@@ -284,6 +284,7 @@ MonoBehaviour:
   m_menuItemPrefab: {fileID: 114996007241749652, guid: 7f9ab2a07e35b35428a88d28fc4c6b3f,
     type: 3}
   m_anchor: {fileID: 0}
+  m_anchorOffset: {x: 0, y: 0}
   m_panel: {fileID: 233234370}
   m_canvasGroup: {fileID: 233234371}
   FadeInSpeed: 8
@@ -1469,6 +1470,7 @@ MonoBehaviour:
   m_menuItemPrefab: {fileID: 114996007241749652, guid: 7f9ab2a07e35b35428a88d28fc4c6b3f,
     type: 3}
   m_anchor: {fileID: 5849259614052136183}
+  m_anchorOffset: {x: 0, y: 0}
   m_panel: {fileID: 220647733058011166}
   m_canvasGroup: {fileID: 230625903091272210}
   FadeInSpeed: 8
@@ -1834,6 +1836,7 @@ MonoBehaviour:
   m_menuItemPrefab: {fileID: 114996007241749652, guid: 7f9ab2a07e35b35428a88d28fc4c6b3f,
     type: 3}
   m_anchor: {fileID: 5849259614183290822}
+  m_anchorOffset: {x: 0, y: 0}
   m_panel: {fileID: 220647733216695752}
   m_canvasGroup: {fileID: 230625903234326468}
   FadeInSpeed: 8
@@ -2210,6 +2213,7 @@ MonoBehaviour:
   m_menuItemPrefab: {fileID: 114996007241749652, guid: 7f9ab2a07e35b35428a88d28fc4c6b3f,
     type: 3}
   m_anchor: {fileID: 5849259614214296018}
+  m_anchorOffset: {x: 0, y: 0}
   m_panel: {fileID: 220647732588404015}
   m_canvasGroup: {fileID: 230625902621628195}
   FadeInSpeed: 8
@@ -2616,6 +2620,7 @@ MonoBehaviour:
   m_menuItemPrefab: {fileID: 114996007241749652, guid: 7f9ab2a07e35b35428a88d28fc4c6b3f,
     type: 3}
   m_anchor: {fileID: 5849259613376326648}
+  m_anchorOffset: {x: 0, y: 0}
   m_panel: {fileID: 220647734270409400}
   m_canvasGroup: {fileID: 230625902139535540}
   FadeInSpeed: 8
@@ -2820,6 +2825,7 @@ MonoBehaviour:
   m_menuItemPrefab: {fileID: 114996007241749652, guid: 7f9ab2a07e35b35428a88d28fc4c6b3f,
     type: 3}
   m_anchor: {fileID: 0}
+  m_anchorOffset: {x: 0, y: 0}
   m_panel: {fileID: 220647733806578002}
   m_canvasGroup: {fileID: 230625901696545630}
   FadeInSpeed: 8
@@ -3035,6 +3041,7 @@ MonoBehaviour:
   m_menuItemPrefab: {fileID: 114996007241749652, guid: 7f9ab2a07e35b35428a88d28fc4c6b3f,
     type: 3}
   m_anchor: {fileID: 5849259614669755914}
+  m_anchorOffset: {x: 0, y: 0}
   m_panel: {fileID: 220647733537699799}
   m_canvasGroup: {fileID: 230625901428817371}
   FadeInSpeed: 8
@@ -4795,6 +4802,7 @@ MonoBehaviour:
   m_pointerOverColor: {r: 0, g: 0.5921569, b: 1, a: 0.49803922}
   m_focusedColor: {r: 0, g: 0.5921569, b: 1, a: 1}
   m_normalColor: {r: 1, g: 1, b: 1, a: 0}
+  m_text: {fileID: 0}
 --- !u!114 &3585920918779202565
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4947,6 +4955,7 @@ MonoBehaviour:
   m_pointerOverColor: {r: 0, g: 0.5921569, b: 1, a: 0.49803922}
   m_focusedColor: {r: 0, g: 0.5921569, b: 1, a: 1}
   m_normalColor: {r: 1, g: 1, b: 1, a: 0}
+  m_text: {fileID: 0}
 --- !u!114 &8077136230047967497
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5188,6 +5197,7 @@ MonoBehaviour:
   m_pointerOverColor: {r: 0, g: 0.5921569, b: 1, a: 0.49803922}
   m_focusedColor: {r: 0, g: 0.5921569, b: 1, a: 1}
   m_normalColor: {r: 1, g: 1, b: 1, a: 0}
+  m_text: {fileID: 0}
 --- !u!114 &8699228782476089258
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5443,6 +5453,7 @@ MonoBehaviour:
   m_pointerOverColor: {r: 0, g: 0.5921569, b: 1, a: 0.49803922}
   m_focusedColor: {r: 0, g: 0.5921569, b: 1, a: 1}
   m_normalColor: {r: 1, g: 1, b: 1, a: 0}
+  m_text: {fileID: 0}
 --- !u!114 &6173097361273975014
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5771,7 +5782,7 @@ MonoBehaviour:
   m_uiForegroundScaler: {fileID: 9174941219733222014}
   m_uiScaler: {fileID: 9174941219733222014}
   m_colors:
-    Primary: {r: 0.21960784, g: 0.21960784, b: 0.21960784, a: 1}
+    Primary: {r: 0, g: 0, b: 0, a: 1}
     Secondary: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
     Border: {r: 0.1254902, g: 0.1254902, b: 0.1254902, a: 1}
     Border2: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
@@ -6289,6 +6300,7 @@ MonoBehaviour:
   m_pointerOverColor: {r: 0, g: 0.5921569, b: 1, a: 0.49803922}
   m_focusedColor: {r: 0, g: 0.5921569, b: 1, a: 1}
   m_normalColor: {r: 1, g: 1, b: 1, a: 0}
+  m_text: {fileID: 0}
 --- !u!114 &8917869522317704742
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -3876,7 +3876,7 @@ ParticleSystem:
 --- !u!199 &19900762
 ParticleSystemRenderer:
   serializedVersion: 6
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -7821,7 +7821,7 @@ ParticleSystem:
 --- !u!199 &19947724
 ParticleSystemRenderer:
   serializedVersion: 6
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -8109,6 +8109,9 @@ MonoBehaviour:
   CanInspect: 1
   CanDuplicate: 1
   CanDelete: 1
+  CanRename: 1
+  CanCreatePrefab: 1
+  ShowSelectionGizmo: 1
   CanSnap: 1
   AddColliders: 1
 --- !u!114 &1792287101373332074
