@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -75,6 +76,8 @@ namespace Battlehub.UIControls
             {
                 m_buttons.SetActive(false);
             }
+
+            InitFilter();
         }
 
         private void OnDestroy()
@@ -87,6 +90,13 @@ namespace Battlehub.UIControls
             TreeView.ItemBeginDrop -= OnItemBeginDrop;
             TreeView.ItemDrop -= OnItemDrop;
             TreeView.ItemEndDrag -= OnItemEndDrag;
+
+            DestroyFilter();
+        }
+
+        private void Update()
+        {
+            UpdateFilter();
         }
 
         private void OnItemExpanding(object sender, VirtualizingItemExpandingArgs e)
@@ -148,8 +158,7 @@ namespace Battlehub.UIControls
                 icon.sprite = Resources.Load<Sprite>("IconNew");
 
                 //And specify whether data item has children (to display expander arrow if needed)
-
-                e.HasChildren = dataItem.Children.Count > 0;
+                e.HasChildren = m_filteredItems.Count == 0 && dataItem.Children.Count > 0;
             }
         }
 
@@ -228,7 +237,16 @@ namespace Battlehub.UIControls
         {
             foreach (DataItem selectedItem in TreeView.SelectedItems.OfType<object>().ToArray())
             {
-                TreeView.RemoveChild(selectedItem.Parent, selectedItem);                
+                TreeView.RemoveChild(selectedItem.Parent, selectedItem);
+
+                if(selectedItem.Parent == null)
+                {
+                    m_dataItems.Remove(selectedItem);
+                }
+                else
+                {
+                    selectedItem.Parent.Children.Remove(selectedItem);
+                }
             }
         }
 
@@ -248,72 +266,70 @@ namespace Battlehub.UIControls
             }
         }
 
-        /*
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.S))
-            {
-                StartCoroutine(Save());
-            }
+        [SerializeField]
+        private TMP_InputField m_txtFilter = null;
+        private float m_nextUpdateTime = float.PositiveInfinity;
+        private List<DataItem> m_filteredItems = new List<DataItem>();
 
-            if (Input.GetKey(KeyCode.L))
-            {
-                StartCoroutine(Load());
-            }
+        private void InitFilter()
+        {
+            UnityEventHelper.AddListener(m_txtFilter, input => input.onValueChanged, OnFilterValueChanged);
         }
 
-        private IEnumerator Save()
+        private void DestroyFilter()
         {
-            TreeViewState state = ScriptableObject.CreateInstance<TreeViewState>();
-            state.Items = m_dataItems;
-
-            yield return m_project.SetValue("TreeViewState", state);
-            Destroy(state);
+            UnityEventHelper.RemoveListener(m_txtFilter, input => input.onValueChanged, OnFilterValueChanged);
         }
 
-        private IEnumerator Load()
+        private void OnFilterValueChanged(string value)
         {
-            ProjectAsyncOperation<TreeViewState> getValue = m_project.GetValue<TreeViewState>("TreeViewState");
-            yield return getValue;
+            m_nextUpdateTime = Time.time + 0.3f;
+        }
 
-            if (getValue.Error.HasError)
+        private void UpdateFilter()
+        {
+            if(Time.time > m_nextUpdateTime)
             {
-                Debug.LogError(getValue.Error.ToString());
-            }
-            else
-            {
-                m_dataItems = getValue.Result.Items;
-                for (int i = 0; i < m_dataItems.Count; ++i)
+                m_nextUpdateTime = float.PositiveInfinity;
+                IEnumerable selectedItems = TreeView.SelectedItems;
+                m_filteredItems.Clear();
+                if (!string.IsNullOrEmpty(m_txtFilter.text))
                 {
-                    SetParents(m_dataItems[i]);
+                    Filter(m_txtFilter.text, m_dataItems, m_filteredItems);
+                    TreeView.Items = m_filteredItems;
+                    TreeView.SelectedItems = selectedItems;
                 }
-                TreeView.Items = m_dataItems;
-
-                foreach (DataItem dataItem in m_dataItems)
+                else
                 {
-                    TreeView.ExpandAll(dataItem, item => item.Parent, item => item.Children);
-                }
-
-                Destroy(getValue.Result);
-            }
-        }
-
-        private void SetParents(DataItem dataItem)
-        {
-            if (dataItem.Children != null)
-            {
-                for (int i = 0; i < dataItem.Children.Count; ++i)
-                {
-                    dataItem.Children[i].Parent = dataItem;
-                    SetParents(dataItem.Children[i]);
+                    
+                    TreeView.Items = m_dataItems;
+                    TreeView.SelectedItems = selectedItems;
+                    if (TreeView.SelectedItemsCount > 0)
+                    {
+                        foreach (DataItem selectedItem in TreeView.SelectedItems)
+                        {
+                            TreeView.ExpandTo(selectedItem, dataItem => dataItem.Parent);
+                        }
+                    }
                 }
             }
-            else
+        }
+
+     
+        private void Filter(string filter, List<DataItem> items, List<DataItem> result)
+        {
+            foreach(DataItem item in items)
             {
-                dataItem.Children = new List<DataItem>();
+                if(item.Name.Contains(filter))
+                {
+                    result.Add(item);
+                }
+
+                if(item.Children != null)
+                {
+                    Filter(filter, item.Children, result);
+                }
             }
         }
-        */
-
     }
 }

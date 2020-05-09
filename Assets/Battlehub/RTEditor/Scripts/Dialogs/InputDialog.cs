@@ -1,7 +1,6 @@
 ﻿using Battlehub.RTCommon;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Battlehub.RTEditor
 {
@@ -23,8 +22,6 @@ namespace Battlehub.RTEditor
         {
             m_inputField.Select();
         }
-
     }
-
 }
 

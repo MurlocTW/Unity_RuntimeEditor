@@ -43,7 +43,7 @@ namespace Battlehub.UIControls.MenuControl
             get { return m_disableTextColor; }
             set { m_disableTextColor = value; }
         }
-        
+
         [SerializeField]
         private Menu m_menuPrefab = null;
 
@@ -59,6 +59,9 @@ namespace Battlehub.UIControls.MenuControl
         [SerializeField]
         private Image m_selection = null;
 
+        [SerializeField]
+        private Image m_onIcon = null;
+
         private Transform m_root;
         public Transform Root
         {
@@ -72,6 +75,7 @@ namespace Battlehub.UIControls.MenuControl
             get { return m_depth; }
             set { m_depth = value; }
         }
+
 
         private MenuItemInfo m_item;
         public MenuItemInfo Item
@@ -142,6 +146,11 @@ namespace Battlehub.UIControls.MenuControl
                 m_icon.gameObject.SetActive(m_item.Icon != null);
                 m_text.text = m_item.Text;
                 m_expander.SetActive(HasChildren);
+
+                if(m_onIcon != null)
+                {
+                    m_onIcon.gameObject.SetActive(m_item.IsOn);
+                }
             }
             else
             {
@@ -149,8 +158,12 @@ namespace Battlehub.UIControls.MenuControl
                 m_icon.gameObject.SetActive(false);
                 m_text.text = string.Empty;
                 m_expander.SetActive(false);
-            }
 
+                if (m_onIcon != null)
+                {
+                    m_onIcon.gameObject.SetActive(false);
+                }
+            }
 
             var validationResult = IsValid(false);
             if(validationResult.IsVisible)

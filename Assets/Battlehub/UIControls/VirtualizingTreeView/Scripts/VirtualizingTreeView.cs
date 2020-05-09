@@ -89,6 +89,7 @@ namespace Battlehub.UIControls
     {
         public static event EventHandler<VirtualizingParentChangedEventArgs> ParentChanging;
         public static event EventHandler<VirtualizingParentChangedEventArgs> ParentChanged;
+        public static bool Internal_RaiseEvents = true;
 
         private TreeViewItemContainerData m_parent;
         public TreeViewItemContainerData Parent
@@ -101,16 +102,24 @@ namespace Battlehub.UIControls
                     return;
                 }
 
-                if (ParentChanging != null)
+                if(Internal_RaiseEvents)
                 {
-                    ParentChanging(this, new VirtualizingParentChangedEventArgs(m_parent, value));
+                    if (ParentChanging != null)
+                    {
+                        ParentChanging(this, new VirtualizingParentChangedEventArgs(m_parent, value));
+                    }
                 }
+               
 
                 TreeViewItemContainerData oldParent = m_parent;
                 m_parent = value;
-                if (ParentChanged != null)
+
+                if(Internal_RaiseEvents)
                 {
-                    ParentChanged(this, new VirtualizingParentChangedEventArgs(oldParent, m_parent));
+                    if (ParentChanged != null)
+                    {
+                        ParentChanged(this, new VirtualizingParentChangedEventArgs(oldParent, m_parent));
+                    }
                 }
             }
         }
@@ -377,28 +386,36 @@ namespace Battlehub.UIControls
             }
             else
             {
-                TreeViewItemContainerData parentContainer = (TreeViewItemContainerData)GetItemContainerData(parent);
-                if (parentContainer == null)
+                TreeViewItemContainerData parentContainerData = (TreeViewItemContainerData)GetItemContainerData(parent);
+                if (parentContainerData == null)
                 {
                     return;
                 }
 
                 int index = -1;
-                if (parentContainer.IsExpanded)
+                if (parentContainerData.IsExpanded)
                 {
-                    if (parentContainer.HasChildren(this))
+                    if (parentContainerData.HasChildren(this))
                     {
-                        TreeViewItemContainerData lastDescendant = parentContainer.LastDescendant(this);
+                        TreeViewItemContainerData lastDescendant = parentContainerData.LastDescendant(this);
                         index = IndexOf(lastDescendant.Item) + 1;
                     }
                     else
                     {
-                        index = IndexOf(parentContainer.Item) + 1;
+                        index = IndexOf(parentContainerData.Item) + 1;
                     }
                 }
                 else
                 {
-                    parentContainer.CanExpand = true;
+                    VirtualizingTreeViewItem parentContainer = (VirtualizingTreeViewItem)GetItemContainer(parent);
+                    if(parentContainer != null)
+                    {
+                        parentContainer.CanExpand = true;
+                    }
+                    else
+                    {
+                        parentContainerData.CanExpand = true;
+                    }
                 }
 
                 if (index > -1)
@@ -407,11 +424,11 @@ namespace Battlehub.UIControls
                     VirtualizingTreeViewItem addedTreeViewItem = (VirtualizingTreeViewItem)GetItemContainer(item);
                     if (addedTreeViewItem != null)
                     {
-                        addedTreeViewItem.Parent = parentContainer;
+                        addedTreeViewItem.Parent = parentContainerData;
                     }
                     else
                     {
-                        addedItemData.Parent = parentContainer;
+                        addedItemData.Parent = parentContainerData;
                     }
                 }
             }
@@ -561,7 +578,6 @@ namespace Battlehub.UIControls
                 return;
             }
 
-            
             if (ItemExpanding != null)
             {
                 VirtualizingItemExpandingArgs args = new VirtualizingItemExpandingArgs(treeViewItemData.Item);
@@ -582,6 +598,7 @@ namespace Battlehub.UIControls
 
                 if (treeViewItemData.CanExpand)
                 {
+                    TreeViewItemContainerData.Internal_RaiseEvents = false;
                     foreach (object childItem in children)
                     {
                         itemIndex++;
@@ -597,6 +614,7 @@ namespace Battlehub.UIControls
                             childData.Parent = treeViewItemData;
                         }
                     }
+                    TreeViewItemContainerData.Internal_RaiseEvents = true;
 
                     UpdateSelectedItemIndex();
                 }
@@ -704,8 +722,8 @@ namespace Battlehub.UIControls
             {
                 VirtualizingTreeViewItemDataBindingArgs args = new VirtualizingTreeViewItemDataBindingArgs();
                 args.Item = item;
-                args.ItemPresenter = itemContainer.ItemPresenter == null ? gameObject : itemContainer.ItemPresenter;
-                args.EditorPresenter = itemContainer.EditorPresenter == null ? gameObject : itemContainer.EditorPresenter;
+                args.ItemPresenter = itemContainer.ItemPresenter == null ? itemContainer.gameObject : itemContainer.ItemPresenter;
+                args.EditorPresenter = itemContainer.EditorPresenter == null ? itemContainer.gameObject : itemContainer.EditorPresenter;
 
                 RaiseItemDataBinding(args);
 
@@ -715,6 +733,7 @@ namespace Battlehub.UIControls
                 treeViewItem.CanDrag = CanDrag && args.CanDrag;
                 treeViewItem.CanBeParent = args.CanBeParent;
                 treeViewItem.CanChangeParent = args.CanChangeParent;
+                treeViewItem.CanSelect = args.CanSelect;
                 treeViewItem.UpdateIndent();
             }
             else
@@ -725,6 +744,7 @@ namespace Battlehub.UIControls
                 treeViewItem.CanDrag = false;
                 treeViewItem.CanBeParent = false;
                 treeViewItem.CanChangeParent = false;
+                treeViewItem.CanSelect = false;
                 treeViewItem.UpdateIndent();
             }
         }
@@ -735,8 +755,8 @@ namespace Battlehub.UIControls
             {
                 return;
             }
-            TreeViewItemContainerData tvItem = (TreeViewItemContainerData)sender;
 
+            TreeViewItemContainerData tvItem = (TreeViewItemContainerData)sender;
             TreeViewItemContainerData oldParent = e.OldParent;
             if (DropMarker.Action != ItemDropAction.SetLastChild && DropMarker.Action != ItemDropAction.None)
             {
@@ -992,6 +1012,7 @@ namespace Battlehub.UIControls
             else
             {
                 child.Parent = parent;
+                UpdateIndent(child.Item);
             }
         }
 

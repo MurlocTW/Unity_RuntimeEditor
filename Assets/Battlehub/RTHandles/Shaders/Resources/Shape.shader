@@ -25,6 +25,7 @@ Shader "Battlehub/RTHandles/Shape" {
 			#include "UnityCG.cginc"
 			#pragma vertex vert  
 			#pragma fragment frag 
+			#pragma multi_compile_instancing
 
 			struct vertexInput {
 				float4 vertex : POSITION;
@@ -40,7 +41,6 @@ Shader "Battlehub/RTHandles/Shape" {
 			};
 
 			fixed4 _Color;
-
 
 			inline float4 GammaToLinearSpace(float4 sRGB)
 			{
@@ -64,7 +64,6 @@ Shader "Battlehub/RTHandles/Shape" {
 				output.color = GammaToLinearSpace(output.color);
 				output.color.a = input.color.a;
 
-				
 				return output;
 			}
 

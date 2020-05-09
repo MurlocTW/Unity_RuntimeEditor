@@ -64,6 +64,9 @@ namespace Battlehub.UIControls.MenuControl
         public string Command;
         public MenuItemEvent Action;
         public MenuItemValidationEvent Validate;
+
+        public bool IsVisible = true;
+        public bool IsOn = false;
     }
 
 
@@ -208,7 +211,7 @@ namespace Battlehub.UIControls.MenuControl
                 for (int i = 0; i < m_items.Length; ++i)
                 {
                     MenuItemInfo menuItemInfo = m_items[i];
-                    if (string.IsNullOrEmpty(menuItemInfo.Path))
+                    if (string.IsNullOrEmpty(menuItemInfo.Path) || !menuItemInfo.IsVisible)
                     {
                         continue;
                     }
@@ -352,7 +355,6 @@ namespace Battlehub.UIControls.MenuControl
             lp.z = 0;
             transform.localPosition = lp;
         }
-
 
         private void LateUpdate()
         {

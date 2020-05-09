@@ -58,13 +58,77 @@ namespace Battlehub.RTHandles
         protected override void AwakeOverride()
         {
             base.AwakeOverride();
-            RuntimeGraphicsLayer graphicsLayer = Window.GetComponent<RuntimeGraphicsLayer>();
-            if (graphicsLayer == null)
+            SetLayer(transform, Window.Editor.CameraLayerSettings.RuntimeGraphicsLayer + Window.Index);
+        }
+    
+        protected virtual void Start()
+        {
+
+        }
+
+        protected virtual void OnEnable()
+        {
+            UpdateModel();
+        }
+
+        protected virtual void OnDisable()
+        {
+            IRTECamera rteCamera = GetRTECamera();
+
+            if (rteCamera != null)
             {
-                graphicsLayer = Window.gameObject.AddComponent<RuntimeGraphicsLayer>();
+                rteCamera.RenderersCache.Remove(GetRenderers());
+                rteCamera.RenderersCache.Refresh();
+            }
+        }
+
+        protected virtual void Update()
+        {
+            
+        }
+
+        public virtual void UpdateModel()
+        {
+            PushUpdatesToGraphicLayer();
+        }
+
+        private IRTECamera GetRTECamera()
+        {
+            if(Window == null || Window.Camera == null)
+            {
+                return null;
             }
 
-            SetLayer(transform, graphicsLayer.Window.Editor.CameraLayerSettings.RuntimeGraphicsLayer + Window.Index);
+            IRTECamera rteCamera;
+            IRTEGraphicsLayer graphicsLayer = Window.IOCContainer.Resolve<IRTEGraphicsLayer>();
+            if (graphicsLayer == null)
+            {
+                rteCamera = Window.Camera.GetComponent<IRTECamera>();
+            }
+            else
+            {
+                rteCamera = graphicsLayer.Camera;
+            }
+
+            return rteCamera;
+        }
+
+        public void PushUpdatesToGraphicLayer()
+        {
+            IRTECamera rteCamera = GetRTECamera();
+
+            if (rteCamera != null && gameObject.activeInHierarchy && rteCamera.RenderersCache != null)
+            {
+                Renderer[] renderers = GetRenderers();
+                rteCamera.RenderersCache.Remove(renderers);
+                rteCamera.RenderersCache.Add(renderers, false, true);
+                rteCamera.RenderersCache.Refresh();
+            }
+        }
+
+        protected virtual Renderer[] GetRenderers()
+        {
+            return gameObject.GetComponentsInChildren<Renderer>(true);
         }
 
         private void SetLayer(Transform t, int layer)
@@ -77,8 +141,8 @@ namespace Battlehub.RTHandles
         }
 
         public virtual void SetLock(LockObject lockObj)
-        { 
-            if(lockObj == null)
+        {
+            if (lockObj == null)
             {
                 lockObj = new LockObject();
             }
@@ -87,7 +151,7 @@ namespace Battlehub.RTHandles
 
         public virtual void Select(RuntimeHandleAxis axis)
         {
-            m_selectedAxis = axis;   
+            m_selectedAxis = axis;
         }
 
         public virtual void SetScale(Vector3 scale)
@@ -101,30 +165,5 @@ namespace Battlehub.RTHandles
             return RuntimeHandleAxis.None;
         }
 
-        protected virtual void Start()
-        {
-        }
-
-        protected virtual void OnEnable()
-        {
-            UpdateModel();
-        }
-
-        protected virtual void OnDisable()
-        {
-
-        }
-
-        protected virtual void Update()
-        {
-
-        }
-
-        public virtual void UpdateModel()
-        {
-
-        }
-
-     
     }
 }

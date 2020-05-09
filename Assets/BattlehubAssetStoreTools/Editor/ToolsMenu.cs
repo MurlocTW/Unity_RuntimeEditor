@@ -27,6 +27,12 @@ namespace Battlehub.AssetStoreTools
             CleanRTSL();
             CleanRTE();
         }
+
+        [MenuItem("Asset Store Tools/Create Empty TypeModel")]
+        public static void CreateEmptyTypeModel()
+        {
+            
+        }
     }
 
 }

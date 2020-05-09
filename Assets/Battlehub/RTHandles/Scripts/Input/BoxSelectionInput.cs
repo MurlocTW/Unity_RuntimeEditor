@@ -30,6 +30,11 @@ namespace Battlehub.RTHandles
                 }
             }
 
+            if(!m_boxSelection.enabled)
+            {
+                return;
+            }
+
             if (!m_boxSelection.IsWindowActive)
             {
                 return;

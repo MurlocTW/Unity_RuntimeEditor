@@ -56,11 +56,24 @@ namespace Battlehub.RTEditor
     {
         public virtual HeaderDescriptor GetHeaderDescriptor(IRTE editor)
         {
+            ILocalization localization = IOC.Resolve<ILocalization>();
+            ISettingsComponent settingsComponent = IOC.Resolve<ISettingsComponent>();
+            BuiltInWindowsSettings settings;
+            if (settingsComponent == null)
+            {
+                settings = BuiltInWindowsSettings.Default;
+            }
+            else
+            {
+                settings = settingsComponent.BuiltInWindowsSettings;
+            }
+            
+            
             return new HeaderDescriptor(
-                ComponentType.Name,
-                editor.ComponentEditorSettings.ShowExpander,
-                editor.ComponentEditorSettings.ShowResetButton,
-                editor.ComponentEditorSettings.ShowEnableButton);
+                localization.GetString("ID_RTEditor_CD_" + ComponentType.Name, ComponentType.Name),
+                settings.Inspector.ComponentEditor.ShowExpander,
+                settings.Inspector.ComponentEditor.ShowResetButton,
+                settings.Inspector.ComponentEditor.ShowEnableButton);
         }
 
         public virtual Type ComponentType

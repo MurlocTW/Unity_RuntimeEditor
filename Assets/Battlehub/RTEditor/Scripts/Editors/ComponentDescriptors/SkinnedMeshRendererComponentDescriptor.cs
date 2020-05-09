@@ -5,6 +5,7 @@ using System;
 using Battlehub.Utils;
 using System.Collections.Generic;
 using Battlehub.RTGizmos;
+using Battlehub.RTCommon;
 
 namespace Battlehub.RTEditor
 {
@@ -24,6 +25,8 @@ namespace Battlehub.RTEditor
     {
         public override PropertyDescriptor[] GetProperties(ComponentEditor editor, object converter)
         {
+            ILocalization lc = IOC.Resolve<ILocalization>();
+
             MemberInfo castShadowsInfo = Strong.PropertyInfo((SkinnedMeshRenderer x) => x.shadowCastingMode, "shadowCastingMode");
             MemberInfo receiveShadowsInfo = Strong.PropertyInfo((SkinnedMeshRenderer x) => x.receiveShadows, "receiveShadows");
             MemberInfo materialsInfo = Strong.PropertyInfo((SkinnedMeshRenderer x) => x.sharedMaterials, "sharedMaterials");
@@ -39,18 +42,18 @@ namespace Battlehub.RTEditor
 
             List<PropertyDescriptor> descriptors = new List<PropertyDescriptor>();
 
-            descriptors.Add(new PropertyDescriptor("Cast Shadows", editor.Component, castShadowsInfo, castShadowsInfo));
-            descriptors.Add(new PropertyDescriptor("Receive Shadows", editor.Component, receiveShadowsInfo, receiveShadowsInfo));
-            descriptors.Add(new PropertyDescriptor("Materials", editor.Component, materialsInfo, materialsInfo));
-            descriptors.Add(new PropertyDescriptor("Light Probes", editor.Component, lightProbesInfo, lightProbesInfo));
-            descriptors.Add(new PropertyDescriptor("Reflection Probes", editor.Component, reflectionProbesInfo, reflectionProbesInfo));
-            descriptors.Add(new PropertyDescriptor("Anchor Override", editor.Component, anchorOverrideInfo, anchorOverrideInfo));
-            descriptors.Add(new PropertyDescriptor("Quality", editor.Component, qualityInfo, qualityInfo));
-            descriptors.Add(new PropertyDescriptor("Update When Offscreen", editor.Component, updateWhenOffscreenInfo, updateWhenOffscreenInfo));
-            descriptors.Add(new PropertyDescriptor("Skinned Motion Vectors", editor.Component, skinnedMotionVectorsInfo, skinnedMotionVectorsInfo));
-            descriptors.Add(new PropertyDescriptor("Mesh", editor.Component, meshInfo, meshInfo));
-            descriptors.Add(new PropertyDescriptor("Root Bone", editor.Component, rootBoneInfo, rootBoneInfo));
-            descriptors.Add(new PropertyDescriptor("Bounds", editor.Component, boundsInfo, boundsInfo));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SkinnedMeshRenderer_CastShadows", "Cast Shadows"), editor.Component, castShadowsInfo));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SkinnedMeshRenderer_ReceiveShadows", "Receive Shadows"), editor.Component, receiveShadowsInfo, "m_ReceiveShadows"));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SkinnedMeshRenderer_Materials", "Materials"), editor.Component, materialsInfo, materialsInfo));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SkinnedMeshRenderer_LightProbes", "Light Probes"), editor.Component, lightProbesInfo, lightProbesInfo));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SkinnedMeshRenderer_ReflectionProbes", "Reflection Probes"), editor.Component, reflectionProbesInfo, reflectionProbesInfo));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SkinnedMeshRenderer_AnchorOverride", "Anchor Override"), editor.Component, anchorOverrideInfo, anchorOverrideInfo));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SkinnedMeshRenderer_Quality", "Quality"), editor.Component, qualityInfo, qualityInfo));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SkinnedMeshRenderer_UpdateWhenOffscreen", "Update When Offscreen"), editor.Component, updateWhenOffscreenInfo, "m_UpdateWhenOffscreen"));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SkinnedMeshRenderer_SkinnedMotionVectors", "Skinned Motion Vectors"), editor.Component, skinnedMotionVectorsInfo, skinnedMotionVectorsInfo));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SkinnedMeshRenderer_Mesh", "Mesh"), editor.Component, meshInfo, meshInfo));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SkinnedMeshRenderer_RootBone", "Root Bone"), editor.Component, rootBoneInfo, rootBoneInfo));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SkinnedMeshRenderer_Bounds", "Bounds"), editor.Component, boundsInfo, boundsInfo));
 
             return descriptors.ToArray();
         }

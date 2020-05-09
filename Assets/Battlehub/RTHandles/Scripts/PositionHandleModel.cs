@@ -1,5 +1,5 @@
 ﻿using Battlehub.RTCommon;
-using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Battlehub.RTHandles
@@ -8,6 +8,9 @@ namespace Battlehub.RTHandles
     {
         [SerializeField]
         private GameObject[] m_models = null;
+        private Renderer[] m_renderers;
+        private Renderer m_ssQuadRenderer;
+
         [SerializeField]
         private GameObject m_screenSpaceQuad = null;
         [SerializeField]
@@ -92,6 +95,12 @@ namespace Battlehub.RTHandles
         private Vector3[] m_defaultB3XScale;
         private Vector3[] m_defaultB3YScale;
         private Vector3[] m_defaultB3ZScale;
+        private Vector3[] m_defaultSigns = new[]
+        {
+            new Vector3(1, 1, 1), new Vector3(-1, 1, 1), new Vector3(-1,-1, 1), new Vector3(1,-1, 1),
+            new Vector3(1, 1,-1), new Vector3(-1, 1,-1), new Vector3(-1,-1,-1), new Vector3(1,-1,-1),
+            new Vector3(1, 1, 1)
+        };
 
         private const float DefaultRadius = 0.05f;
         private const float DefaultLength = 1.0f;
@@ -174,13 +183,18 @@ namespace Battlehub.RTHandles
             m_b4ss = m_ssQuadArmature.GetChild(4);
 
             m_materials = m_models[0].GetComponent<Renderer>().materials;
-            m_ssQuadMaterial = m_screenSpaceQuad.GetComponent<Renderer>().sharedMaterial;
+            m_ssQuadRenderer = m_screenSpaceQuad.GetComponent<Renderer>();
+            m_ssQuadRenderer.forceRenderingOff = true;
+            m_ssQuadMaterial = m_ssQuadRenderer.sharedMaterial;
             SetDefaultColors();
 
+            m_renderers = new Renderer[m_models.Length];
             for (int i = 0; i < m_models.Length; ++i)
             {
                 Renderer renderer = m_models[i].GetComponent<Renderer>();
                 renderer.sharedMaterials = m_materials;
+                renderer.forceRenderingOff = true;
+                m_renderers[i] = renderer;
             }
 
             OnVertexSnappingModeChaged();
@@ -284,6 +298,32 @@ namespace Battlehub.RTHandles
         {
             m_normalModeArrows.SetActive(!m_isVertexSnapping);
             m_vertexSnappingModeArrows.SetActive(m_isVertexSnapping && !m_lockObj.IsPositionLocked);
+
+            if(m_vertexSnappingModeArrows.activeSelf)
+            {
+                for (int i = 0; i < m_renderers.Length; ++i)
+                {
+                    m_renderers[i].forceRenderingOff = true;
+                }
+                m_renderers[m_renderers.Length - 1].forceRenderingOff = false;
+            }
+            else
+            {
+                if(m_xCollider != null)
+                {
+                    m_prevCameraPosition = Window.Camera.transform.position;
+                    int index = SetCameraPosition(m_prevCameraPosition, true);
+                    if (index >= 0)
+                    {
+                        UpdateColliders(index);
+                        m_prevIndex = index;
+                    }
+                }
+            }
+
+            m_ssQuadRenderer.forceRenderingOff = !m_vertexSnappingModeArrows.activeSelf;
+
+            PushUpdatesToGraphicLayer();
         }
 
         private void SetDefaultColors()
@@ -292,39 +332,99 @@ namespace Battlehub.RTHandles
             {
                 m_materials[m_xMatIndex].color = Colors.DisabledColor;
                 m_materials[m_xArrowMatIndex].color = Colors.DisabledColor;
+
+                if(Mathf.Approximately(Colors.DisabledColor.a, 0))
+                {
+                    m_materials[m_xMatIndex].SetFloat("_ZWrite", 0);
+                    m_materials[m_xArrowMatIndex].SetFloat("_ZWrite", 0);
+                }
             }
             else
             {
                 m_materials[m_xMatIndex].color = Colors.XColor;
                 m_materials[m_xArrowMatIndex].color = Colors.XColor;
+                m_materials[m_xMatIndex].SetFloat("_ZWrite", 1);
+                m_materials[m_xArrowMatIndex].SetFloat("_ZWrite", 1);
             }
 
             if (m_lockObj.PositionY)
             {
                 m_materials[m_yMatIndex].color = Colors.DisabledColor;
                 m_materials[m_yArrowMatIndex].color = Colors.DisabledColor;
+                if (Mathf.Approximately(Colors.DisabledColor.a, 0))
+                {
+                    m_materials[m_yMatIndex].SetFloat("_ZWrite", 0);
+                    m_materials[m_yArrowMatIndex].SetFloat("_ZWrite", 0);
+                }
             }
             else
             {
                 m_materials[m_yMatIndex].color = Colors.YColor;
                 m_materials[m_yArrowMatIndex].color = Colors.YColor;
+                m_materials[m_yMatIndex].SetFloat("_ZWrite", 1);
+                m_materials[m_yArrowMatIndex].SetFloat("_ZWrite", 1);
             }
 
             if (m_lockObj.PositionZ)
             {
                 m_materials[m_zMatIndex].color = Colors.DisabledColor;
                 m_materials[m_zArrowMatIndex].color = Colors.DisabledColor;
+                if (Mathf.Approximately(Colors.DisabledColor.a, 0))
+                {
+                    m_materials[m_zMatIndex].SetFloat("_ZWrite", 0);
+                    m_materials[m_zArrowMatIndex].SetFloat("_ZWrite", 0);
+                }
             }
             else
             {
                 m_materials[m_zMatIndex].color = Colors.ZColor;
                 m_materials[m_zArrowMatIndex].color = Colors.ZColor;
+                m_materials[m_zMatIndex].SetFloat("_ZWrite", 1);
+                m_materials[m_zArrowMatIndex].SetFloat("_ZWrite", 1);
             }
 
-            m_materials[m_xQMatIndex].color = m_lockObj.PositionY || m_lockObj.PositionZ ? Colors.DisabledColor : Colors.XColor;
-            m_materials[m_yQMatIndex].color = m_lockObj.PositionX || m_lockObj.PositionZ ? Colors.DisabledColor : Colors.YColor;
-            m_materials[m_zQMatIndex].color = m_lockObj.PositionX || m_lockObj.PositionY ? Colors.DisabledColor : Colors.ZColor;
-
+            if (m_lockObj.PositionY || m_lockObj.PositionZ)
+            {
+                m_materials[m_xQMatIndex].color = Colors.DisabledColor;
+                if (Mathf.Approximately(Colors.DisabledColor.a, 0))
+                {
+                    m_materials[m_xQMatIndex].SetFloat("_ZWrite", 0);
+                }
+            }
+            else
+            {
+                m_materials[m_xQMatIndex].color = Colors.XColor;
+                m_materials[m_xQMatIndex].SetFloat("_ZWrite", 1);
+            }
+            
+            if(m_lockObj.PositionX || m_lockObj.PositionZ)
+            {
+                m_materials[m_yQMatIndex].color = Colors.DisabledColor;
+                if (Mathf.Approximately(Colors.DisabledColor.a, 0))
+                {
+                    m_materials[m_yQMatIndex].SetFloat("_ZWrite", 0);
+                }
+            }
+            else
+            {
+                m_materials[m_yQMatIndex].color = Colors.YColor;
+                m_materials[m_yQMatIndex].SetFloat("_ZWrite", 1);
+            }
+            
+            if (m_lockObj.PositionX || m_lockObj.PositionY)
+            {
+                m_materials[m_zQMatIndex].color = Colors.DisabledColor;
+                if (Mathf.Approximately(Colors.DisabledColor.a, 0))
+                {
+                    m_materials[m_zQMatIndex].SetFloat("_ZWrite", 0);
+                }
+            }
+            else
+            {
+                m_materials[m_zQMatIndex].color = Colors.ZColor;
+                m_materials[m_zQMatIndex].SetFloat("_ZWrite", 1);
+            }
+                
             Color xQuadColor = m_lockObj.PositionY || m_lockObj.PositionZ ? Colors.DisabledColor : Colors.XColor; xQuadColor.a = Mathf.Min(m_quadTransparency, xQuadColor.a);
             m_materials[m_xQuadMatIndex].color =  xQuadColor;
 
@@ -456,9 +556,9 @@ namespace Battlehub.RTHandles
                 m_b3z[i].localScale = Vector3.up * arrowScale +
                     new Vector3(1, 0, 1) * arrowRadiusScale;
 
-                m_b1x[i].position = transform.TransformPoint(Mathf.Sign(Vector3.Dot(right, m_b1x[i].position - p)) * Vector3.right * quadLength);
-                m_b1y[i].position = transform.TransformPoint(Mathf.Sign(Vector3.Dot(up, m_b1y[i].position - p)) * Vector3.up * quadLength);
-                m_b1z[i].position = transform.TransformPoint(Mathf.Sign(Vector3.Dot(forward, m_b1z[i].position - p)) * Vector3.forward * quadLength);
+                m_b1x[i].position = transform.TransformPoint(m_defaultSigns[i].x * Vector3.right * quadLength);
+                m_b1y[i].position = transform.TransformPoint(m_defaultSigns[i].y * Vector3.up * quadLength);
+                m_b1z[i].position = transform.TransformPoint(m_defaultSigns[i].z * Vector3.forward * quadLength);
 
                 m_bSx[i].position = p + (m_b1y[i].position - p) + (m_b1z[i].position - p);
                 m_bSy[i].position = p + (m_b1x[i].position - p) + (m_b1z[i].position - p);
@@ -475,6 +575,8 @@ namespace Battlehub.RTHandles
             {
                 UpdateColliders(index);
             }
+
+            base.UpdateModel();
         }
 
         private void UpdateColliders(int i)
@@ -540,64 +642,6 @@ namespace Battlehub.RTHandles
                 m_yzCollider.center = Vector3.zero;
                 m_snappingCollider.radius = 0;
             }
-        }
-
-
-        public int SetCameraPosition(Vector3 pos)
-        {
-
-            Vector3 toCam = (pos - transform.position).normalized;
-            toCam = transform.InverseTransformDirection(toCam);
-            float[] dots =
-                transform.localScale.z < 0 ?
-                new[]
-                {
-                    Vector3.Dot(new Vector3( 1,  1, -1).normalized, toCam),
-                    Vector3.Dot(new Vector3(-1,  1, -1).normalized, toCam),
-                    Vector3.Dot(new Vector3(-1, -1, -1).normalized, toCam),
-                    Vector3.Dot(new Vector3( 1, -1, -1).normalized, toCam),
-                    Vector3.Dot(new Vector3( 1,  1,  1).normalized, toCam),
-                    Vector3.Dot(new Vector3(-1,  1,  1).normalized, toCam),
-                    Vector3.Dot(new Vector3(-1, -1,  1).normalized, toCam),
-                    Vector3.Dot(new Vector3( 1, -1,  1).normalized, toCam),
-                } :
-                new[]
-                {
-                    Vector3.Dot(new Vector3( 1,  1,  1).normalized, toCam),
-                    Vector3.Dot(new Vector3(-1,  1,  1).normalized, toCam),
-                    Vector3.Dot(new Vector3(-1, -1,  1).normalized, toCam),
-                    Vector3.Dot(new Vector3( 1, -1,  1).normalized, toCam),
-                    Vector3.Dot(new Vector3( 1,  1, -1).normalized, toCam),
-                    Vector3.Dot(new Vector3(-1,  1, -1).normalized, toCam),
-                    Vector3.Dot(new Vector3(-1, -1, -1).normalized, toCam),
-                    Vector3.Dot(new Vector3( 1, -1, -1).normalized, toCam),
-                };
-
-            float maxDot = float.MinValue;
-            int maxIndex = -1;
-            for (int i = 0; i < dots.Length; ++i)
-            {
-                if (dots[i] > maxDot)
-                {
-                    maxDot = dots[i];
-                    maxIndex = i;
-                }
-            } 
-
-            for (int i = 0; i < m_models.Length - 1; ++i)
-            {
-                if (i != maxIndex)
-                {
-                    m_models[i].SetActive(false);
-                }
-            }
-
-            if (maxIndex >= 0)
-            {
-                m_models[maxIndex].SetActive(true);
-            }
-            return maxIndex;
-
         }
 
         public override RuntimeHandleAxis HitTest(Ray ray, out float distance)
@@ -708,6 +752,98 @@ namespace Battlehub.RTHandles
         private Vector3 m_prevCameraPosition = new Vector3(float.MinValue, float.MinValue, float.MinValue);
         private Vector3 m_prevPosition;
         private Quaternion m_prevRotation;
+        private int m_prevIndex = -1;
+
+        public int SetCameraPosition(Vector3 pos, bool force = false)
+        {
+            Vector3 toCam = (pos - transform.position).normalized;
+            toCam = transform.InverseTransformDirection(toCam);
+
+            int index = -1;
+            if (toCam.x >= 0)
+            {
+                if (toCam.y >= 0)
+                {
+                    if (toCam.z >= 0)
+                    {
+                        index = 0;
+                    }
+                    else
+                    {
+                        index = 4;
+                    }
+                }
+                else
+                {
+                    if (toCam.z >= 0)
+                    {
+                        index = 3;
+                    }
+                    else
+                    {
+                        index = 7;
+                    }
+                }
+            }
+            else
+            {
+                if (toCam.y >= 0)
+                {
+                    if (toCam.z >= 0)
+                    {
+                        index = 1;
+                    }
+                    else
+                    {
+                        index = 5;
+                    }
+                }
+                else
+                {
+                    if (toCam.z >= 0)
+                    {
+                        index = 2;
+                    }
+                    else
+                    {
+                        index = 6;
+                    }
+                }
+            }
+
+            index = (index + (transform.localScale.z < 0 ? 4 : 0)) % 8;
+
+            if (m_lockObj != null && (m_lockObj.PositionX || m_lockObj.PositionY || m_lockObj.PositionZ))
+            {
+                index = 0;
+            }
+
+            if(m_prevIndex == index && !force)
+            {
+                return -1;
+            }
+            
+            if(m_prevIndex >= 0)
+            {
+                m_models[m_prevIndex].SetActive(false);
+
+                Renderer renderer = m_renderers[m_prevIndex];
+                renderer.forceRenderingOff = true;
+            }
+
+            if(index >= 0)
+            {
+                m_models[index].SetActive(true);
+
+                Renderer renderer = m_renderers[index];
+                renderer.forceRenderingOff = false;
+            }
+
+            PushUpdatesToGraphicLayer();
+
+            m_prevIndex = index;
+            return index;
+        }
 
         protected override void Update()
         {

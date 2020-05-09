@@ -24,8 +24,8 @@ namespace Battlehub.RTEditor
         private Dialog m_parentDialog;
 
         private IProject m_project;
-
         private IWindowManager m_windowManager;
+        private ILocalization m_localization;
 
         [SerializeField]
         private Button m_btnNew = null;
@@ -42,6 +42,8 @@ namespace Battlehub.RTEditor
         {
             WindowType = RuntimeWindowType.OpenProject;
             base.AwakeOverride();
+
+            m_localization = IOC.Resolve<ILocalization>();
         }
 
         private void Start()
@@ -51,7 +53,8 @@ namespace Battlehub.RTEditor
             {
                 m_parentDialog.IsOkVisible = true;
                 m_parentDialog.IsCancelVisible = true;
-                m_parentDialog.OkText = "Open";
+                m_parentDialog.OkText = m_localization.GetString("ID_RTEditor_ProjectsDialog_Btn_Open", "Open");
+                m_parentDialog.CancelText = m_localization.GetString("ID_RTEditor_ProjectsDialog_Btn_Cancel", "Cancel");
                 m_parentDialog.Ok += OnOk;
             }
 
@@ -81,7 +84,7 @@ namespace Battlehub.RTEditor
             {
                 if(error.HasError)
                 {
-                    m_windowManager.MessageBox("Unable to get projects", error.ToString());
+                    m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_ProjectsDialog_UnableToGetProjects", "Unable to get projects"), error.ToString());
                     return;
                 }
 
@@ -184,7 +187,7 @@ namespace Battlehub.RTEditor
                         Editor.IsBusy = false;
                         if (error.HasError)
                         {
-                            m_windowManager.MessageBox("Unable to open project", error.ErrorText);
+                            m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_ProjectsDialog_UnableToOpenProject", "Unable to open project"), error.ErrorText);
                         }                        
                     });
                 }
@@ -196,7 +199,7 @@ namespace Battlehub.RTEditor
             InputDialog input = Instantiate(m_inputDialogPrefab);
             input.transform.position = Vector3.zero;
 
-            m_windowManager.Dialog("Create Project", input.transform,
+            m_windowManager.Dialog(m_localization.GetString("ID_RTEditor_ProjectsDialog_CreateProject", "Create Project"), input.transform,
                 (sender, args) =>
                 {
                     string projectName = input.Text;
@@ -208,7 +211,9 @@ namespace Battlehub.RTEditor
 
                     if (m_treeView.Items != null && m_treeView.Items.OfType<ProjectInfo>().Any(p => p.Name == projectName))
                     {
-                        m_windowManager.MessageBox("Unable to create project", "Project with the same name already exists");
+                        m_windowManager.MessageBox(
+                            m_localization.GetString("ID_RTEditor_ProjectsDialog_UnableToCreateProject", "Unable to create project"),
+                            m_localization.GetString("ID_RTEditor_ProjectsDialog_ProjectWithSameNameExists", "Project with the same name already exists"));
                         args.Cancel = true;
                         return;
                     }
@@ -219,7 +224,7 @@ namespace Battlehub.RTEditor
                         Editor.IsBusy = false;
                         if(error.HasError)
                         {
-                            m_windowManager.MessageBox("Unable to create project", error.ErrorText);
+                            m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_ProjectsDialog_UnableToCreateProject", "Unable to create project"), error.ErrorText);
                             args.Cancel = true;
                             return;
                         }
@@ -232,8 +237,9 @@ namespace Battlehub.RTEditor
                     });
                 },
                 (sender, args) => { },
-                "Create",
-                "Cancel", 120, 100, 350, 100);
+                m_localization.GetString("ID_RTEditor_ProjectsDialog_Btn_Create", "Create"),
+                m_localization.GetString("ID_RTEditor_ProjectsDialog_Btn_Cancel", "Cancel"),
+                120, 100, 350, 100);
         }
 
         private void OnDestroyProjectClick()
@@ -244,7 +250,10 @@ namespace Battlehub.RTEditor
                 return;
             }
 
-            m_windowManager.Confirmation("Delete Project", "Delete " + selectedProject.Name  + " project?", (sender, args) =>
+            m_windowManager.Confirmation(
+                m_localization.GetString("ID_RTEditor_ProjectsDialog_DeleteProject", "Delete Project"),
+                string.Format(m_localization.GetString("ID_RTEditor_ProjectsDialog_AreYouSureDeleteProject", "Delete {0} project?"), selectedProject.Name),
+                (sender, args) =>
             {
                 ProjectInfo[] projectInfo = m_treeView.Items.OfType<ProjectInfo>().ToArray();
                 int index = Array.IndexOf(projectInfo, selectedProject);
@@ -258,9 +267,6 @@ namespace Battlehub.RTEditor
                         args.Cancel = true;
                         return;
                     }
-
-                    //m_treeView.RemoveChild(null, selectedProject, projectInfo.Length == 1);
-                    //m_treeView.Remove(selectedProject);
 
                     m_treeView.RemoveChild(null, selectedProject);
 
@@ -276,8 +282,8 @@ namespace Battlehub.RTEditor
                 });
             },
             (sender, args) => { },
-            "Delete",
-            "Cancel");
+            m_localization.GetString("ID_RTEditor_ProjectsDialog_Btn_Delete", "Delete"),
+            m_localization.GetString("ID_RTEditor_ProjectsDialog_Btn_Cancel", "Cancel"));
 
         }
     }

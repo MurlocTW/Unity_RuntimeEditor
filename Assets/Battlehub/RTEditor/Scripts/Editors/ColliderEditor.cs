@@ -54,11 +54,15 @@ namespace Battlehub.RTEditor
         protected override void BuildEditor(IComponentDescriptor componentDescriptor, PropertyDescriptor[] descriptors)
         {
             base.BuildEditor(componentDescriptor, descriptors);
-            m_editColliderButton = Instantiate(ToggleButton).GetComponent<Toggle>();
-            m_editColliderButton.transform.SetParent(EditorsPanel, false);
-            m_editColliderButton.onValueChanged.RemoveListener(OnEditCollider);
-            m_editColliderButton.isOn = m_isEditing;
-            m_editColliderButton.onValueChanged.AddListener(OnEditCollider);
+
+            if((Component.gameObject.hideFlags & HideFlags.HideInHierarchy) == 0)
+            {
+                m_editColliderButton = Instantiate(ToggleButton).GetComponent<Toggle>();
+                m_editColliderButton.transform.SetParent(EditorsPanel, false);
+                m_editColliderButton.onValueChanged.RemoveListener(OnEditCollider);
+                m_editColliderButton.isOn = m_isEditing;
+                m_editColliderButton.onValueChanged.AddListener(OnEditCollider);
+            }
         }
 
         protected override void DestroyEditor()

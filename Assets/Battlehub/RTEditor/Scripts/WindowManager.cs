@@ -6,6 +6,7 @@ using Battlehub.UIControls.DockPanels;
 using Battlehub.UIControls.MenuControl;
 using Battlehub.Utils;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -21,10 +22,16 @@ namespace Battlehub.RTEditor
             get;
         }
 
+        Transform ComponentsRoot
+        {
+            get;
+        }
+
         event Action<IWindowManager> AfterLayout;
         event Action<Transform> WindowCreated;
         event Action<Transform> WindowDestroyed;
 
+        bool ValidateLayout(LayoutInfo layout);
         void OverrideDefaultLayout(Func<IWindowManager, LayoutInfo> callback, string activateWindowOfType = null);
         void SetDefaultLayout();
         void SetLayout(Func<IWindowManager, LayoutInfo> callback, string activateWindowOfType = null);
@@ -37,15 +44,18 @@ namespace Battlehub.RTEditor
         void SetTopBar(Transform tools);
         void SetBottomBar(Transform tools);
 
+        bool IsWindowRegistered(string windowTypeName);
         bool RegisterWindow(CustomWindowDescriptor desc);
 
         Transform GetWindow(string windowTypeName);
+        Transform[] GetWindows();
         Transform[] GetWindows(string windowTypeName);
         Transform[] GetComponents(Transform content);
 
         bool Exists(string windowTypeName);
         bool IsActive(string windowType);
         bool IsActive(Transform content);
+        Transform FindPointerOverWindow(RuntimeWindow exceptWindow);
 
         bool ActivateWindow(string windowTypeName);
         bool ActivateWindow(Transform content);
@@ -79,11 +89,73 @@ namespace Battlehub.RTEditor
              float preferredWidth = 700,
              float preferredHeight = 400);
 
+        string DefaultPersistentLayoutName
+        {
+            get;
+        }
+
         bool LayoutExist(string name);
         void SaveLayout(string name);
         LayoutInfo GetLayout(string name);
         void LoadLayout(string name);
+        void DeleteLayout(string name);
         void ForceLayoutUpdate();
+    }
+
+    public static class IWindowManagerExt
+    {
+        public static LayoutInfo GetBuiltInDefaultLayout(this IWindowManager wm)
+        {
+            WindowDescriptor sceneWd;
+            GameObject sceneContent;
+            bool isDialog;
+            wm.CreateWindow(RuntimeWindowType.Scene.ToString(), out sceneWd, out sceneContent, out isDialog);
+
+            WindowDescriptor gameWd;
+            GameObject gameContent;
+            wm.CreateWindow(RuntimeWindowType.Game.ToString(), out gameWd, out gameContent, out isDialog);
+
+            WindowDescriptor inspectorWd;
+            GameObject inspectorContent;
+            wm.CreateWindow(RuntimeWindowType.Inspector.ToString(), out inspectorWd, out inspectorContent, out isDialog);
+
+            WindowDescriptor consoleWd;
+            GameObject consoleContent;
+            wm.CreateWindow(RuntimeWindowType.Console.ToString(), out consoleWd, out consoleContent, out isDialog);
+
+            WindowDescriptor hierarchyWd;
+            GameObject hierarchyContent;
+            wm.CreateWindow(RuntimeWindowType.Hierarchy.ToString(), out hierarchyWd, out hierarchyContent, out isDialog);
+
+            WindowDescriptor projectWd;
+            GameObject projectContent;
+            wm.CreateWindow(RuntimeWindowType.Project.ToString(), out projectWd, out projectContent, out isDialog);
+
+            WindowDescriptor animationWd;
+            GameObject animationContent;
+            wm.CreateWindow(RuntimeWindowType.Animation.ToString(), out animationWd, out animationContent, out isDialog);
+
+            LayoutInfo layout = new LayoutInfo(false,
+                new LayoutInfo(false,
+                    new LayoutInfo(true,
+                        new LayoutInfo(inspectorContent.transform, inspectorWd.Header, inspectorWd.Icon),
+                        new LayoutInfo(consoleContent.transform, consoleWd.Header, consoleWd.Icon),
+                        0.5f),
+                    new LayoutInfo(true,
+                        new LayoutInfo(sceneContent.transform, sceneWd.Header, sceneWd.Icon),
+                        new LayoutInfo(
+                            new LayoutInfo(gameContent.transform, gameWd.Header, gameWd.Icon),
+                            new LayoutInfo(animationContent.transform, animationWd.Header, animationWd.Icon)),
+                        0.75f),
+                    0.25f),
+                new LayoutInfo(true,
+                    new LayoutInfo(hierarchyContent.transform, hierarchyWd.Header, hierarchyWd.Icon),
+                    new LayoutInfo(projectContent.transform, projectWd.Header, projectWd.Icon),
+                    0.5f),
+                0.75f);
+
+            return layout;
+        }
     }
 
     [Serializable]
@@ -105,7 +177,6 @@ namespace Battlehub.RTEditor
         public bool IsDialog;
         public WindowDescriptor Descriptor;
     }
-
 
     [DefaultExecutionOrder(-89)]
     public class WindowManager : MonoBehaviour, IWindowManager
@@ -136,7 +207,13 @@ namespace Battlehub.RTEditor
         private WindowDescriptor m_consoleWindow = null;
 
         [SerializeField]
+        private WindowDescriptor m_animationWindow = null;
+
+        [SerializeField]
         private WindowDescriptor m_saveSceneDialog = null;
+
+        [SerializeField]
+        private WindowDescriptor m_saveAssetDialog = null;
 
         [SerializeField]
         private WindowDescriptor m_openProjectDialog = null;
@@ -158,6 +235,15 @@ namespace Battlehub.RTEditor
 
         [SerializeField]
         private WindowDescriptor m_selectColorDialog = null;
+
+        [SerializeField]
+        private WindowDescriptor m_selectAnimationPropertiesDialog = null;
+
+        [SerializeField]
+        private WindowDescriptor m_saveFileDialog = null;
+
+        [SerializeField]
+        private WindowDescriptor m_openFileDialog = null;
 
         [SerializeField]
         private CustomWindowDescriptor[] m_customWindows = null;
@@ -183,7 +269,7 @@ namespace Battlehub.RTEditor
         [SerializeField]
         private RectTransform m_rightBar = null;
 
-
+        private ILocalization m_localization;
         private IRTE m_editor;
         private Func<IWindowManager, LayoutInfo> m_overrideLayoutCallback;
         private string m_activateWindowOfType;
@@ -226,9 +312,15 @@ namespace Battlehub.RTEditor
             get { return m_dialogManager.IsDialogOpened; }
         }
 
+        public Transform ComponentsRoot
+        {
+            get { return m_componentsRoot; }
+        }
+
         private void Awake()
         {
             m_editor = IOC.Resolve<IRTE>();
+            m_localization = IOC.Resolve<ILocalization>();
         }
 
         private void Start()
@@ -236,6 +328,12 @@ namespace Battlehub.RTEditor
             if (m_dockPanels == null)
             {
                 m_dockPanels = FindObjectOfType<DockPanel>();
+            }
+
+            if (m_dockPanels != null && RenderPipelineInfo.UseRenderTextures)
+            {
+                DepthMaskingBehavior depthMaskingBehavior = m_dockPanels.GetComponent<DepthMaskingBehavior>();
+                Destroy(depthMaskingBehavior);
             }
 
             if (m_dialogManager == null)
@@ -309,7 +407,7 @@ namespace Battlehub.RTEditor
         }
 
 
-        public bool IsOverlapped(RuntimeWindow testWindow)
+        public bool IsOverlapped(RuntimeWindow testWindow, RuntimeWindow exceptWindow = null)
         {
             for (int i = 0; i < Windows.Length; ++i)
             {
@@ -321,7 +419,7 @@ namespace Battlehub.RTEditor
 
                 if (RectTransformUtility.RectangleContainsScreenPoint((RectTransform)window.transform, Input.GetPointerXY(0), Raycaster.eventCamera))
                 {
-                    if (testWindow.Depth < window.Depth)
+                    if (testWindow.Depth < window.Depth && exceptWindow != window)
                     {
                         return true;
                     }
@@ -330,11 +428,37 @@ namespace Battlehub.RTEditor
             return false;
         }
 
+        public bool IsPointerOver(RuntimeWindow testWindow)
+        {
+            return RectTransformUtility.RectangleContainsScreenPoint((RectTransform)testWindow.transform, Input.GetPointerXY(0), Raycaster.eventCamera);
+        }
+
+        public Transform FindPointerOverWindow(RuntimeWindow exceptWindow = null)
+        {
+            foreach (KeyValuePair<string, HashSet<Transform>> kvp in m_windows)
+            {
+                foreach(Transform content in kvp.Value)
+                {
+                    RuntimeWindow window = content.GetComponentInChildren<RuntimeWindow>();
+
+                    if(window != null && window != exceptWindow && IsPointerOver(window) /* && !IsOverlapped(window, exceptWindow)*/)
+                    {
+                        Tab tab = Region.FindTab(window.transform);
+                        if(tab != null && tab.IsOn)
+                        {
+                            return content;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
         private void EnableOrDisableRaycasts()
         {
             if (ActiveWindow != null)
             {
-                if (RectTransformUtility.RectangleContainsScreenPoint((RectTransform)ActiveWindow.transform, Input.GetPointerXY(0), Raycaster.eventCamera) && !IsOverlapped(ActiveWindow))
+                if (IsPointerOver(ActiveWindow) && !IsOverlapped(ActiveWindow))
                 {
                     if (!m_isPointerOverActiveWindow)
                     {
@@ -418,7 +542,11 @@ namespace Battlehub.RTEditor
 
                 if (!results.Any(r => r.gameObject.GetComponent<Menu>() || r.gameObject.GetComponent<WindowOverlay>()))
                 {
-                    foreach (Region region in results.Select(r => r.gameObject.GetComponentInParent<Region>()).Where(r => r != null).OrderBy(r => r.transform.localPosition.z))
+                    IOrderedEnumerable<Region> regions = results.Select(r => r.gameObject.GetComponentInParent<Region>()).Where(r => r != null).OrderBy(r => r.transform.localPosition.z);
+
+                   // Region[] arr = regions.ToArray();
+
+                    foreach (Region region in regions)
                     {
                         RuntimeWindow window = region.ActiveContent != null ? region.ActiveContent.GetComponentInChildren<RuntimeWindow>() : region.ContentPanel.GetComponentInChildren<RuntimeWindow>();
                         if (window != null && (!activeWindowContainsScreenPoint || window.Depth >= ActiveWindow.Depth))
@@ -427,7 +555,7 @@ namespace Battlehub.RTEditor
                             {
                                 if (pointerDownOrUp || window.ActivateOnAnyKey)
                                 {
-                                    if (window != null && window.WindowType == RuntimeWindowType.Scene)
+                                    if (window != null)
                                     {
                                         IEnumerable<Selectable> selectables = results.Select(r => r.gameObject.GetComponent<Selectable>()).Where(s => s != null);
                                         int count = selectables.Count();
@@ -438,6 +566,12 @@ namespace Battlehub.RTEditor
                                             {
                                                 selectionComponentUI.Select();
                                             }
+                                        }
+
+                                        IEnumerable<Resizer> resizer = results.Select(r => r.gameObject.GetComponent<Resizer>()).Where(r => r != null);
+                                        if(resizer.Any())
+                                        {
+                                            break; 
                                         }
                                     }
 
@@ -484,7 +618,31 @@ namespace Battlehub.RTEditor
 
         private void OnDialogDestroyed(Dialog dialog)
         {
+            RuntimeWindow dialogWindow = dialog.Content.GetComponentInParent<RuntimeWindow>();
+
             OnContentDestroyed(dialog.Content);
+
+            if(!m_dialogManager.IsDialogOpened)
+            {
+                Transform pointerOverWindow = dialog.Content != null ? FindPointerOverWindow(dialogWindow) : null;
+                if (pointerOverWindow != null)
+                {
+                    RuntimeWindow window = pointerOverWindow.GetComponentInChildren<RuntimeWindow>();
+                    if (window == null)
+                    {
+                        window = m_editor.GetWindow(RuntimeWindowType.Scene);
+                    }
+                    window.IsPointerOver = true;
+                    m_editor.ActivateWindow(window);
+                }
+                else
+                {
+                    RuntimeWindow window = m_editor.GetWindow(RuntimeWindowType.Scene);
+                    m_editor.ActivateWindow(window);
+                }
+
+                m_skipUpdate = true;
+            }
         }
 
         private void OnRegionSelected(Region region)
@@ -616,72 +774,8 @@ namespace Battlehub.RTEditor
                     }
                 }
 
-                WindowDescriptor wd = null;
-                if (windowTypeName == RuntimeWindowType.Scene.ToString().ToLower())
-                {
-                    wd = m_sceneWindow;
-                }
-                else if (windowTypeName == RuntimeWindowType.Game.ToString().ToLower())
-                {
-                    wd = m_gameWindow;
-                }
-                else if (windowTypeName == RuntimeWindowType.Hierarchy.ToString().ToLower())
-                {
-                    wd = m_hierarchyWindow;
-                }
-                else if (windowTypeName == RuntimeWindowType.Inspector.ToString().ToLower())
-                {
-                    wd = m_inspectorWindow;
-                }
-                else if (windowTypeName == RuntimeWindowType.Project.ToString().ToLower())
-                {
-                    wd = m_projectWindow;
-                }
-                else if (windowTypeName == RuntimeWindowType.Console.ToString().ToLower())
-                {
-                    wd = m_consoleWindow;
-                }
-                else if (windowTypeName == RuntimeWindowType.SaveScene.ToString().ToLower())
-                {
-                    wd = m_saveSceneDialog;
-                }
-                else if (windowTypeName == RuntimeWindowType.OpenProject.ToString().ToLower())
-                {
-                    wd = m_openProjectDialog;
-                }
-                else if (windowTypeName == RuntimeWindowType.ToolsPanel.ToString().ToLower())
-                {
-                    wd = m_toolsWindow;
-                }
-                else if (windowTypeName == RuntimeWindowType.SelectAssetLibrary.ToString().ToLower())
-                {
-                    wd = m_selectAssetLibraryDialog;
-                }
-                else if (windowTypeName == RuntimeWindowType.ImportAssets.ToString().ToLower())
-                {
-                    wd = m_importAssetsDialog;
-                }
-                else if (windowTypeName == RuntimeWindowType.About.ToString().ToLower())
-                {
-                    wd = m_aboutDialog;
-                }
-                else if (windowTypeName == RuntimeWindowType.SelectObject.ToString().ToLower())
-                {
-                    wd = m_selectObjectDialog;
-                }
-                else if (windowTypeName == RuntimeWindowType.SelectColor.ToString().ToLower())
-                {
-                    wd = m_selectColorDialog;
-                }
-                else
-                {
-                    CustomWindowDescriptor cwd;
-                    if (m_typeToCustomWindow.TryGetValue(windowTypeName, out cwd))
-                    {
-                        wd = cwd.Descriptor;
-                    }
-                }
-
+                bool isDialog;
+                WindowDescriptor wd = GetWindowDescriptor(windowTypeName, out isDialog);
                 if (wd != null)
                 {
                     wd.Created--;
@@ -693,6 +787,26 @@ namespace Battlehub.RTEditor
                     }
                 }
             }
+
+            RenderTextureCamera[] rtc = FindObjectsOfType<RenderTextureCamera>();
+            for (int i = 0; i < rtc.Length; ++i)
+            {
+                if(rtc[i] != null)
+                {
+                    rtc[i].TryResizeRenderTexture();
+                }
+            }
+
+            m_dockPanels.ForceUpdateLayout();
+
+            StartCoroutine(CoForceUpdateLayout());
+        }
+
+        private IEnumerator CoForceUpdateLayout()
+        {
+            yield return new WaitForEndOfFrame();
+
+            m_dockPanels.ForceUpdateLayout();
         }
 
         private void CancelIfRegionIsNotActive(Region region, CancelArgs arg)
@@ -708,7 +822,7 @@ namespace Battlehub.RTEditor
                 return;
             }
 
-            if (activeRegion.GetDragRegion() != region.GetDragRegion())
+            if (!region.IsModal() && activeRegion.GetDragRegion() != region.GetDragRegion())
             {
                 arg.Cancel = true;
             }
@@ -740,6 +854,12 @@ namespace Battlehub.RTEditor
             }
         }
 
+        public bool IsWindowRegistered(string windowTypeName)
+        {
+            bool isDialog;
+            return GetWindowDescriptor(windowTypeName, out isDialog) != null;
+        }
+
         public bool RegisterWindow(CustomWindowDescriptor desc)
         {
             if (m_typeToCustomWindow.ContainsKey(desc.TypeName.ToLower()))
@@ -749,6 +869,11 @@ namespace Battlehub.RTEditor
 
             m_typeToCustomWindow.Add(desc.TypeName.ToLower(), desc);
             return true;
+        }
+
+        public bool ValidateLayout(LayoutInfo layoutInfo)
+        {
+            return m_dockPanels.RootRegion.Validate(layoutInfo);
         }
 
         public void OverrideDefaultLayout(Func<IWindowManager, LayoutInfo> buildLayoutCallback, string activateWindowOfType = null)
@@ -765,55 +890,8 @@ namespace Battlehub.RTEditor
             }
             else
             {
-                SetLayout(BuiltInDefaultLayout, RuntimeWindowType.Scene.ToString().ToLower());
+                SetLayout(IWindowManagerExt.GetBuiltInDefaultLayout, RuntimeWindowType.Scene.ToString().ToLower());
             }
-        }
-
-        private static LayoutInfo BuiltInDefaultLayout(IWindowManager wm)
-        {
-            WindowDescriptor sceneWd;
-            GameObject sceneContent;
-            bool isDialog;
-            wm.CreateWindow(RuntimeWindowType.Scene.ToString(), out sceneWd, out sceneContent, out isDialog);
-
-            WindowDescriptor gameWd;
-            GameObject gameContent;
-            wm.CreateWindow(RuntimeWindowType.Game.ToString(), out gameWd, out gameContent, out isDialog);
-
-            WindowDescriptor inspectorWd;
-            GameObject inspectorContent;
-            wm.CreateWindow(RuntimeWindowType.Inspector.ToString(), out inspectorWd, out inspectorContent, out isDialog);
-
-            WindowDescriptor consoleWd;
-            GameObject consoleContent;
-            wm.CreateWindow(RuntimeWindowType.Console.ToString(), out consoleWd, out consoleContent, out isDialog);
-
-            WindowDescriptor hierarchyWd;
-            GameObject hierarchyContent;
-            wm.CreateWindow(RuntimeWindowType.Hierarchy.ToString(), out hierarchyWd, out hierarchyContent, out isDialog);
-
-            WindowDescriptor projectWd;
-            GameObject projectContent;
-            wm.CreateWindow(RuntimeWindowType.Project.ToString(), out projectWd, out projectContent, out isDialog);
-
-            LayoutInfo layout = new LayoutInfo(false,
-                new LayoutInfo(false,
-                    new LayoutInfo(true,
-                        new LayoutInfo(inspectorContent.transform, inspectorWd.Header, inspectorWd.Icon),
-                        new LayoutInfo(consoleContent.transform, consoleWd.Header, consoleWd.Icon),
-                        0.5f),
-                    new LayoutInfo(true,
-                        new LayoutInfo(sceneContent.transform, sceneWd.Header, sceneWd.Icon),
-                        new LayoutInfo(gameContent.transform, gameWd.Header, gameWd.Icon),
-                        0.75f),
-                    0.25f),
-                new LayoutInfo(true,
-                    new LayoutInfo(hierarchyContent.transform, hierarchyWd.Header, hierarchyWd.Icon),
-                    new LayoutInfo(projectContent.transform, projectWd.Header, projectWd.Icon),
-                    0.5f),
-                0.75f);
-
-            return layout;
         }
 
         public void OverrideWindow(string windowTypeName, WindowDescriptor descriptor)
@@ -844,9 +922,17 @@ namespace Battlehub.RTEditor
             {
                 m_consoleWindow = descriptor;
             }
+            else if (windowTypeName == RuntimeWindowType.Animation.ToString().ToLower())
+            {
+                m_animationWindow = descriptor;
+            }
             else if (windowTypeName == RuntimeWindowType.SaveScene.ToString().ToLower())
             {
                 m_saveSceneDialog = descriptor;
+            }
+            else if(windowTypeName == RuntimeWindowType.SaveAsset.ToString().ToLower())
+            {
+                m_saveAssetDialog = descriptor;
             }
             else if (windowTypeName == RuntimeWindowType.OpenProject.ToString().ToLower())
             {
@@ -875,6 +961,18 @@ namespace Battlehub.RTEditor
             else if (windowTypeName == RuntimeWindowType.SelectColor.ToString().ToLower())
             {
                 m_selectColorDialog = descriptor;
+            }
+            else if (windowTypeName == RuntimeWindowType.SelectAnimationProperties.ToString().ToLower())
+            {
+                m_selectAnimationPropertiesDialog = descriptor;
+            }
+            else if(windowTypeName == RuntimeWindowType.SaveFile.ToString().ToLower())
+            {
+                m_saveFileDialog = descriptor;
+            }
+            else if(windowTypeName == RuntimeWindowType.OpenFile.ToString().ToLower())
+            {
+                m_openFileDialog = descriptor;
             }
         }
 
@@ -963,20 +1061,26 @@ namespace Battlehub.RTEditor
             }
 
             LayoutInfo layout = buildLayoutCallback(this);
-            m_dockPanels.RootRegion.Build(layout);
-
+            if(layout.Content != null || layout.Child0 != null && layout.Child1 != null)
+            {
+                m_dockPanels.RootRegion.Build(layout);
+            }
+            
             if (!string.IsNullOrEmpty(activateWindowOfType))
             {
                 ActivateWindow(activateWindowOfType);
             }
 
             RuntimeWindow[] windows = Windows;
-            for (int i = 0; i < windows.Length; ++i)
+            if(windows != null)
             {
-                windows[i].EnableRaycasts();
-                windows[i].HandleResize();
+                for (int i = 0; i < windows.Length; ++i)
+                {
+                    windows[i].EnableRaycasts();
+                    windows[i].HandleResize();
+                }
             }
-
+            
             if (AfterLayout != null)
             {
                 AfterLayout(this);
@@ -1010,6 +1114,11 @@ namespace Battlehub.RTEditor
                 return hs.FirstOrDefault();
             }
             return null;
+        }
+
+        public Transform[] GetWindows()
+        {
+            return m_windows.Values.SelectMany(w => w).ToArray();
         }
 
         public Transform[] GetWindows(string windowTypeName)
@@ -1098,7 +1207,18 @@ namespace Battlehub.RTEditor
             return true;
         }
 
+        //public Transform CreateWindow(string windowTypeName, out Dialog dialog)
+        //{
+        //    return CreateWindow(windowTypeName, out dialog, true, RegionSplitType.None, 0.3f, null);
+        //}
+
         public Transform CreateWindow(string windowTypeName, bool isFree = true, RegionSplitType splitType = RegionSplitType.None, float flexibleSize = 0.3f, Transform parentWindow = null)
+        {
+            Dialog dialog;
+            return CreateWindow(windowTypeName, out dialog, isFree, splitType, flexibleSize, parentWindow);
+        }
+
+        private Transform CreateWindow(string windowTypeName, out Dialog dialog,  bool isFree = true, RegionSplitType splitType = RegionSplitType.None, float flexibleSize = 0.3f, Transform parentWindow = null)
         {
             WindowDescriptor wd;
             GameObject content;
@@ -1107,17 +1227,20 @@ namespace Battlehub.RTEditor
             Transform window = CreateWindow(windowTypeName, out wd, out content, out isDialog);
             if (!window)
             {
+                dialog = null;
                 return window;
             }
 
-            if (isDialog)
+            if (isDialog && isFree)
             {
-                Dialog dialog = m_dialogManager.ShowDialog(wd.Icon, wd.Header, content.transform);
+                dialog = m_dialogManager.ShowDialog(wd.Icon, wd.Header, content.transform);
                 dialog.IsCancelVisible = false;
                 dialog.IsOkVisible = false;
             }
             else
             {
+                dialog = null;
+
                 Region targetRegion = null;
                 if(parentWindow != null)
                 {
@@ -1130,11 +1253,21 @@ namespace Battlehub.RTEditor
                 }
 
                 targetRegion.Add(wd.Icon, wd.Header, content.transform, isFree, splitType, flexibleSize);
+
                 
-                if(!isFree)
+                if (!isFree)
                 {
                     m_dockPanels.ForceUpdateLayout();
                 }
+
+                RuntimeWindow region = window.GetComponentInParent<RuntimeWindow>();
+                if(region != null)
+                {
+                    region.HandleResize();
+                }
+
+                targetRegion.RaiseDepthChanged();
+
             }
 
             ActivateContent(wd, content);
@@ -1183,7 +1316,10 @@ namespace Battlehub.RTEditor
                 {
                     header = wd.Header;
                 }
-                Dialog dialog = m_dialogManager.ShowDialog(wd.Icon, header, content.transform, okAction, "OK", cancelAction, "Cancel", minWidth, minHeight, preferredWidth, preferredHeight, canResize);
+                Dialog dialog = m_dialogManager.ShowDialog(wd.Icon, header, content.transform, 
+                    okAction, m_localization.GetString("ID_RTEditor_WM_Dialog_OK", "OK"),
+                    cancelAction, m_localization.GetString("ID_RTEditor_WM_Dialog_Cancel", "Cancel"), 
+                    minWidth, minHeight, preferredWidth, preferredHeight, canResize);
                 dialog.IsCancelVisible = false;
                 dialog.IsOkVisible = false;
             }
@@ -1210,83 +1346,9 @@ namespace Battlehub.RTEditor
             }
 
             windowTypeName = windowTypeName.ToLower();
-            wd = null;
+            
             content = null;
-            isDialog = false;
-
-            if (windowTypeName == RuntimeWindowType.Scene.ToString().ToLower())
-            {
-                wd = m_sceneWindow;
-            }
-            else if (windowTypeName == RuntimeWindowType.Game.ToString().ToLower())
-            {
-                wd = m_gameWindow;
-            }
-            else if (windowTypeName == RuntimeWindowType.Hierarchy.ToString().ToLower())
-            {
-                wd = m_hierarchyWindow;
-            }
-            else if (windowTypeName == RuntimeWindowType.Inspector.ToString().ToLower())
-            {
-                wd = m_inspectorWindow;
-            }
-            else if (windowTypeName == RuntimeWindowType.Project.ToString().ToLower())
-            {
-                wd = m_projectWindow;
-            }
-            else if (windowTypeName == RuntimeWindowType.Console.ToString().ToLower())
-            {
-                wd = m_consoleWindow;
-            }
-            else if (windowTypeName == RuntimeWindowType.ToolsPanel.ToString().ToLower())
-            {
-                wd = m_toolsWindow;
-            }
-            else if (windowTypeName == RuntimeWindowType.SaveScene.ToString().ToLower())
-            {
-                wd = m_saveSceneDialog;
-                isDialog = true;
-            }
-            else if (windowTypeName == RuntimeWindowType.OpenProject.ToString().ToLower())
-            {
-                wd = m_openProjectDialog;
-                isDialog = true;
-            }
-            else if (windowTypeName == RuntimeWindowType.SelectAssetLibrary.ToString().ToLower())
-            {
-                wd = m_selectAssetLibraryDialog;
-                isDialog = true;
-            }
-            else if (windowTypeName == RuntimeWindowType.ImportAssets.ToString().ToLower())
-            {
-                wd = m_importAssetsDialog;
-                isDialog = true;
-            }
-            else if (windowTypeName == RuntimeWindowType.About.ToString().ToLower())
-            {
-                wd = m_aboutDialog;
-                isDialog = true;
-            }
-            else if (windowTypeName == RuntimeWindowType.SelectObject.ToString().ToLower())
-            {
-                wd = m_selectObjectDialog;
-                isDialog = true;
-            }
-            else if (windowTypeName == RuntimeWindowType.SelectColor.ToString().ToLower())
-            {
-                wd = m_selectColorDialog;
-                isDialog = true;
-            }
-            else
-            {
-                CustomWindowDescriptor cwd;
-                if (m_typeToCustomWindow.TryGetValue(windowTypeName, out cwd))
-                {
-                    wd = cwd.Descriptor;
-                    isDialog = cwd.IsDialog;
-                }
-            }
-
+            wd = GetWindowDescriptor(windowTypeName, out isDialog);
             if (wd == null)
             {
                 Debug.LogWarningFormat("{0} window was not found", windowTypeName);
@@ -1329,8 +1391,6 @@ namespace Battlehub.RTEditor
             }
             else
             {
-                //Debug.LogWarningFormat("{0} WindowDescriptor.ContentPrefab is null", windowTypeName);
-
                 content = new GameObject();
                 content.AddComponent<RectTransform>();
                 content.name = "Empty Content";
@@ -1349,6 +1409,116 @@ namespace Battlehub.RTEditor
             return content.transform;
         }
 
+        private WindowDescriptor GetWindowDescriptor(string windowTypeName, out bool isDialog)
+        {
+            WindowDescriptor wd = null;
+            isDialog = false;
+            if (windowTypeName == null)
+            {
+                return null;
+            }
+
+            windowTypeName = windowTypeName.ToLower();
+            if (windowTypeName == RuntimeWindowType.Scene.ToString().ToLower())
+            {
+                wd = m_sceneWindow;
+            }
+            else if (windowTypeName == RuntimeWindowType.Game.ToString().ToLower())
+            {
+                wd = m_gameWindow;
+            }
+            else if (windowTypeName == RuntimeWindowType.Hierarchy.ToString().ToLower())
+            {
+                wd = m_hierarchyWindow;
+            }
+            else if (windowTypeName == RuntimeWindowType.Inspector.ToString().ToLower())
+            {
+                wd = m_inspectorWindow;
+            }
+            else if (windowTypeName == RuntimeWindowType.Project.ToString().ToLower())
+            {
+                wd = m_projectWindow;
+            }
+            else if (windowTypeName == RuntimeWindowType.Console.ToString().ToLower())
+            {
+                wd = m_consoleWindow;
+            }
+            else if (windowTypeName == RuntimeWindowType.Animation.ToString().ToLower())
+            {
+                wd = m_animationWindow;
+            }
+            else if (windowTypeName == RuntimeWindowType.ToolsPanel.ToString().ToLower())
+            {
+                wd = m_toolsWindow;
+            }
+            else if (windowTypeName == RuntimeWindowType.SaveScene.ToString().ToLower())
+            {
+                wd = m_saveSceneDialog;
+                isDialog = true;
+            }
+            else if (windowTypeName == RuntimeWindowType.SaveAsset.ToString().ToLower())
+            {
+                wd = m_saveAssetDialog;
+                isDialog = true;
+            }
+            else if (windowTypeName == RuntimeWindowType.OpenProject.ToString().ToLower())
+            {
+                wd = m_openProjectDialog;
+                isDialog = true;
+            }
+            else if (windowTypeName == RuntimeWindowType.SelectAssetLibrary.ToString().ToLower())
+            {
+                wd = m_selectAssetLibraryDialog;
+                isDialog = true;
+            }
+            else if (windowTypeName == RuntimeWindowType.ImportAssets.ToString().ToLower())
+            {
+                wd = m_importAssetsDialog;
+                isDialog = true;
+            }
+            else if (windowTypeName == RuntimeWindowType.About.ToString().ToLower())
+            {
+                wd = m_aboutDialog;
+                isDialog = true;
+            }
+            else if (windowTypeName == RuntimeWindowType.SelectObject.ToString().ToLower())
+            {
+                wd = m_selectObjectDialog;
+                isDialog = true;
+            }
+            else if (windowTypeName == RuntimeWindowType.SelectColor.ToString().ToLower())
+            {
+                wd = m_selectColorDialog;
+                isDialog = true;
+            }
+            else if (windowTypeName == RuntimeWindowType.SelectAnimationProperties.ToString().ToLower())
+            {
+                wd = m_selectAnimationPropertiesDialog;
+                isDialog = true;
+            }
+            else if (windowTypeName == RuntimeWindowType.SaveFile.ToString().ToLower())
+            {
+                wd = m_saveFileDialog;
+                isDialog = true;
+            }
+            else if(windowTypeName == RuntimeWindowType.OpenFile.ToString().ToLower())
+            {
+                wd = m_openFileDialog;
+                isDialog = true;
+            }
+            else
+            {
+                CustomWindowDescriptor cwd;
+                if (m_typeToCustomWindow.TryGetValue(windowTypeName, out cwd))
+                {
+                    wd = cwd.Descriptor;
+                    isDialog = cwd.IsDialog;
+                }
+            }
+
+            return wd;
+        }
+
         private void ActivateContent(WindowDescriptor wd, GameObject content)
         {
             List<Transform> extraComponentsList = new List<Transform>();
@@ -1365,12 +1535,16 @@ namespace Battlehub.RTEditor
 
         public void MessageBox(string header, string text, DialogAction<DialogCancelArgs> ok = null)
         {
-            m_dialogManager.ShowDialog(null, header, text, ok);
+            m_dialogManager.ShowDialog(null, header, text, 
+                ok, m_localization.GetString("ID_RTEditor_WM_Dialog_OK", "OK"), 
+                null, m_localization.GetString("ID_RTEditor_WM_Dialog_Cancel", "Cancel"));
         }
 
         public void MessageBox(Sprite icon, string header, string text, DialogAction<DialogCancelArgs> ok = null)
         {
-            m_dialogManager.ShowDialog(icon, header, text, ok);
+            m_dialogManager.ShowDialog(icon, header, text,
+                ok, m_localization.GetString("ID_RTEditor_WM_Dialog_OK", "OK"),
+                null, m_localization.GetString("ID_RTEditor_WM_Dialog_Cancel", "Cancel"));
         }
 
         public void Confirmation(string header, string text, DialogAction<DialogCancelArgs> ok, DialogAction<DialogCancelArgs> cancel, string okText = "OK", string cancelText = "Cancel")
@@ -1401,7 +1575,13 @@ namespace Battlehub.RTEditor
             m_dialogManager.ShowDialog(icon, header, content, ok, okText, cancel, cancelText, minWidth, minHeight, preferredWidth, preferredHeight);
         }
 
-
+        public string DefaultPersistentLayoutName
+        {
+            get
+            {
+                return "Persistent_Layout";
+            }
+        }
 
         public bool LayoutExist(string name)
         {
@@ -1460,8 +1640,8 @@ namespace Battlehub.RTEditor
                     for (int i = 0; i < region.ContentPanel.childCount; ++i)
                     {
                         Transform content = region.ContentPanel.GetChild(i);
-
                         PersistentLayoutInfo tabLayout = new PersistentLayoutInfo();
+
                         ToPersistentLayout(region, content, tabLayout);
                         layoutInfo.TabGroup[i] = tabLayout;
                     }
@@ -1487,6 +1667,7 @@ namespace Battlehub.RTEditor
                     {
                         layoutInfo.CanDrag = tab.CanDrag;
                         layoutInfo.CanClose = tab.CanClose;
+                        layoutInfo.IsOn = tab.IsOn;
                     }
                     layoutInfo.IsHeaderVisible = region.IsHeaderVisible;
                     break;
@@ -1511,17 +1692,17 @@ namespace Battlehub.RTEditor
 
         public void LoadLayout(string name)
         {
-            LayoutInfo layoutInfo = GetLayout(name);
-            if (layoutInfo == null)
-            {
-                return;
-            }
-
             ClearRegion(m_dockPanels.RootRegion);
             foreach (Transform child in m_dockPanels.Free)
             {
                 Region region = child.GetComponent<Region>();
                 ClearRegion(region);
+            }
+
+            LayoutInfo layoutInfo = GetLayout(name);
+            if (layoutInfo == null)
+            {
+                return;
             }
 
             SetLayout(wm => layoutInfo);
@@ -1543,11 +1724,21 @@ namespace Battlehub.RTEditor
                 bool isDialog;
                 CreateWindow(persistentLayoutInfo.WindowType, out wd, out content, out isDialog);
 
-                layoutInfo.Content = content.transform;
-                layoutInfo.Header = wd.Header;
-                layoutInfo.Icon = wd.Icon;
-                layoutInfo.CanDrag = persistentLayoutInfo.CanDrag;
-                layoutInfo.CanClose = persistentLayoutInfo.CanClose;
+                if(content == null)
+                {
+                    layoutInfo.Content = new GameObject("Empty").AddComponent<RectTransform>();
+                    layoutInfo.Header = "Empty";
+                }
+                else
+                {
+                    layoutInfo.Content = content.transform;
+                    layoutInfo.Header = wd.Header;
+                    layoutInfo.Icon = wd.Icon;
+                    layoutInfo.CanDrag = persistentLayoutInfo.CanDrag;
+                    layoutInfo.CanClose = persistentLayoutInfo.CanClose;
+                    layoutInfo.IsHeaderVisible = persistentLayoutInfo.IsHeaderVisible;
+                    layoutInfo.IsOn = persistentLayoutInfo.IsOn;
+                }   
             }
             else
             {
@@ -1564,14 +1755,22 @@ namespace Battlehub.RTEditor
                 else
                 {
                     layoutInfo.IsVertical = persistentLayoutInfo.IsVertical;
-                    layoutInfo.Child0 = new LayoutInfo();
-                    layoutInfo.Child1 = new LayoutInfo();
-                    layoutInfo.Ratio = persistentLayoutInfo.Ratio;
+                    if(persistentLayoutInfo.Child0 != null && persistentLayoutInfo.Child0 != null)
+                    {
+                        layoutInfo.Child0 = new LayoutInfo();
+                        layoutInfo.Child1 = new LayoutInfo();
+                        layoutInfo.Ratio = persistentLayoutInfo.Ratio;
 
-                    ToLayout(persistentLayoutInfo.Child0, layoutInfo.Child0);
-                    ToLayout(persistentLayoutInfo.Child1, layoutInfo.Child1);
+                        ToLayout(persistentLayoutInfo.Child0, layoutInfo.Child0);
+                        ToLayout(persistentLayoutInfo.Child1, layoutInfo.Child1);
+                    }
                 }
             }
+        }
+
+        public void DeleteLayout(string name)
+        {
+            PlayerPrefs.DeleteKey("Battlehub.RTEditor.Layout" + name);
         }
 
         public void ForceLayoutUpdate()

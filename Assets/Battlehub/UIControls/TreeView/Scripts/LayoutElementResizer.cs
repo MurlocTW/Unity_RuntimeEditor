@@ -42,10 +42,6 @@ namespace Battlehub.UIControls
                     SecondaryTarget.flexibleHeight = Mathf.Clamp01(SecondaryTarget.flexibleHeight);
                 }
 
-                
-                
-
-
                 m_midY = Target.flexibleHeight / (Target.flexibleHeight + SecondaryTarget.flexibleHeight);
                 m_midY *= Math.Max((Parent.rect.height - Target.minHeight - SecondaryTarget.minHeight), 0);
                 m_midX = Target.flexibleWidth / (Target.flexibleWidth + SecondaryTarget.flexibleWidth);

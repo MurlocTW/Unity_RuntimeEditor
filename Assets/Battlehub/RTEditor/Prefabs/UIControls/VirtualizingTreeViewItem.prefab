@@ -605,6 +605,7 @@ MonoBehaviour:
   CanEdit: 1
   CanBeParent: 1
   CanSelect: 1
+  CanChangeParent: 1
   ItemPresenter: {fileID: 1014062533193862}
   EditorPresenter: {fileID: 1801793456933662}
   m_itemLayout: {fileID: 114693865613443442}
@@ -1385,7 +1386,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_textAlignment: 513
-  m_isAlignmentEnumConverted: 1
+  m_isAlignmentEnumConverted: 0
   m_characterSpacing: 0
   m_wordSpacing: 0
   m_lineSpacing: 0
@@ -1430,7 +1431,7 @@ MonoBehaviour:
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_spriteAnimator: {fileID: 0}
-  m_isInputParsingRequired: 1
+  m_isInputParsingRequired: 0
   m_inputSource: 0
   m_hasFontAssetChanged: 0
   m_subTextObjects:
@@ -1559,7 +1560,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 2
   m_textAlignment: 513
-  m_isAlignmentEnumConverted: 1
+  m_isAlignmentEnumConverted: 0
   m_characterSpacing: 0
   m_wordSpacing: 0
   m_lineSpacing: 0
@@ -1604,7 +1605,7 @@ MonoBehaviour:
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_spriteAnimator: {fileID: 0}
-  m_isInputParsingRequired: 1
+  m_isInputParsingRequired: 0
   m_inputSource: 0
   m_hasFontAssetChanged: 0
   m_subTextObjects:
@@ -1695,6 +1696,7 @@ GameObject:
   - component: {fileID: 7831721430021264315}
   - component: {fileID: 2433843337759501730}
   - component: {fileID: 8617433118814586991}
+  - component: {fileID: 4242671038839328729}
   m_Layer: 5
   m_Name: InputField
   m_TagString: Untagged
@@ -1905,3 +1907,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Name: InputField2Color
+--- !u!114 &4242671038839328729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8533776770442334721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e7e3384b569bd0489b10522a59c0a11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_inputField: {fileID: 7831721430021264315}

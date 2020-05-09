@@ -1,6 +1,4 @@
-﻿using System;
-using Battlehub.RTCommon;
-using Battlehub.UIControls;
+﻿using Battlehub.RTCommon;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -25,7 +23,6 @@ namespace Battlehub.RTEditor
             Alpha.transform.localScale = new Vector3(value.a, 1, 1);   
         }
 
-
         protected override void AwakeOverride()
         {
             base.AwakeOverride();
@@ -43,8 +40,12 @@ namespace Battlehub.RTEditor
 
         private void OnSelect()
         {
+            ILocalization localization = IOC.Resolve<ILocalization>();
+            string memberInfoTypeName = localization.GetString("ID_RTEditor_PE_TypeName_" + MemberInfoType.Name, MemberInfoType.Name);
+            string select = localization.GetString("ID_RTEditor_PE_ColorEditor_Select", "Select") + " ";
+
             SelectColorDialog colorSelector = null;
-            Transform dialogTransform = IOC.Resolve<IWindowManager>().CreateDialogWindow(RuntimeWindowType.SelectColor.ToString(), "Select " + MemberInfoType.Name,
+            Transform dialogTransform = IOC.Resolve<IWindowManager>().CreateDialogWindow(RuntimeWindowType.SelectColor.ToString(), select + memberInfoTypeName,
                 (sender, args) =>
                 {
                     SetValue(colorSelector.SelectedColor);

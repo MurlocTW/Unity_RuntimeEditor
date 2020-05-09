@@ -51,17 +51,21 @@ namespace Battlehub.RTEditor
         private FileBrowser m_fileBrowser;
 
         private Dictionary<string, IFileImporter> m_extToFileImporter = new Dictionary<string, IFileImporter>();
-        
+
+        private ILocalization m_localization;
+
         protected override void AwakeOverride()
         {
             WindowType = RuntimeWindowType.ImportFile;
             base.AwakeOverride();
+
+            m_localization = IOC.Resolve<ILocalization>();
         }
 
         private void Start()
         {
             List<Assembly> assemblies = new List<Assembly>();
-            foreach (string assemblyName in BHPath.RootAssemblies)
+            foreach (string assemblyName in BHRoot.Assemblies)
             {
                 var asName = new AssemblyName();
                 asName.Name = assemblyName;
@@ -76,9 +80,9 @@ namespace Battlehub.RTEditor
 
             m_parentDialog = GetComponentInParent<Dialog>();
             m_parentDialog.Ok += OnOk;
-            m_parentDialog.OkText = "Open";
+            m_parentDialog.OkText = m_localization.GetString("ID_RTEditor_ImportFileDialog_Btn_Open", "Open");
             m_parentDialog.IsOkVisible = true;
-            m_parentDialog.CancelText = "Cancel";
+            m_parentDialog.CancelText = m_localization.GetString("ID_RTEditor_ImportFileDialog_Btn_Cancel", "Cancel");
             m_parentDialog.IsCancelVisible = true;
 
             m_fileBrowser = GetComponent<FileBrowser>();
@@ -167,11 +171,11 @@ namespace Battlehub.RTEditor
         {
             if (File.Exists(path))
             {
-                m_parentDialog.OkText = "Import";
+                m_parentDialog.OkText = m_localization.GetString("ID_RTEditor_ImportFileDialog_Btn_Import", "Import");
             }
             else
             {
-                m_parentDialog.OkText = "Open";
+                m_parentDialog.OkText = m_localization.GetString("ID_RTEditor_ImportFileDialog_Btn_Open", "Open");
             }
         }
 
@@ -195,7 +199,7 @@ namespace Battlehub.RTEditor
                 return;
             }
 
-            StartCoroutine(CoImport(importer, path));
+           Editor.StartCoroutine(CoImport(importer, path));
         }
 
         private IEnumerator CoImport(IFileImporter importer, string path)
@@ -205,9 +209,9 @@ namespace Battlehub.RTEditor
 
             IProjectTree projectTree = IOC.Resolve<IProjectTree>();
             string targetPath = Path.GetFileNameWithoutExtension(path);
-            if (projectTree != null && projectTree.SelectedFolder != null)
+            if (projectTree != null && projectTree.SelectedItem != null)
             {
-                ProjectItem folder = projectTree.SelectedFolder;
+                ProjectItem folder = projectTree.SelectedItem;
 
                 targetPath = folder.RelativePath(false) + "/" + targetPath;
                 targetPath = targetPath.TrimStart('/');
@@ -216,11 +220,9 @@ namespace Battlehub.RTEditor
                 targetPath = project.GetUniquePath(targetPath, typeof(Texture2D), folder);    
             }
 
-            yield return StartCoroutine(importer.Import(path, targetPath));
+            yield return Editor.StartCoroutine(importer.Import(path, targetPath));
             rte.IsBusy = false;
             m_parentDialog.Close();
-            
-            rte.ActivateWindow(RuntimeWindowType.Scene);
         }
 
         

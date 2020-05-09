@@ -1,0 +1,2517 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85a37e76ce395ad4a9d0c4633bbe6e21, type: 3}
+  m_Name: HellefantSurvivalAssetLibrary
+  m_EditorClassIdentifier: 
+  m_offset: 65536
+  m_ordinal: 16384
+  m_assetLibrary:
+    m_ID: 0
+    m_Name: Root
+    m_Depth: -1
+    Identity: 528
+    FolderIdentity: 15
+    Folders:
+    - m_ID: 0
+      m_Name: Root
+      m_Depth: -1
+      Assets: []
+      IsEnabled: 0
+    - m_ID: 3
+      m_Name: Assets
+      m_Depth: 0
+      Assets: []
+      IsEnabled: 1
+    - m_ID: 4
+      m_Name: HellefantSurvival
+      m_Depth: 1
+      Assets: []
+      IsEnabled: 0
+    - m_ID: 5
+      m_Name: Audio
+      m_Depth: 2
+      Assets: []
+      IsEnabled: 0
+    - m_ID: 6
+      m_Name: Effects
+      m_Depth: 3
+      Assets:
+      - m_ID: 4
+        m_Name: Hellephant Hurt
+        m_Depth: 0
+        Object: {fileID: 8300000, guid: fce027b40770a44298a6f5a4233bfb04, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 5
+        m_Name: Player Death
+        m_Depth: 0
+        Object: {fileID: 8300000, guid: d36a393bca4582043982db9089e1694f, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 6
+        m_Name: Player GunShot
+        m_Depth: 0
+        Object: {fileID: 8300000, guid: fa7f046ce321d4021b5e753bf1152916, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      IsEnabled: 0
+    - m_ID: 8
+      m_Name: Fonts
+      m_Depth: 2
+      Assets: []
+      IsEnabled: 0
+    - m_ID: 9
+      m_Name: LuckiestGuy
+      m_Depth: 3
+      Assets:
+      - m_ID: 7
+        m_Name: LuckiestGuy
+        m_Depth: 0
+        Object: {fileID: 12800000, guid: 46238fb1ad7a7a84ba8954c1c860994c, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      IsEnabled: 0
+    - m_ID: 10
+      m_Name: Materials
+      m_Depth: 2
+      Assets:
+      - m_ID: 8
+        m_Name: EyesMaterial
+        m_Depth: 0
+        Object: {fileID: 2100000, guid: 51d14e0fd3936be48bf8d5031d3e24c7, type: 2}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 9
+        m_Name: FlareParticleMaterial
+        m_Depth: 0
+        Object: {fileID: 2100000, guid: b75a561f374f89247a62336b50288d40, type: 2}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 10
+        m_Name: FluffParticleMaterial
+        m_Depth: 0
+        Object: {fileID: 2100000, guid: 01ffe1f3679a0894087ea5e74106fb93, type: 2}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 11
+        m_Name: GunMaterial
+        m_Depth: 0
+        Object: {fileID: 2100000, guid: 5afa4a01a731c834d9a62da55c7cfa7c, type: 2}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 12
+        m_Name: HellephantMaterial
+        m_Depth: 0
+        Object: {fileID: 2100000, guid: 20c2c861010d0ce49a4716087f02535e, type: 2}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 13
+        m_Name: LineRenderMaterial
+        m_Depth: 0
+        Object: {fileID: 2100000, guid: 007cd3dce0e6539409edcc484011c877, type: 2}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 14
+        m_Name: ParticleConfetti
+        m_Depth: 0
+        Object: {fileID: 2100000, guid: 90c402a9560fc3f469d0f490d22ba0a9, type: 2}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 15
+        m_Name: PlanksMaterial
+        m_Depth: 0
+        Object: {fileID: 2100000, guid: c9fdccd01cd0c3d40af6eb4f901b3b24, type: 2}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 16
+        m_Name: PlayerMaterial
+        m_Depth: 0
+        Object: {fileID: 2100000, guid: 3ea44298aa419344dbdcf87dd1a50533, type: 2}
+        IsEnabled: 0
+        PrefabParts: []
+      IsEnabled: 0
+    - m_ID: 11
+      m_Name: Prefabs
+      m_Depth: 2
+      Assets:
+      - m_ID: 17
+        m_Name: Confetti
+        m_Depth: 0
+        Object: {fileID: 116760, guid: 11751883a2af66e4c92a3fa620802b7f, type: 3}
+        IsEnabled: 0
+        PrefabParts:
+        - ParentPersistentID: -1
+          PersistentID: 18
+          Object: {fileID: 430832, guid: 11751883a2af66e4c92a3fa620802b7f, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 19
+          Object: {fileID: 19824144, guid: 11751883a2af66e4c92a3fa620802b7f, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 20
+          Object: {fileID: 19984312, guid: 11751883a2af66e4c92a3fa620802b7f, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 21
+          Object: {fileID: 103252, guid: 11751883a2af66e4c92a3fa620802b7f, type: 3}
+          Depth: 0
+        - ParentPersistentID: 21
+          PersistentID: 22
+          Object: {fileID: 491008, guid: 11751883a2af66e4c92a3fa620802b7f, type: 3}
+          Depth: 1
+        - ParentPersistentID: 21
+          PersistentID: 23
+          Object: {fileID: 19876160, guid: 11751883a2af66e4c92a3fa620802b7f, type: 3}
+          Depth: 1
+        - ParentPersistentID: 21
+          PersistentID: 24
+          Object: {fileID: 19913878, guid: 11751883a2af66e4c92a3fa620802b7f, type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 25
+          Object: {fileID: 175794, guid: 11751883a2af66e4c92a3fa620802b7f, type: 3}
+          Depth: 0
+        - ParentPersistentID: 25
+          PersistentID: 26
+          Object: {fileID: 441236, guid: 11751883a2af66e4c92a3fa620802b7f, type: 3}
+          Depth: 1
+        - ParentPersistentID: 25
+          PersistentID: 27
+          Object: {fileID: 19850430, guid: 11751883a2af66e4c92a3fa620802b7f, type: 3}
+          Depth: 1
+        - ParentPersistentID: 25
+          PersistentID: 28
+          Object: {fileID: 19951042, guid: 11751883a2af66e4c92a3fa620802b7f, type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 29
+          Object: {fileID: 163220, guid: 11751883a2af66e4c92a3fa620802b7f, type: 3}
+          Depth: 0
+        - ParentPersistentID: 29
+          PersistentID: 30
+          Object: {fileID: 494024, guid: 11751883a2af66e4c92a3fa620802b7f, type: 3}
+          Depth: 1
+      - m_ID: 31
+        m_Name: Enemy
+        m_Depth: 0
+        Object: {fileID: 5361162693068783104, guid: 52cff551d8129864999b364ed917a855,
+          type: 3}
+        IsEnabled: 0
+        PrefabParts:
+        - ParentPersistentID: -1
+          PersistentID: 32
+          Object: {fileID: 5361162693069201982, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 33
+          Object: {fileID: 5361162693076159886, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 34
+          Object: {fileID: 3578433863071120285, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 35
+          Object: {fileID: 5361162693068783180, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: 35
+          PersistentID: 36
+          Object: {fileID: 5361162693069202028, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 35
+          PersistentID: 37
+          Object: {fileID: 5361162693071893326, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 38
+          Object: {fileID: 4940614932184028486, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: 38
+          PersistentID: 39
+          Object: {fileID: 4940614932184241114, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 38
+          PersistentID: 40
+          Object: {fileID: 4940614932201956582, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 38
+          PersistentID: 41
+          Object: {fileID: 4940614932176867380, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 38
+          PersistentID: 42
+          Object: {fileID: 4940614932181713550, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 38
+          PersistentID: 43
+          Object: {fileID: 4940614932178036556, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 38
+          PersistentID: 44
+          Object: {fileID: 4940614932203678816, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 38
+          PersistentID: 45
+          Object: {fileID: 3236037043914038857, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 46
+          Object: {fileID: 5361162693068783134, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: 46
+          PersistentID: 47
+          Object: {fileID: 5361162693069201952, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 46
+          PersistentID: 48
+          Object: {fileID: 5361162693071893324, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 49
+          Object: {fileID: 5361162693068783132, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: 49
+          PersistentID: 50
+          Object: {fileID: 5361162693069201980, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 49
+          PersistentID: 51
+          Object: {fileID: 5361162693068783182, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 51
+          PersistentID: 52
+          Object: {fileID: 5361162693069202030, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 2
+        - ParentPersistentID: 51
+          PersistentID: 53
+          Object: {fileID: 5361162693068783178, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 2
+        - ParentPersistentID: 53
+          PersistentID: 54
+          Object: {fileID: 5361162693069202026, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 3
+        - ParentPersistentID: 53
+          PersistentID: 55
+          Object: {fileID: 5361162693068783174, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 3
+        - ParentPersistentID: 55
+          PersistentID: 56
+          Object: {fileID: 5361162693069202022, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 55
+          PersistentID: 57
+          Object: {fileID: 5361162693068783176, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 57
+          PersistentID: 58
+          Object: {fileID: 5361162693069202024, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 49
+          PersistentID: 59
+          Object: {fileID: 5361162693068783560, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 59
+          PersistentID: 60
+          Object: {fileID: 5361162693069202408, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 2
+        - ParentPersistentID: 59
+          PersistentID: 61
+          Object: {fileID: 5361162693068783190, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 2
+        - ParentPersistentID: 61
+          PersistentID: 62
+          Object: {fileID: 5361162693069202038, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 3
+        - ParentPersistentID: 61
+          PersistentID: 63
+          Object: {fileID: 5361162693068783188, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 3
+        - ParentPersistentID: 63
+          PersistentID: 64
+          Object: {fileID: 5361162693069202036, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 63
+          PersistentID: 65
+          Object: {fileID: 5361162693068783138, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 65
+          PersistentID: 66
+          Object: {fileID: 5361162693069201986, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 65
+          PersistentID: 67
+          Object: {fileID: 5361162693068783118, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 67
+          PersistentID: 68
+          Object: {fileID: 5361162693069201966, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 63
+          PersistentID: 69
+          Object: {fileID: 5361162693068783594, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 69
+          PersistentID: 70
+          Object: {fileID: 5361162693069201930, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 69
+          PersistentID: 71
+          Object: {fileID: 5361162693068783606, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 71
+          PersistentID: 72
+          Object: {fileID: 5361162693069201942, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 61
+          PersistentID: 73
+          Object: {fileID: 5361162693068783558, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 3
+        - ParentPersistentID: 73
+          PersistentID: 74
+          Object: {fileID: 5361162693069202406, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 73
+          PersistentID: 75
+          Object: {fileID: 5361162693068783192, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 75
+          PersistentID: 76
+          Object: {fileID: 5361162693069202040, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 75
+          PersistentID: 77
+          Object: {fileID: 5361162693068783172, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 77
+          PersistentID: 78
+          Object: {fileID: 5361162693069202020, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 77
+          PersistentID: 79
+          Object: {fileID: 5361162693068783170, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 79
+          PersistentID: 80
+          Object: {fileID: 5361162693069202018, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 79
+          PersistentID: 81
+          Object: {fileID: 5361162693068783168, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 81
+          PersistentID: 82
+          Object: {fileID: 5361162693069202016, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 81
+          PersistentID: 83
+          Object: {fileID: 5361162693068783198, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 83
+          PersistentID: 84
+          Object: {fileID: 5361162693069202046, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 9
+        - ParentPersistentID: 83
+          PersistentID: 85
+          Object: {fileID: 5361162693068783196, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 9
+        - ParentPersistentID: 85
+          PersistentID: 86
+          Object: {fileID: 5361162693069202044, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 10
+        - ParentPersistentID: 85
+          PersistentID: 87
+          Object: {fileID: 5361162693068783194, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 10
+        - ParentPersistentID: 87
+          PersistentID: 88
+          Object: {fileID: 5361162693069202042, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 11
+        - ParentPersistentID: 75
+          PersistentID: 89
+          Object: {fileID: 5361162693068783186, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 89
+          PersistentID: 90
+          Object: {fileID: 5361162693069202034, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 89
+          PersistentID: 91
+          Object: {fileID: 5361162693068783184, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 91
+          PersistentID: 92
+          Object: {fileID: 5361162693069202032, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 75
+          PersistentID: 93
+          Object: {fileID: 5361162693068783150, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 93
+          PersistentID: 94
+          Object: {fileID: 5361162693069201998, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 93
+          PersistentID: 95
+          Object: {fileID: 5361162693068783148, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 95
+          PersistentID: 96
+          Object: {fileID: 5361162693069201996, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 75
+          PersistentID: 97
+          Object: {fileID: 5361162693068783146, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 97
+          PersistentID: 98
+          Object: {fileID: 5361162693069201994, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 97
+          PersistentID: 99
+          Object: {fileID: 5361162693068783144, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 99
+          PersistentID: 100
+          Object: {fileID: 5361162693069201992, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 75
+          PersistentID: 101
+          Object: {fileID: 5361162693068783130, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 101
+          PersistentID: 102
+          Object: {fileID: 5361162693069201978, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 101
+          PersistentID: 103
+          Object: {fileID: 5361162693068783128, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 103
+          PersistentID: 104
+          Object: {fileID: 5361162693069201976, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 75
+          PersistentID: 105
+          Object: {fileID: 5361162693068783126, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 105
+          PersistentID: 106
+          Object: {fileID: 5361162693069201974, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 105
+          PersistentID: 107
+          Object: {fileID: 5361162693068783124, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 107
+          PersistentID: 108
+          Object: {fileID: 5361162693069201972, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 75
+          PersistentID: 109
+          Object: {fileID: 5361162693068783122, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 109
+          PersistentID: 110
+          Object: {fileID: 5361162693069201970, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 109
+          PersistentID: 111
+          Object: {fileID: 5361162693068783120, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 111
+          PersistentID: 112
+          Object: {fileID: 5361162693069201968, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 73
+          PersistentID: 113
+          Object: {fileID: 5361162693068783156, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 113
+          PersistentID: 114
+          Object: {fileID: 5361162693069202004, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 113
+          PersistentID: 115
+          Object: {fileID: 5361162693068783116, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 115
+          PersistentID: 116
+          Object: {fileID: 5361162693069201964, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 115
+          PersistentID: 117
+          Object: {fileID: 5361162693068783136, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 117
+          PersistentID: 118
+          Object: {fileID: 5361162693069201984, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 117
+          PersistentID: 119
+          Object: {fileID: 5361162693068783166, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 119
+          PersistentID: 120
+          Object: {fileID: 5361162693069202014, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 119
+          PersistentID: 121
+          Object: {fileID: 5361162693068783110, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 121
+          PersistentID: 122
+          Object: {fileID: 5361162693069201958, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 9
+        - ParentPersistentID: 121
+          PersistentID: 123
+          Object: {fileID: 5361162693068783142, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 9
+        - ParentPersistentID: 123
+          PersistentID: 124
+          Object: {fileID: 5361162693069201990, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 10
+        - ParentPersistentID: 123
+          PersistentID: 125
+          Object: {fileID: 5361162693068783140, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 10
+        - ParentPersistentID: 125
+          PersistentID: 126
+          Object: {fileID: 5361162693069201988, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 11
+        - ParentPersistentID: 121
+          PersistentID: 127
+          Object: {fileID: 5361162693068783154, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 9
+        - ParentPersistentID: 127
+          PersistentID: 128
+          Object: {fileID: 5361162693069202002, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 10
+        - ParentPersistentID: 127
+          PersistentID: 129
+          Object: {fileID: 5361162693068783152, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 10
+        - ParentPersistentID: 129
+          PersistentID: 130
+          Object: {fileID: 5361162693069202000, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 11
+        - ParentPersistentID: 113
+          PersistentID: 131
+          Object: {fileID: 5361162693068783114, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 131
+          PersistentID: 132
+          Object: {fileID: 5361162693069201962, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 131
+          PersistentID: 133
+          Object: {fileID: 5361162693068783160, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 133
+          PersistentID: 134
+          Object: {fileID: 5361162693069202008, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 133
+          PersistentID: 135
+          Object: {fileID: 5361162693068783162, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 135
+          PersistentID: 136
+          Object: {fileID: 5361162693069202010, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 135
+          PersistentID: 137
+          Object: {fileID: 5361162693068783108, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 137
+          PersistentID: 138
+          Object: {fileID: 5361162693069201956, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 9
+        - ParentPersistentID: 113
+          PersistentID: 139
+          Object: {fileID: 5361162693068783112, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 139
+          PersistentID: 140
+          Object: {fileID: 5361162693069201960, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 139
+          PersistentID: 141
+          Object: {fileID: 5361162693068783158, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 141
+          PersistentID: 142
+          Object: {fileID: 5361162693069202006, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 141
+          PersistentID: 143
+          Object: {fileID: 5361162693068783164, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 143
+          PersistentID: 144
+          Object: {fileID: 5361162693069202012, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 143
+          PersistentID: 145
+          Object: {fileID: 5361162693068783106, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 145
+          PersistentID: 146
+          Object: {fileID: 5361162693069201954, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 9
+        - ParentPersistentID: 73
+          PersistentID: 147
+          Object: {fileID: 5361162693068783612, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 147
+          PersistentID: 148
+          Object: {fileID: 5361162693069201948, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 147
+          PersistentID: 149
+          Object: {fileID: 5361162693068783604, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 149
+          PersistentID: 150
+          Object: {fileID: 5361162693069201940, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 149
+          PersistentID: 151
+          Object: {fileID: 5361162693068783592, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 151
+          PersistentID: 152
+          Object: {fileID: 5361162693069201928, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 151
+          PersistentID: 153
+          Object: {fileID: 5361162693068783590, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 153
+          PersistentID: 154
+          Object: {fileID: 5361162693069201926, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 153
+          PersistentID: 155
+          Object: {fileID: 5361162693068783566, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 155
+          PersistentID: 156
+          Object: {fileID: 5361162693069202414, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 9
+        - ParentPersistentID: 155
+          PersistentID: 157
+          Object: {fileID: 5361162693068783598, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 9
+        - ParentPersistentID: 157
+          PersistentID: 158
+          Object: {fileID: 5361162693069201934, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 10
+        - ParentPersistentID: 157
+          PersistentID: 159
+          Object: {fileID: 5361162693068783596, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 10
+        - ParentPersistentID: 159
+          PersistentID: 160
+          Object: {fileID: 5361162693069201932, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 11
+        - ParentPersistentID: 155
+          PersistentID: 161
+          Object: {fileID: 5361162693068783610, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 9
+        - ParentPersistentID: 161
+          PersistentID: 162
+          Object: {fileID: 5361162693069201946, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 10
+        - ParentPersistentID: 161
+          PersistentID: 163
+          Object: {fileID: 5361162693068783608, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 10
+        - ParentPersistentID: 163
+          PersistentID: 164
+          Object: {fileID: 5361162693069201944, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 11
+        - ParentPersistentID: 147
+          PersistentID: 165
+          Object: {fileID: 5361162693068783602, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 165
+          PersistentID: 166
+          Object: {fileID: 5361162693069201938, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 165
+          PersistentID: 167
+          Object: {fileID: 5361162693068783584, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 167
+          PersistentID: 168
+          Object: {fileID: 5361162693069201920, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 167
+          PersistentID: 169
+          Object: {fileID: 5361162693068783588, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 169
+          PersistentID: 170
+          Object: {fileID: 5361162693069201924, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 169
+          PersistentID: 171
+          Object: {fileID: 5361162693068783564, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 171
+          PersistentID: 172
+          Object: {fileID: 5361162693069202412, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 9
+        - ParentPersistentID: 147
+          PersistentID: 173
+          Object: {fileID: 5361162693068783600, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 173
+          PersistentID: 174
+          Object: {fileID: 5361162693069201936, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 173
+          PersistentID: 175
+          Object: {fileID: 5361162693068783614, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 175
+          PersistentID: 176
+          Object: {fileID: 5361162693069201950, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 175
+          PersistentID: 177
+          Object: {fileID: 5361162693068783586, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 177
+          PersistentID: 178
+          Object: {fileID: 5361162693069201922, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 177
+          PersistentID: 179
+          Object: {fileID: 5361162693068783562, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 179
+          PersistentID: 180
+          Object: {fileID: 5361162693069202410, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 9
+        - ParentPersistentID: 61
+          PersistentID: 181
+          Object: {fileID: 5361162693068783556, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 3
+        - ParentPersistentID: 181
+          PersistentID: 182
+          Object: {fileID: 5361162693069202404, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 181
+          PersistentID: 183
+          Object: {fileID: 5361162693068783554, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 183
+          PersistentID: 184
+          Object: {fileID: 5361162693069202402, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 183
+          PersistentID: 185
+          Object: {fileID: 5361162693068783552, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 185
+          PersistentID: 186
+          Object: {fileID: 5361162693069202400, guid: 52cff551d8129864999b364ed917a855,
+            type: 3}
+          Depth: 6
+      - m_ID: 187
+        m_Name: Floor
+        m_Depth: 0
+        Object: {fileID: 997549653042218837, guid: 660220551d121b84babfa47fa88b28df,
+          type: 3}
+        IsEnabled: 0
+        PrefabParts:
+        - ParentPersistentID: -1
+          PersistentID: 188
+          Object: {fileID: 997549653042060149, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 189
+          Object: {fileID: 997549653051585685, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 190
+          Object: {fileID: 997549653042218829, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: 190
+          PersistentID: 191
+          Object: {fileID: 997549653042060141, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 190
+          PersistentID: 192
+          Object: {fileID: 997549653041257311, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 190
+          PersistentID: 193
+          Object: {fileID: 997549653040290207, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 194
+          Object: {fileID: 997549653042218839, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: 194
+          PersistentID: 195
+          Object: {fileID: 997549653042060151, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 194
+          PersistentID: 196
+          Object: {fileID: 997549653041257309, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 194
+          PersistentID: 197
+          Object: {fileID: 997549653040290205, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 198
+          Object: {fileID: 997549653042218831, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: 198
+          PersistentID: 199
+          Object: {fileID: 997549653042060143, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 198
+          PersistentID: 200
+          Object: {fileID: 997549653041257305, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 198
+          PersistentID: 201
+          Object: {fileID: 997549653040290201, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 202
+          Object: {fileID: 997549653449558518, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: 202
+          PersistentID: 203
+          Object: {fileID: 997549653449558506, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 202
+          PersistentID: 204
+          Object: {fileID: 997549653449558505, guid: 660220551d121b84babfa47fa88b28df,
+            type: 3}
+          Depth: 1
+      - m_ID: 205
+        m_Name: Hellephant
+        m_Depth: 0
+        Object: {fileID: 8019536189253298816, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+          type: 3}
+        IsEnabled: 0
+        PrefabParts:
+        - ParentPersistentID: -1
+          PersistentID: 206
+          Object: {fileID: 8019536189253138080, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 207
+          Object: {fileID: 8019536189243808068, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 208
+          Object: {fileID: -2341061408049475144, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 209
+          Object: {fileID: 8019536189253298820, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: 209
+          PersistentID: 210
+          Object: {fileID: 8019536189253138084, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 209
+          PersistentID: 211
+          Object: {fileID: 8019536189253298916, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 211
+          PersistentID: 212
+          Object: {fileID: 8019536189253138052, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 2
+        - ParentPersistentID: 211
+          PersistentID: 213
+          Object: {fileID: 8019536189253298818, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 2
+        - ParentPersistentID: 213
+          PersistentID: 214
+          Object: {fileID: 8019536189253138082, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 3
+        - ParentPersistentID: 213
+          PersistentID: 215
+          Object: {fileID: 8019536189253298838, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 3
+        - ParentPersistentID: 215
+          PersistentID: 216
+          Object: {fileID: 8019536189253138102, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 215
+          PersistentID: 217
+          Object: {fileID: 8019536189253298826, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 217
+          PersistentID: 218
+          Object: {fileID: 8019536189253138090, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 217
+          PersistentID: 219
+          Object: {fileID: 8019536189253298836, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 219
+          PersistentID: 220
+          Object: {fileID: 8019536189253138100, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 213
+          PersistentID: 221
+          Object: {fileID: 8019536189253298842, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 3
+        - ParentPersistentID: 221
+          PersistentID: 222
+          Object: {fileID: 8019536189253138106, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 221
+          PersistentID: 223
+          Object: {fileID: 8019536189253298846, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 223
+          PersistentID: 224
+          Object: {fileID: 8019536189253138110, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 223
+          PersistentID: 225
+          Object: {fileID: 8019536189253298840, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 225
+          PersistentID: 226
+          Object: {fileID: 8019536189253138104, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 213
+          PersistentID: 227
+          Object: {fileID: 8019536189253298918, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 3
+        - ParentPersistentID: 227
+          PersistentID: 228
+          Object: {fileID: 8019536189253138054, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 227
+          PersistentID: 229
+          Object: {fileID: 8019536189253298912, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 229
+          PersistentID: 230
+          Object: {fileID: 8019536189253138048, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 229
+          PersistentID: 231
+          Object: {fileID: 8019536189253298828, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 231
+          PersistentID: 232
+          Object: {fileID: 8019536189253138092, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 231
+          PersistentID: 233
+          Object: {fileID: 8019536189253298830, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 233
+          PersistentID: 234
+          Object: {fileID: 8019536189253138094, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 233
+          PersistentID: 235
+          Object: {fileID: 8019536189253298824, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 235
+          PersistentID: 236
+          Object: {fileID: 8019536189253138088, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 229
+          PersistentID: 237
+          Object: {fileID: 8019536189253298832, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 237
+          PersistentID: 238
+          Object: {fileID: 8019536189253138096, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 237
+          PersistentID: 239
+          Object: {fileID: 8019536189253298834, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 239
+          PersistentID: 240
+          Object: {fileID: 8019536189253138098, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 239
+          PersistentID: 241
+          Object: {fileID: 8019536189253298844, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 241
+          PersistentID: 242
+          Object: {fileID: 8019536189253138108, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: 229
+          PersistentID: 243
+          Object: {fileID: 8019536189253298914, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 243
+          PersistentID: 244
+          Object: {fileID: 8019536189253138050, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 227
+          PersistentID: 245
+          Object: {fileID: 8019536189253298924, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 4
+        - ParentPersistentID: 245
+          PersistentID: 246
+          Object: {fileID: 8019536189253138060, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 245
+          PersistentID: 247
+          Object: {fileID: 8019536189253298926, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 5
+        - ParentPersistentID: 247
+          PersistentID: 248
+          Object: {fileID: 8019536189253138062, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 247
+          PersistentID: 249
+          Object: {fileID: 8019536189253298920, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 6
+        - ParentPersistentID: 249
+          PersistentID: 250
+          Object: {fileID: 8019536189253138056, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 249
+          PersistentID: 251
+          Object: {fileID: 8019536189253298922, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 7
+        - ParentPersistentID: 251
+          PersistentID: 252
+          Object: {fileID: 8019536189253138058, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 8
+        - ParentPersistentID: -1
+          PersistentID: 253
+          Object: {fileID: 8019536189253298822, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: 253
+          PersistentID: 254
+          Object: {fileID: 8019536189253138086, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 253
+          PersistentID: 255
+          Object: {fileID: 8019536189239699332, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 256
+          Object: {fileID: 1104198514848439807, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: 256
+          PersistentID: 257
+          Object: {fileID: 1104198514848076339, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 256
+          PersistentID: 258
+          Object: {fileID: 1104198514832945017, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 256
+          PersistentID: 259
+          Object: {fileID: 1104198514834930507, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 260
+          Object: {fileID: 8913412301730488102, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: 260
+          PersistentID: 261
+          Object: {fileID: 8913412301730336564, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 260
+          PersistentID: 262
+          Object: {fileID: 8913412301710908604, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 260
+          PersistentID: 263
+          Object: {fileID: 8913412301710440550, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 264
+          Object: {fileID: 3436373375285659717, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: 264
+          PersistentID: 265
+          Object: {fileID: 3436373375285659721, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 264
+          PersistentID: 266
+          Object: {fileID: 3436373375285659720, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 264
+          PersistentID: 267
+          Object: {fileID: 3436373375285659723, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 264
+          PersistentID: 268
+          Object: {fileID: 3436373375285659722, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 264
+          PersistentID: 269
+          Object: {fileID: 3436373374794429980, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 1
+        - ParentPersistentID: 269
+          PersistentID: 270
+          Object: {fileID: 3436373374794429981, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 2
+        - ParentPersistentID: 269
+          PersistentID: 271
+          Object: {fileID: 3436373374794429987, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 2
+        - ParentPersistentID: 269
+          PersistentID: 272
+          Object: {fileID: 3436373374794429986, guid: 8c3f339ac69c24b4aa32e25901ff35dc,
+            type: 3}
+          Depth: 2
+      IsEnabled: 0
+    - m_ID: 12
+      m_Name: Models
+      m_Depth: 3
+      Assets:
+      - m_ID: 273
+        m_Name: Confetti
+        m_Depth: 0
+        Object: {fileID: 100000, guid: 41b886a5643e2aa4287d8b3ef7fca294, type: 3}
+        IsEnabled: 0
+        PrefabParts:
+        - ParentPersistentID: -1
+          PersistentID: 274
+          Object: {fileID: 400000, guid: 41b886a5643e2aa4287d8b3ef7fca294, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 275
+          Object: {fileID: 3300000, guid: 41b886a5643e2aa4287d8b3ef7fca294, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 276
+          Object: {fileID: 2300000, guid: 41b886a5643e2aa4287d8b3ef7fca294, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 277
+          Object: {fileID: 9500000, guid: 41b886a5643e2aa4287d8b3ef7fca294, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 278
+          Object: {fileID: 4300000, guid: 41b886a5643e2aa4287d8b3ef7fca294, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 279
+          Object: {fileID: 9000000, guid: 41b886a5643e2aa4287d8b3ef7fca294, type: 3}
+          Depth: 0
+      - m_ID: 280
+        m_Name: Enemy
+        m_Depth: 0
+        Object: {fileID: 100078, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+        IsEnabled: 0
+        PrefabParts:
+        - ParentPersistentID: -1
+          PersistentID: 281
+          Object: {fileID: 400080, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 282
+          Object: {fileID: 9500000, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 283
+          Object: {fileID: 100002, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 0
+        - ParentPersistentID: 283
+          PersistentID: 284
+          Object: {fileID: 400002, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 1
+        - ParentPersistentID: 283
+          PersistentID: 285
+          Object: {fileID: 13700000, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 286
+          Object: {fileID: 100080, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 0
+        - ParentPersistentID: 286
+          PersistentID: 287
+          Object: {fileID: 400078, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 1
+        - ParentPersistentID: 286
+          PersistentID: 288
+          Object: {fileID: 13700002, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 289
+          Object: {fileID: 100082, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 0
+        - ParentPersistentID: 289
+          PersistentID: 290
+          Object: {fileID: 400082, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 1
+        - ParentPersistentID: 289
+          PersistentID: 291
+          Object: {fileID: 100000, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 1
+        - ParentPersistentID: 291
+          PersistentID: 292
+          Object: {fileID: 400000, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 2
+        - ParentPersistentID: 291
+          PersistentID: 293
+          Object: {fileID: 100004, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 2
+        - ParentPersistentID: 293
+          PersistentID: 294
+          Object: {fileID: 400004, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 3
+        - ParentPersistentID: 293
+          PersistentID: 295
+          Object: {fileID: 100008, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 3
+        - ParentPersistentID: 295
+          PersistentID: 296
+          Object: {fileID: 400008, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 4
+        - ParentPersistentID: 295
+          PersistentID: 297
+          Object: {fileID: 100006, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 4
+        - ParentPersistentID: 297
+          PersistentID: 298
+          Object: {fileID: 400006, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 289
+          PersistentID: 299
+          Object: {fileID: 100134, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 1
+        - ParentPersistentID: 299
+          PersistentID: 300
+          Object: {fileID: 400134, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 2
+        - ParentPersistentID: 299
+          PersistentID: 301
+          Object: {fileID: 100024, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 2
+        - ParentPersistentID: 301
+          PersistentID: 302
+          Object: {fileID: 400024, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 3
+        - ParentPersistentID: 301
+          PersistentID: 303
+          Object: {fileID: 100026, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 3
+        - ParentPersistentID: 303
+          PersistentID: 304
+          Object: {fileID: 400026, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 4
+        - ParentPersistentID: 303
+          PersistentID: 305
+          Object: {fileID: 100044, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 4
+        - ParentPersistentID: 305
+          PersistentID: 306
+          Object: {fileID: 400044, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 305
+          PersistentID: 307
+          Object: {fileID: 100064, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 307
+          PersistentID: 308
+          Object: {fileID: 400064, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 303
+          PersistentID: 309
+          Object: {fileID: 100100, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 4
+        - ParentPersistentID: 309
+          PersistentID: 310
+          Object: {fileID: 400100, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 309
+          PersistentID: 311
+          Object: {fileID: 100120, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 311
+          PersistentID: 312
+          Object: {fileID: 400120, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 301
+          PersistentID: 313
+          Object: {fileID: 100136, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 3
+        - ParentPersistentID: 313
+          PersistentID: 314
+          Object: {fileID: 400136, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 4
+        - ParentPersistentID: 313
+          PersistentID: 315
+          Object: {fileID: 100022, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 4
+        - ParentPersistentID: 315
+          PersistentID: 316
+          Object: {fileID: 400022, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 315
+          PersistentID: 317
+          Object: {fileID: 100010, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 317
+          PersistentID: 318
+          Object: {fileID: 400010, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 317
+          PersistentID: 319
+          Object: {fileID: 100012, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 319
+          PersistentID: 320
+          Object: {fileID: 400012, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 319
+          PersistentID: 321
+          Object: {fileID: 100014, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 321
+          PersistentID: 322
+          Object: {fileID: 400014, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 8
+        - ParentPersistentID: 321
+          PersistentID: 323
+          Object: {fileID: 100016, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 8
+        - ParentPersistentID: 323
+          PersistentID: 324
+          Object: {fileID: 400016, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 9
+        - ParentPersistentID: 323
+          PersistentID: 325
+          Object: {fileID: 100018, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 9
+        - ParentPersistentID: 325
+          PersistentID: 326
+          Object: {fileID: 400018, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 10
+        - ParentPersistentID: 325
+          PersistentID: 327
+          Object: {fileID: 100020, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 10
+        - ParentPersistentID: 327
+          PersistentID: 328
+          Object: {fileID: 400020, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 11
+        - ParentPersistentID: 315
+          PersistentID: 329
+          Object: {fileID: 100028, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 329
+          PersistentID: 330
+          Object: {fileID: 400028, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 329
+          PersistentID: 331
+          Object: {fileID: 100030, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 331
+          PersistentID: 332
+          Object: {fileID: 400030, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 315
+          PersistentID: 333
+          Object: {fileID: 100032, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 333
+          PersistentID: 334
+          Object: {fileID: 400032, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 333
+          PersistentID: 335
+          Object: {fileID: 100034, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 335
+          PersistentID: 336
+          Object: {fileID: 400034, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 315
+          PersistentID: 337
+          Object: {fileID: 100036, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 337
+          PersistentID: 338
+          Object: {fileID: 400036, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 337
+          PersistentID: 339
+          Object: {fileID: 100038, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 339
+          PersistentID: 340
+          Object: {fileID: 400038, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 315
+          PersistentID: 341
+          Object: {fileID: 100084, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 341
+          PersistentID: 342
+          Object: {fileID: 400084, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 341
+          PersistentID: 343
+          Object: {fileID: 100086, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 343
+          PersistentID: 344
+          Object: {fileID: 400086, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 315
+          PersistentID: 345
+          Object: {fileID: 100088, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 345
+          PersistentID: 346
+          Object: {fileID: 400088, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 345
+          PersistentID: 347
+          Object: {fileID: 100090, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 347
+          PersistentID: 348
+          Object: {fileID: 400090, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 315
+          PersistentID: 349
+          Object: {fileID: 100092, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 349
+          PersistentID: 350
+          Object: {fileID: 400092, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 349
+          PersistentID: 351
+          Object: {fileID: 100094, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 351
+          PersistentID: 352
+          Object: {fileID: 400094, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 313
+          PersistentID: 353
+          Object: {fileID: 100058, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 4
+        - ParentPersistentID: 353
+          PersistentID: 354
+          Object: {fileID: 400058, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 353
+          PersistentID: 355
+          Object: {fileID: 100066, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 355
+          PersistentID: 356
+          Object: {fileID: 400066, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 355
+          PersistentID: 357
+          Object: {fileID: 100046, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 357
+          PersistentID: 358
+          Object: {fileID: 400046, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 357
+          PersistentID: 359
+          Object: {fileID: 100048, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 359
+          PersistentID: 360
+          Object: {fileID: 400048, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 8
+        - ParentPersistentID: 359
+          PersistentID: 361
+          Object: {fileID: 100072, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 8
+        - ParentPersistentID: 361
+          PersistentID: 362
+          Object: {fileID: 400072, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 9
+        - ParentPersistentID: 361
+          PersistentID: 363
+          Object: {fileID: 100040, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 9
+        - ParentPersistentID: 363
+          PersistentID: 364
+          Object: {fileID: 400040, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 10
+        - ParentPersistentID: 363
+          PersistentID: 365
+          Object: {fileID: 100042, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 10
+        - ParentPersistentID: 365
+          PersistentID: 366
+          Object: {fileID: 400042, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 11
+        - ParentPersistentID: 361
+          PersistentID: 367
+          Object: {fileID: 100060, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 9
+        - ParentPersistentID: 367
+          PersistentID: 368
+          Object: {fileID: 400060, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 10
+        - ParentPersistentID: 367
+          PersistentID: 369
+          Object: {fileID: 100062, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 10
+        - ParentPersistentID: 369
+          PersistentID: 370
+          Object: {fileID: 400062, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 11
+        - ParentPersistentID: 353
+          PersistentID: 371
+          Object: {fileID: 100068, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 371
+          PersistentID: 372
+          Object: {fileID: 400068, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 371
+          PersistentID: 373
+          Object: {fileID: 100054, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 373
+          PersistentID: 374
+          Object: {fileID: 400054, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 373
+          PersistentID: 375
+          Object: {fileID: 100052, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 375
+          PersistentID: 376
+          Object: {fileID: 400052, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 8
+        - ParentPersistentID: 375
+          PersistentID: 377
+          Object: {fileID: 100074, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 8
+        - ParentPersistentID: 377
+          PersistentID: 378
+          Object: {fileID: 400074, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 9
+        - ParentPersistentID: 353
+          PersistentID: 379
+          Object: {fileID: 100070, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 379
+          PersistentID: 380
+          Object: {fileID: 400070, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 379
+          PersistentID: 381
+          Object: {fileID: 100056, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 381
+          PersistentID: 382
+          Object: {fileID: 400056, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 381
+          PersistentID: 383
+          Object: {fileID: 100050, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 383
+          PersistentID: 384
+          Object: {fileID: 400050, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 8
+        - ParentPersistentID: 383
+          PersistentID: 385
+          Object: {fileID: 100076, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 8
+        - ParentPersistentID: 385
+          PersistentID: 386
+          Object: {fileID: 400076, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 9
+        - ParentPersistentID: 313
+          PersistentID: 387
+          Object: {fileID: 100114, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 4
+        - ParentPersistentID: 387
+          PersistentID: 388
+          Object: {fileID: 400114, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 387
+          PersistentID: 389
+          Object: {fileID: 100122, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 389
+          PersistentID: 390
+          Object: {fileID: 400122, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 389
+          PersistentID: 391
+          Object: {fileID: 100102, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 391
+          PersistentID: 392
+          Object: {fileID: 400102, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 391
+          PersistentID: 393
+          Object: {fileID: 100104, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 393
+          PersistentID: 394
+          Object: {fileID: 400104, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 8
+        - ParentPersistentID: 393
+          PersistentID: 395
+          Object: {fileID: 100128, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 8
+        - ParentPersistentID: 395
+          PersistentID: 396
+          Object: {fileID: 400128, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 9
+        - ParentPersistentID: 395
+          PersistentID: 397
+          Object: {fileID: 100096, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 9
+        - ParentPersistentID: 397
+          PersistentID: 398
+          Object: {fileID: 400096, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 10
+        - ParentPersistentID: 397
+          PersistentID: 399
+          Object: {fileID: 100098, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 10
+        - ParentPersistentID: 399
+          PersistentID: 400
+          Object: {fileID: 400098, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 11
+        - ParentPersistentID: 395
+          PersistentID: 401
+          Object: {fileID: 100116, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 9
+        - ParentPersistentID: 401
+          PersistentID: 402
+          Object: {fileID: 400116, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 10
+        - ParentPersistentID: 401
+          PersistentID: 403
+          Object: {fileID: 100118, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 10
+        - ParentPersistentID: 403
+          PersistentID: 404
+          Object: {fileID: 400118, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 11
+        - ParentPersistentID: 387
+          PersistentID: 405
+          Object: {fileID: 100124, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 405
+          PersistentID: 406
+          Object: {fileID: 400124, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 405
+          PersistentID: 407
+          Object: {fileID: 100110, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 407
+          PersistentID: 408
+          Object: {fileID: 400110, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 407
+          PersistentID: 409
+          Object: {fileID: 100106, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 409
+          PersistentID: 410
+          Object: {fileID: 400106, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 8
+        - ParentPersistentID: 409
+          PersistentID: 411
+          Object: {fileID: 100130, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 8
+        - ParentPersistentID: 411
+          PersistentID: 412
+          Object: {fileID: 400130, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 9
+        - ParentPersistentID: 387
+          PersistentID: 413
+          Object: {fileID: 100126, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 413
+          PersistentID: 414
+          Object: {fileID: 400126, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 413
+          PersistentID: 415
+          Object: {fileID: 100112, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: 415
+          PersistentID: 416
+          Object: {fileID: 400112, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 415
+          PersistentID: 417
+          Object: {fileID: 100108, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 7
+        - ParentPersistentID: 417
+          PersistentID: 418
+          Object: {fileID: 400108, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 8
+        - ParentPersistentID: 417
+          PersistentID: 419
+          Object: {fileID: 100132, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 8
+        - ParentPersistentID: 419
+          PersistentID: 420
+          Object: {fileID: 400132, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 9
+        - ParentPersistentID: 301
+          PersistentID: 421
+          Object: {fileID: 100138, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 3
+        - ParentPersistentID: 421
+          PersistentID: 422
+          Object: {fileID: 400138, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 4
+        - ParentPersistentID: 421
+          PersistentID: 423
+          Object: {fileID: 100140, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 4
+        - ParentPersistentID: 423
+          PersistentID: 424
+          Object: {fileID: 400140, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 423
+          PersistentID: 425
+          Object: {fileID: 100142, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 5
+        - ParentPersistentID: 425
+          PersistentID: 426
+          Object: {fileID: 400142, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 6
+        - ParentPersistentID: -1
+          PersistentID: 427
+          Object: {fileID: 4300000, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 428
+          Object: {fileID: 4300002, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 429
+          Object: {fileID: 9000000, guid: f1d84cc28597f5641a3d9cbc4df7e306, type: 3}
+          Depth: 0
+      - m_ID: 430
+        m_Name: EnemyAC
+        m_Depth: 0
+        Object: {fileID: 9100000, guid: 8f6ed2f6afee3694fb79f5c2f289840f, type: 2}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 431
+        m_Name: Floor
+        m_Depth: 0
+        Object: {fileID: 100000, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+        IsEnabled: 0
+        PrefabParts:
+        - ParentPersistentID: -1
+          PersistentID: 432
+          Object: {fileID: 400000, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 433
+          Object: {fileID: 9500000, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 434
+          Object: {fileID: 100024, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 0
+        - ParentPersistentID: 434
+          PersistentID: 435
+          Object: {fileID: 400024, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 1
+        - ParentPersistentID: 434
+          PersistentID: 436
+          Object: {fileID: 3300010, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 1
+        - ParentPersistentID: 434
+          PersistentID: 437
+          Object: {fileID: 2300010, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 438
+          Object: {fileID: 100002, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 0
+        - ParentPersistentID: 438
+          PersistentID: 439
+          Object: {fileID: 400002, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 1
+        - ParentPersistentID: 438
+          PersistentID: 440
+          Object: {fileID: 3300008, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 1
+        - ParentPersistentID: 438
+          PersistentID: 441
+          Object: {fileID: 2300008, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 442
+          Object: {fileID: 100026, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 0
+        - ParentPersistentID: 442
+          PersistentID: 443
+          Object: {fileID: 400026, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 1
+        - ParentPersistentID: 442
+          PersistentID: 444
+          Object: {fileID: 3300012, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 1
+        - ParentPersistentID: 442
+          PersistentID: 445
+          Object: {fileID: 2300012, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 446
+          Object: {fileID: 4300008, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 447
+          Object: {fileID: 4300000, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 448
+          Object: {fileID: 4300010, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 449
+          Object: {fileID: 9000000, guid: bd3a7a773fe02354da0a4d8dbabd8cbb, type: 3}
+          Depth: 0
+      - m_ID: 450
+        m_Name: Hellephant
+        m_Depth: 0
+        Object: {fileID: 100004, guid: b77f122f451a2394898a24191c26107c, type: 3}
+        IsEnabled: 0
+        PrefabParts:
+        - ParentPersistentID: -1
+          PersistentID: 451
+          Object: {fileID: 400004, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 452
+          Object: {fileID: 9500000, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 453
+          Object: {fileID: 100000, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 0
+        - ParentPersistentID: 453
+          PersistentID: 454
+          Object: {fileID: 400000, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 1
+        - ParentPersistentID: 453
+          PersistentID: 455
+          Object: {fileID: 100032, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 1
+        - ParentPersistentID: 455
+          PersistentID: 456
+          Object: {fileID: 400032, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 2
+        - ParentPersistentID: 455
+          PersistentID: 457
+          Object: {fileID: 100006, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 2
+        - ParentPersistentID: 457
+          PersistentID: 458
+          Object: {fileID: 400006, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 3
+        - ParentPersistentID: 457
+          PersistentID: 459
+          Object: {fileID: 100018, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 3
+        - ParentPersistentID: 459
+          PersistentID: 460
+          Object: {fileID: 400018, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 4
+        - ParentPersistentID: 459
+          PersistentID: 461
+          Object: {fileID: 100014, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 4
+        - ParentPersistentID: 461
+          PersistentID: 462
+          Object: {fileID: 400014, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 5
+        - ParentPersistentID: 461
+          PersistentID: 463
+          Object: {fileID: 100016, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 5
+        - ParentPersistentID: 463
+          PersistentID: 464
+          Object: {fileID: 400016, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 6
+        - ParentPersistentID: 457
+          PersistentID: 465
+          Object: {fileID: 100030, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 3
+        - ParentPersistentID: 465
+          PersistentID: 466
+          Object: {fileID: 400030, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 4
+        - ParentPersistentID: 465
+          PersistentID: 467
+          Object: {fileID: 100026, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 4
+        - ParentPersistentID: 467
+          PersistentID: 468
+          Object: {fileID: 400026, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 5
+        - ParentPersistentID: 467
+          PersistentID: 469
+          Object: {fileID: 100028, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 5
+        - ParentPersistentID: 469
+          PersistentID: 470
+          Object: {fileID: 400028, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 6
+        - ParentPersistentID: 457
+          PersistentID: 471
+          Object: {fileID: 100034, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 3
+        - ParentPersistentID: 471
+          PersistentID: 472
+          Object: {fileID: 400034, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 4
+        - ParentPersistentID: 471
+          PersistentID: 473
+          Object: {fileID: 100036, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 4
+        - ParentPersistentID: 473
+          PersistentID: 474
+          Object: {fileID: 400036, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 5
+        - ParentPersistentID: 473
+          PersistentID: 475
+          Object: {fileID: 100008, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 5
+        - ParentPersistentID: 475
+          PersistentID: 476
+          Object: {fileID: 400008, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 6
+        - ParentPersistentID: 475
+          PersistentID: 477
+          Object: {fileID: 100010, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 6
+        - ParentPersistentID: 477
+          PersistentID: 478
+          Object: {fileID: 400010, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 7
+        - ParentPersistentID: 477
+          PersistentID: 479
+          Object: {fileID: 100012, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 7
+        - ParentPersistentID: 479
+          PersistentID: 480
+          Object: {fileID: 400012, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 8
+        - ParentPersistentID: 473
+          PersistentID: 481
+          Object: {fileID: 100020, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 5
+        - ParentPersistentID: 481
+          PersistentID: 482
+          Object: {fileID: 400020, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 6
+        - ParentPersistentID: 481
+          PersistentID: 483
+          Object: {fileID: 100022, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 6
+        - ParentPersistentID: 483
+          PersistentID: 484
+          Object: {fileID: 400022, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 7
+        - ParentPersistentID: 483
+          PersistentID: 485
+          Object: {fileID: 100024, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 7
+        - ParentPersistentID: 485
+          PersistentID: 486
+          Object: {fileID: 400024, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 8
+        - ParentPersistentID: 473
+          PersistentID: 487
+          Object: {fileID: 100038, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 5
+        - ParentPersistentID: 487
+          PersistentID: 488
+          Object: {fileID: 400038, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 6
+        - ParentPersistentID: 471
+          PersistentID: 489
+          Object: {fileID: 100040, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 4
+        - ParentPersistentID: 489
+          PersistentID: 490
+          Object: {fileID: 400040, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 5
+        - ParentPersistentID: 489
+          PersistentID: 491
+          Object: {fileID: 100042, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 5
+        - ParentPersistentID: 491
+          PersistentID: 492
+          Object: {fileID: 400042, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 6
+        - ParentPersistentID: 491
+          PersistentID: 493
+          Object: {fileID: 100044, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 6
+        - ParentPersistentID: 493
+          PersistentID: 494
+          Object: {fileID: 400044, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 7
+        - ParentPersistentID: 493
+          PersistentID: 495
+          Object: {fileID: 100046, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 7
+        - ParentPersistentID: 495
+          PersistentID: 496
+          Object: {fileID: 400046, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 8
+        - ParentPersistentID: -1
+          PersistentID: 497
+          Object: {fileID: 100002, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 0
+        - ParentPersistentID: 497
+          PersistentID: 498
+          Object: {fileID: 400002, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 1
+        - ParentPersistentID: 497
+          PersistentID: 499
+          Object: {fileID: 13700000, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 1
+        - ParentPersistentID: -1
+          PersistentID: 500
+          Object: {fileID: 4300000, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 501
+          Object: {fileID: 9000000, guid: b77f122f451a2394898a24191c26107c, type: 3}
+          Depth: 0
+      - m_ID: 502
+        m_Name: HellephantAC
+        m_Depth: 0
+        Object: {fileID: 9100000, guid: cfcc04cfb4f25384e99af6d9e22bcb61, type: 2}
+        IsEnabled: 0
+        PrefabParts: []
+      IsEnabled: 0
+    - m_ID: 13
+      m_Name: Shaders
+      m_Depth: 2
+      Assets:
+      - m_ID: 503
+        m_Name: Particles/Priority Alpha Blended
+        m_Depth: 0
+        Object: {fileID: 4800000, guid: cc4347574b823934ba11785e25895920, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      IsEnabled: 0
+    - m_ID: 14
+      m_Name: Textures
+      m_Depth: 2
+      Assets:
+      - m_ID: 504
+        m_Name: GunDiffuse
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 66cc5581f2192a549b9b9270381c9be7, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 505
+        m_Name: GunNormals
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 8128aa17b6fcbb64e893327f11ab0239, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 506
+        m_Name: GunOcclusion
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 02dff1fe2bc5e6f43b5ac5780d1c3b46, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 507
+        m_Name: GunSpecular
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 0bfd74eda21b8b4408f654c7cf1f3665, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 508
+        m_Name: HellephantDiffuse
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: e6e99f9ddd45baf4bb95a4f65b0d88de, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 509
+        m_Name: HellephantEmissive
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: f0b5213189232764daf08b2e7ad112f5, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 510
+        m_Name: HellephantNormals
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 39323f4e1dd1d80408bd05af5f2db69f, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 511
+        m_Name: HellephantOcclusion
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 2118c0f2414a28744bd2fc8d7e632f7a, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 512
+        m_Name: HellephantSpecular
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 2c38b41a69c9bdc4bbac4dbc9324dacf, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 513
+        m_Name: planks1
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: f9e045c3ff75b9d49863ba390b1d8432, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 514
+        m_Name: planks1_normal
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: c8821d18de9ea25418790397c6d97947, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 515
+        m_Name: planks2
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 61e0acb05c9aa804d90bcc655f1858fb, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 516
+        m_Name: planks2_normal
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: e58b1a8873c3ea64fa8663ef618b3d2b, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 517
+        m_Name: planks3
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: b96ca8a3773b11341bba3976f05df6c1, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 518
+        m_Name: planks3_normal
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 731b55a655e0de04d93fd8a780203de8, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 519
+        m_Name: PlanksDiffuse
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 2afdbfec03da65448a82f9bd561218c6, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 520
+        m_Name: PlanksNormals
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 777d258aba35c41459675e40cf92c808, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 521
+        m_Name: PlanksOcclusion
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: e915ce70ce400f54682d462de1b188db, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 522
+        m_Name: PlanksSpecular
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 41a4fe639750e1f46a3f96eef43eac7e, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 523
+        m_Name: PlayerDiffuse
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: a3cc890ba79fb47449fb51893aa9b363, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 524
+        m_Name: PlayerNormals
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: d98be175031405b4fb3f6a5f459a22e4, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 525
+        m_Name: PlayerOcclusion
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 6ae2af98f5c9f0243806bfb6ccbbdd19, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 526
+        m_Name: PlayerSpecular
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: bc9b1c6383841ea4f9e532a49c651ff6, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 527
+        m_Name: PuffSprite
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: acdb41fd591a7434a9f285ba714869c9, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      IsEnabled: 0

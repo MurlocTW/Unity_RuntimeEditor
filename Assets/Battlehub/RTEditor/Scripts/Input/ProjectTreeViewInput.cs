@@ -10,7 +10,7 @@ namespace Battlehub.RTEditor
 
             if(DeleteAction())
             {
-                View.DeleteSelectedFolders();
+                View.DeleteSelectedItems();
             }
 
             if (SelectAllAction())

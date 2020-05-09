@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿#if UNITY_EDITOR
+using UnityEditor;
 using UnityEngine;
 using System.Linq;
 
@@ -13,7 +14,7 @@ namespace Battlehub.RTHandles
     {
         public static GameObject InstantiatePrefab(string name)
         {
-            UnityEngine.Object prefab = AssetDatabase.LoadAssetAtPath("Assets/" + BHPath.Root + "/RTHandles/Prefabs/" + name, typeof(GameObject));
+            Object prefab = AssetDatabase.LoadAssetAtPath("Assets/" + BHRoot.Path + "/RTHandles/Prefabs/" + name, typeof(GameObject));
             return (GameObject)PrefabUtility.InstantiatePrefab(prefab);
         }
 
@@ -68,5 +69,5 @@ namespace Battlehub.RTHandles
             }
         }
     }
-
 }
+#endif

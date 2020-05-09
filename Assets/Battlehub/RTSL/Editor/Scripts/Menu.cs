@@ -44,11 +44,13 @@ namespace Battlehub.RTSL
             {
                 GameObject projGo = new GameObject();
                 IAssetBundleLoader bundleLoader;
+#if USE_GOOGLE_DRIVE
                 if (File.Exists(Application.streamingAssetsPath + "/credentials.json"))
                 {
                     bundleLoader = new GoogleDriveAssetBundleLoader();
                 }
                 else
+#endif
                 {
                     bundleLoader = new AssetBundleLoader();
                 }
@@ -118,6 +120,7 @@ namespace Battlehub.RTSL
                             string relativePath = GetRelativePath(path, projectPath);
                             relativePath = relativePath.Replace('\\', '/');
                             AssetItem scene = (AssetItem)project.Root.Get(relativePath);
+                            
                             project.Load(new[] { scene }, (loadError, loadedObjects) =>
                             {
                                 IOC.ClearAll();
@@ -138,9 +141,10 @@ namespace Battlehub.RTSL
             }
         }
 
-        [MenuItem("Tools/Runtime SaveLoad/Persistent Classes/Create")]
+        //[MenuItem("Tools/Runtime SaveLoad/Persistent Classes/Create")]
         private static void CreatePersistentClasses()
         {
+            PersistentClassMapperWindow.CreateOrPatchMappings();
             PersistentClassMapperWindow.CreatePersistentClasses();
         }
 
@@ -155,45 +159,58 @@ namespace Battlehub.RTSL
         {
             if(EditorUtility.DisplayDialog("Clean", "Do you want to remove persistent classes and type model?", "Yes", "No"))
             {
-                if(EditorUtility.DisplayDialog("Clean", "Do you want to remove files from " + "Assets" + RTSLPath.UserRoot + "/CustomImplementation ?", "Yes", "No"))
+                if (EditorUtility.DisplayDialog("Clean", "Do you want to remove files from " + "Assets" + RTSLPath.UserRoot + "/CustomImplementation ?", "Yes", "No"))
                 {
-                    AssetDatabase.DeleteAsset("Assets" + RTSLPath.UserRoot + "/CustomImplementation");
-                    AssetDatabase.DeleteAsset("Assets" + RTSLPath.UserRoot + "/Mappings/Editor/FilePathStorage.prefab");
-                    AssetDatabase.DeleteAsset("Assets" + RTSLPath.UserRoot + "/Scripts");
-                    AssetDatabase.DeleteAsset("Assets" + RTSLPath.UserRoot + "/RTSLTypeModel.dll");
+                    try
+                    {
+                        AssetDatabase.StartAssetEditing();
+                        AssetDatabase.DeleteAsset("Assets" + RTSLPath.UserRoot + "/CustomImplementation");
+                        AssetDatabase.DeleteAsset("Assets" + RTSLPath.UserRoot + "/Mappings/Editor/FilePathStorage.prefab");
+                        AssetDatabase.DeleteAsset("Assets" + RTSLPath.UserRoot + "/Scripts");
+                        AssetDatabase.DeleteAsset("Assets" + RTSLPath.UserRoot + "/RTSLTypeModel.dll");
+                    }
+                    finally
+                    {
+                        AssetDatabase.StopAssetEditing();
+                    }                    
                 }
                 else
                 {
-                    AssetDatabase.DeleteAsset("Assets" + RTSLPath.UserRoot + "/Scripts");
-                    AssetDatabase.DeleteAsset("Assets" + RTSLPath.UserRoot + "/RTSLTypeModel.dll");
+                    try
+                    {
+                        AssetDatabase.StartAssetEditing();
+                        AssetDatabase.DeleteAsset("Assets" + RTSLPath.UserRoot + "/Scripts");
+                        AssetDatabase.DeleteAsset("Assets" + RTSLPath.UserRoot + "/RTSLTypeModel.dll");
+                    }
+                    finally
+                    {
+                        AssetDatabase.StopAssetEditing();
+                    }
                 }
-                //AssetDatabase.DeleteAsset("Assets" + RTSLPath.UserRoot + "/Mappings");
+
+                AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
             }
         }
 
-        [MenuItem("Tools/Runtime SaveLoad/Persistent Classes/Build Type Model")]
+        //[MenuItem("Tools/Runtime SaveLoad/Persistent Classes/Build Type Model")]
         private static void BuildTypeModel()
         {
+            EditorUtility.DisplayProgressBar("Build", "Building Type Model...", 0.66f);
             RuntimeTypeModel model = TypeModelCreator.Create();
-            string dllName = RTSLPath.TypeModelDll;
 
-            model.Compile(new RuntimeTypeModel.CompilerOptions() { OutputPath = dllName, TypeName = "RTSLTypeModel" });
+            model.Compile(new RuntimeTypeModel.CompilerOptions() { OutputPath = RTSLPath.TypeModelDll, TypeName = "RTSLTypeModel" });
 
-            string srcPath = Application.dataPath.Remove(Application.dataPath.LastIndexOf("Assets")) + dllName;
-            string dstPath = Application.dataPath + RTSLPath.UserRoot + "/" + dllName;
+            string srcPath = Application.dataPath.Remove(Application.dataPath.LastIndexOf("Assets")) + RTSLPath.TypeModelDll;
+            string dstPath = Application.dataPath + RTSLPath.UserRoot + "/" + RTSLPath.TypeModelDll;
             Debug.LogFormat("Done! Move {0} to {1} ...", srcPath, dstPath);
             File.Delete(dstPath);
             File.Move(srcPath, dstPath);
 
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-
-            PluginImporter importer = AssetImporter.GetAtPath("Assets" + RTSLPath.UserRoot + "/" + dllName) as PluginImporter;
-            importer.SetCompatibleWithAnyPlatform(true);
-            importer.SetExcludeEditorFromAnyPlatform(true);
-            importer.SaveAndReimport();
+            EditorPrefs.SetBool("RTSL_UpdateTypeModelImportSettings", true);
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
-        [MenuItem("Tools/Runtime SaveLoad/Libraries/Collect Scene Dependencies")]
+        //[MenuItem("Tools/Runtime SaveLoad/Libraries/Collect Scene Dependencies")]
         private static void CreateAssetLibraryForActiveScene()
         {
             CreateBuiltInAssetLibrary();
@@ -222,8 +239,16 @@ namespace Battlehub.RTSL
             CreateAssetLibraryForScene(scene, index, asset, folder, hs2);
         }
 
+        [MenuItem("Tools/Runtime SaveLoad/Update Libraries")]
+        private static void UpdateLibraries()
+        {
+            CreateAssetLibraryForActiveScene();
+            CreateBuiltInAssetLibrary();
+            CreateShaderProfiles();
+            CreateAssetLibrariesList();
+        }
 
-        [MenuItem("Tools/Runtime SaveLoad/Libraries/Update Built-In Assets Library")]
+        //[MenuItem("Tools/Runtime SaveLoad/Libraries/Update Built-In Assets Library")]
         private static void CreateBuiltInAssetLibrary()
         {
             int index;
@@ -233,13 +258,19 @@ namespace Battlehub.RTSL
             CreateBuiltInAssetLibrary(index, asset, folder, hs);
         }
 
-        [MenuItem("Tools/Runtime SaveLoad/Libraries/Update Shader Profiles")]
+        //[MenuItem("Tools/Runtime SaveLoad/Libraries/Update Shader Profiles")]
         private static void CreateShaderProfiles()
         {
             RuntimeShaderProfilesGen.CreateProfile();
+
+            /*
+            RuntimeShaderProfilesAsset asset = RuntimeShaderProfilesGen.CreateProfile();
+            Selection.activeObject = asset;
+            EditorGUIUtility.PingObject(asset);
+            */
         }
 
-        [MenuItem("Tools/Runtime SaveLoad/Libraries/Update Asset Libraries List")]
+        //[MenuItem("Tools/Runtime SaveLoad/Libraries/Update Asset Libraries List")]
         private static void CreateAssetLibrariesList()
         {
             AssetLibrariesListAsset asset = AssetLibrariesListGen.UpdateList();
@@ -263,7 +294,7 @@ namespace Battlehub.RTSL
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
                         
-            Selection.activeObject = asset;
+            //Selection.activeObject = asset;
 
             AssetLibrariesListGen.UpdateList(identity + 1);
         }
@@ -271,12 +302,13 @@ namespace Battlehub.RTSL
         [DidReloadScripts]
         private static void OnScriptsReloaded()
         {
-            if(EditorPrefs.GetBool("RTSLBuildAll"))
+            if (EditorPrefs.GetBool("RTSL_BuildAll"))
             {
-                EditorPrefs.SetBool("RTSLBuildAll", false);
-
+                EditorPrefs.SetBool("RTSL_BuildAll", false);
                 try
                 {
+                    AssetDatabase.StartAssetEditing();
+
                     CreateAssetLibraryForActiveScene();
                     Debug.Log("Asset Libraries Updated");
 
@@ -285,32 +317,61 @@ namespace Battlehub.RTSL
 
                     CreateShaderProfiles();
                     Debug.Log("Shader Profiles Updated");
+                }
+                finally
+                {
+                    AssetDatabase.StopAssetEditing();
+                }
 
-                    EditorUtility.DisplayProgressBar("Build All", "Building Type Model...", 0.66f);
+                try
+                {
+                    AssetDatabase.StartAssetEditing();
                     BuildTypeModel();
+                    EditorUtility.DisplayProgressBar("Build All", "Updating type model import settings", 0.99f);
+                }
+                catch
+                {
+                    EditorUtility.ClearProgressBar();
+                }
+                finally
+                {
+                    AssetDatabase.StopAssetEditing();
+                }
+            }
+
+            if (EditorPrefs.GetBool("RTSL_UpdateTypeModelImportSettings"))
+            {
+                EditorPrefs.SetBool("RTSL_UpdateTypeModelImportSettings", false);
+                try
+                {
+                    PluginImporter importer = AssetImporter.GetAtPath("Assets" + RTSLPath.UserRoot + "/" + RTSLPath.TypeModelDll) as PluginImporter;
+                    importer.SetCompatibleWithAnyPlatform(true);
+                    importer.SetExcludeEditorFromAnyPlatform(true);
+                    importer.SaveAndReimport();
                 }
                 finally
                 {
                     EditorUtility.ClearProgressBar();
                 }
-            }
+            }            
         }
 
         [MenuItem("Tools/Runtime SaveLoad/Build All")]
         public static void BuildAll()
         {
+            Selection.activeObject = null;
             EditorUtility.DisplayProgressBar("Build All", "Creating persistent classes", 0.0f);
             try
             {
                 CreatePersistentClasses();
-                AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+                AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
                 Debug.Log("Persistent Classes Created");
 
                 Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets" + RTSLPath.UserRoot + "/" + RTSLPath.ScriptsAutoFolder, typeof(UnityObject));
                 EditorGUIUtility.PingObject(Selection.activeObject);
 
                 EditorUtility.DisplayProgressBar("Build All", "Updating asset libraries and shader profiles", 0.33f);
-                EditorPrefs.SetBool("RTSLBuildAll", true);
+                EditorPrefs.SetBool("RTSL_BuildAll", true);
             }
             catch
             {
@@ -483,8 +544,8 @@ namespace Battlehub.RTSL
             SaveAssetLibrary(asset, folderName, assetLibraryName, index);
             index++;
 
-            Selection.activeObject = asset;
-            EditorGUIUtility.PingObject(asset);
+            //Selection.activeObject = asset;
+            //EditorGUIUtility.PingObject(asset);
         }
 
         private static void SaveAssetLibrary(AssetLibraryAsset asset, string folderName, string assetLibraryName, int index)
@@ -635,6 +696,8 @@ namespace Battlehub.RTSL
                 {  "UI/Skin/Knob.psd", typeof(Sprite) },
                 {  "UI/Skin/UIMask.psd", typeof(Sprite) },
                 {  "UI/Skin/UISprite.psd", typeof(Sprite) },
+                {  "Default-Terrain-Standard.mat", typeof(Material) },
+                {  "Default-Particle.psd", typeof(Texture2D) },
             };
 
             Dictionary<string, Type> builtIn = new Dictionary<string, Type>
@@ -647,6 +710,8 @@ namespace Battlehub.RTSL
                { "Quad.fbx", typeof(Mesh) },
                { "Arial.ttf", typeof(Font) }
             };
+
+            
 
             List<object> builtInAssets = new List<object>();
             foreach (KeyValuePair<string, Type> kvp in builtInExtra)
@@ -666,6 +731,23 @@ namespace Battlehub.RTSL
                     builtInAssets.Add(obj);
                 }
             }
+
+            GameObject defaultTree = Resources.Load<GameObject>("Tree/RTT_DefaultTree");
+            if(defaultTree != null)
+            {
+                builtInAssets.Add(defaultTree);
+                Material barkMaterial = Resources.Load<Material>("Tree/Materials/RTT_DefaultTreeBark");
+                if(barkMaterial != null)
+                {
+                    builtInAssets.Add(barkMaterial);
+                }
+                Material branchesMaterial = Resources.Load<Material>("Tree/Materials/RTT_DefaultTreeBranches");
+                if(branchesMaterial != null)
+                {
+                    builtInAssets.Add(branchesMaterial);
+                }
+            }
+
             CreateAssetLibrary(builtInAssets.ToArray(), "BuiltInAssets", "BuiltInAssetLibrary", index, asset, folder, hs);
         }
     }

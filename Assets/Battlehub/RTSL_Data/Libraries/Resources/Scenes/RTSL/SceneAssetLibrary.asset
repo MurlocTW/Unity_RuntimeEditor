@@ -18,7 +18,7 @@ MonoBehaviour:
     m_ID: 0
     m_Name: Root
     m_Depth: -1
-    Identity: 39
+    Identity: 58
     FolderIdentity: 4
     Folders:
     - m_ID: 0
@@ -234,10 +234,118 @@ MonoBehaviour:
         Object: {fileID: 2100000, guid: b3447251bc65b704dabf20c3b7c78b02, type: 2}
         IsEnabled: 0
         PrefabParts: []
-      - m_ID: 38
-        m_Name: Mega Drive - Take Me Home
+      - m_ID: 39
+        m_Name: smoke
         m_Depth: 0
-        Object: {fileID: 8300000, guid: 47acc2e5856437344a004b588f6d3783, type: 3}
+        Object: {fileID: 2800000, guid: d2cc9aefd111fc540bc37d440c7581b0, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 40
+        m_Name: Smoke30Frames_0
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 972223cba69272344996f21c782310ab, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 41
+        m_Name: Central2
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: e2bb13e4b42a21143b1e8024aabd20be, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 42
+        m_Name: Legacy Shaders/Particles/Additive
+        m_Depth: 0
+        Object: {fileID: 200, guid: 0000000000000000f000000000000000, type: 0}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 43
+        m_Name: black
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 5916f21354def1344a0e0d0882a08e51, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 44
+        m_Name: logo
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: ddc37ac2d75a7a24691ec7c177d3e0b3, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 45
+        m_Name: central
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 126ae6dfb3bc5c749bdae959f1044a1c, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 46
+        m_Name: glow
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 9aeeb6c5dbe899d4397bbeeb9db85654, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 47
+        m_Name: Target
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 46835dcd2623f824890bf80bc7574b35, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 48
+        m_Name: Legacy Shaders/Particles/Additive (Soft)
+        m_Depth: 0
+        Object: {fileID: 202, guid: 0000000000000000f000000000000000, type: 0}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 49
+        m_Name: Sky_c09
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: ef035b86633b8854ba4afa0da0a5b8a6, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 50
+        m_Name: Sky_c08
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 07711bb04f1075349bf6c8e120bcb951, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 51
+        m_Name: Sky_c07
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: ce80fbf6360aeff41ab0a147029ee900, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 52
+        m_Name: Sky_c06
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: f86e83cc2a1577d43a6a24df0b1162e1, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 53
+        m_Name: Standard
+        m_Depth: 0
+        Object: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 54
+        m_Name: UI/Default
+        m_Depth: 0
+        Object: {fileID: 10770, guid: 0000000000000000f000000000000000, type: 0}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 55
+        m_Name: Sky_c11
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 25022f176623df14c86aabccd336813a, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 56
+        m_Name: Sky_c10
+        m_Depth: 0
+        Object: {fileID: 2800000, guid: 83f160211234f79498ac79146554970b, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 57
+        m_Name: Skybox/6 Sided
+        m_Depth: 0
+        Object: {fileID: 104, guid: 0000000000000000f000000000000000, type: 0}
         IsEnabled: 0
         PrefabParts: []
       IsEnabled: 1

@@ -239,6 +239,7 @@ GameObject:
   - component: {fileID: 2015470046791911681}
   - component: {fileID: 5068544542025902993}
   - component: {fileID: 6707069432748612204}
+  - component: {fileID: 2053064997023007213}
   m_Layer: 5
   m_Name: InputFieldWithDropArea
   m_TagString: Untagged
@@ -430,6 +431,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55bada67899f332498d6f384bb186e2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &2053064997023007213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5432877179632202248}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e7e3384b569bd0489b10522a59c0a11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_inputField: {fileID: 2015470046791911681}
 --- !u!1 &5882789471497418932
 GameObject:
   m_ObjectHideFlags: 0

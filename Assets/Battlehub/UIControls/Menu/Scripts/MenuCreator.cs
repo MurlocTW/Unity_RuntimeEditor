@@ -55,25 +55,35 @@ namespace Battlehub.UIControls.MenuControl
             private set;
         }
 
-        public MenuCommandAttribute(string path, bool validate = false, bool hide = false, int priority = int.MaxValue)
+        public bool RequiresInstance
+        {
+            get;
+            private set;
+        }
+
+        public MenuCommandAttribute(string path, bool validate = false, bool hide = false, int priority = int.MaxValue, bool requiresInstance = false)
         {
             Path = path;
             Validate = validate;
             Hide = hide;
             Priority = priority;
+            RequiresInstance = requiresInstance;
         }
 
-        public MenuCommandAttribute(string path, string iconPath)
+        public MenuCommandAttribute(string path, string iconPath, bool requiresInstance = false)
         {
             Path = path;
             Validate = false;
             IconPath = iconPath;
+            Priority = int.MaxValue;
+            RequiresInstance = requiresInstance;
         }
     }
 
     [DefaultExecutionOrder(-25)]
     public class MenuCreator : MonoBehaviour
     {
+   
         [SerializeField]
         private GameObject m_topMenu = null;
 
@@ -107,7 +117,7 @@ namespace Battlehub.UIControls.MenuControl
         private void Awake()
         {
             List<Assembly> assemblies = new List<Assembly>();
-            foreach(string assemblyName in BHPath.RootAssemblies)
+            foreach(string assemblyName in BHRoot.Assemblies)
             {
                 var asName = new AssemblyName();
                 asName.Name = assemblyName;
@@ -185,6 +195,14 @@ namespace Battlehub.UIControls.MenuControl
                         continue;
                     }
 
+                    if(cmd.RequiresInstance)
+                    {
+                        if(FindObjectOfType(menuDef) == null)
+                        {
+                            continue;
+                        }
+                    }
+
                     string[] pathParts = cmd.Path.Split('/');
                     if (pathParts.Length < 1)
                     {
@@ -193,36 +211,15 @@ namespace Battlehub.UIControls.MenuControl
 
                     string menuName = pathParts[0];
 
-                    Menu menu;
                     if (!menuDictionary.ContainsKey(menuName))
                     {
-                        m_menuButtonPrefab.gameObject.SetActive(false);
-                        m_menuPrefab.gameObject.SetActive(false);
+                        MainMenuButton btn = _CreateMenu(menuName);
 
-                        menu = Instantiate(m_menuPrefab, m_menuPanel.transform, false);
-                        menu.Items = null;
-
-                        MainMenuButton btn = Instantiate(m_menuButtonPrefab, m_topMenu.transform, false);
-                        btn.name = menuName;
-                        btn.Menu = menu;
-
-                        Text txt = btn.GetComponentInChildren<Text>(true);
-                        if (txt != null)
-                        {
-                            txt.text = menuName;
-                        }
-
-                        btn.gameObject.SetActive(true);
-
-                        menuDictionary.Add(menuName, menu);
+                        menuDictionary.Add(menuName, btn.Menu);
                         menuItemsDictionary.Add(menuName, new List<MenuItemWithPriority>());
                     }
-                    else
-                    {
-                        menu = menuDictionary[menuName];
-                    }
 
-                    if(pathParts.Length == 1)
+                    if (pathParts.Length == 1)
                     {
                         if (cmd.Hide)
                         {
@@ -291,6 +288,42 @@ namespace Battlehub.UIControls.MenuControl
             {
                 menuDictionary[kvp.Key].SetMenuItems(kvp.Value.OrderBy(m => m.Priority).Select(m => m.Info).ToArray(), false);
             }
+        }
+
+        public MainMenuButton CreateMenu(string menuName)
+        {
+            bool wasButtonPrefabActive = m_menuButtonPrefab.gameObject.activeSelf;
+            bool wasMenuPrefabActive = m_menuPrefab.gameObject.activeSelf;
+
+            m_menuButtonPrefab.gameObject.SetActive(false);
+            m_menuPrefab.gameObject.SetActive(false);
+            MainMenuButton result = _CreateMenu(menuName);
+
+            m_menuPrefab.gameObject.SetActive(wasMenuPrefabActive);
+            m_menuButtonPrefab.gameObject.SetActive(wasButtonPrefabActive);
+            return result;
+        }
+
+        private MainMenuButton _CreateMenu(string menuName)
+        {
+            Menu menu = Instantiate(m_menuPrefab, m_menuPanel.transform, false);
+            menu.Items = null;
+
+            m_menuButtonPrefab.gameObject.SetActive(false);
+
+            MainMenuButton btn = Instantiate(m_menuButtonPrefab, m_topMenu.transform, false);
+            btn.name = menuName;
+            btn.Text = menuName;
+            btn.Menu = menu;
+
+            Text txt = btn.GetComponentInChildren<Text>(true);
+            if (txt != null)
+            {
+                txt.text = menuName;
+            }
+
+            btn.gameObject.SetActive(true);
+            return btn;
         }
     }
 }

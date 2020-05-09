@@ -7,7 +7,16 @@ namespace Battlehub.RTCommon
     {
         public virtual Ray Ray
         {
-            get { return m_window.Camera.ScreenPointToRay(ScreenPoint); }
+            get
+            {
+                Vector2 screenPoint = ScreenPoint;
+                Rect pixelRect = m_window.Camera.pixelRect;
+                if(!pixelRect.Contains(screenPoint))
+                {
+                    return new Ray(Vector3.up * float.MaxValue, Vector3.up);
+                }
+                return m_window.Camera.ScreenPointToRay(screenPoint);
+            }
         }
 
         public virtual Vector2 ScreenPoint
@@ -17,25 +26,28 @@ namespace Battlehub.RTCommon
 
         private RenderTextureCamera m_renderTextureCamera;
         private CanvasScaler m_canvasScaler;
+        private Canvas m_canvas;
 
         [SerializeField]
         protected RuntimeWindow m_window;
-        private void Awake()
+        protected virtual void Awake()
         {
             Init();
         }
 
-        private void Start()
+        protected virtual void Start()
         {
             Init();
         }
 
-        private void Init()
+        protected virtual void Init()
         {
             if (m_window == null)
             {
                 m_window = GetComponent<RuntimeWindow>();
             }
+
+            m_canvas = GetComponentInParent<Canvas>();
 
             if (m_window.Camera != null)
             {
@@ -49,7 +61,7 @@ namespace Battlehub.RTCommon
 
         private Vector2 ScreenPointToViewPoint(Vector2 screenPoint)
         {
-            if (m_renderTextureCamera == null)
+            if (m_renderTextureCamera == null || m_canvas.renderMode == RenderMode.ScreenSpaceOverlay)
             {
                 return screenPoint;
             }
@@ -57,11 +69,18 @@ namespace Battlehub.RTCommon
             Vector2 viewPoint;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(m_renderTextureCamera.RectTransform, screenPoint, m_renderTextureCamera.Canvas.worldCamera, out viewPoint);
 
-            if (m_canvasScaler != null)
+            if(m_canvasScaler != null)
             {
-                viewPoint *= m_canvasScaler.scaleFactor;
+                if (m_canvasScaler.uiScaleMode == CanvasScaler.ScaleMode.ScaleWithScreenSize)
+                {
+                    viewPoint = screenPoint;
+                }
+                else
+                {
+                    viewPoint *= m_canvasScaler.scaleFactor;
+                }
             }
-
+            
             return viewPoint;
         }
 

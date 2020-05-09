@@ -1,11 +1,10 @@
-﻿//#define SIMPLIFIED_MESHRENDERER
+﻿#define SIMPLIFIED_MESHRENDERER
 
 using UnityEngine;
 using System.Reflection;
-using System;
 
 using Battlehub.Utils;
-using System.Linq;
+using Battlehub.RTCommon;
 
 namespace Battlehub.RTEditor
 {
@@ -15,10 +14,17 @@ namespace Battlehub.RTEditor
     {
         public override PropertyDescriptor[] GetProperties(ComponentEditor editor, object converter)
         {
+            ILocalization lc = IOC.Resolve<ILocalization>();
+
+            MemberInfo shadowCastingMode = Strong.PropertyInfo((MeshRenderer x) => x.shadowCastingMode, "shadowCastingMode");
+            MemberInfo receiveShadows = Strong.PropertyInfo((MeshRenderer x) => x.receiveShadows, "receiveShadows");
             MemberInfo materials = Strong.PropertyInfo((MeshRenderer x) => x.sharedMaterials, "sharedMaterials");
+            
             return new[]
                 {
-                    new PropertyDescriptor( "Materials", editor.Component, materials, materials),
+                    new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_MeshRenderer_CastShadows", "Cast Shadows"), editor.Component, shadowCastingMode),
+                    new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_MeshRenderer_ReceiveShadows", "Receive Shadows"), editor.Component, receiveShadows, "m_ReceiveShadows"),
+                    new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_MeshRenderer_Materials", "Materials"), editor.Component, materials),
                 };
         }
     }
@@ -27,6 +33,8 @@ namespace Battlehub.RTEditor
     {
         public override PropertyDescriptor[] GetProperties(ComponentEditor editor, object converter)
         {
+            ILocalization lc = IOC.Resolve<ILocalization>();
+
             MemberInfo shadowCastingMode = Strong.PropertyInfo((MeshRenderer x) => x.shadowCastingMode, "shadowCastingMode");
             MemberInfo receiveShadows = Strong.PropertyInfo((MeshRenderer x) => x.receiveShadows, "receiveShadows");
             MemberInfo materials = Strong.PropertyInfo((MeshRenderer x) => x.sharedMaterials, "sharedMaterials");
@@ -36,12 +44,12 @@ namespace Battlehub.RTEditor
 
             return new[]
                 {
-                    new PropertyDescriptor( "Cast Shadows", editor.Component, shadowCastingMode, shadowCastingMode),
-                    new PropertyDescriptor( "Receive Shadows", editor.Component, receiveShadows, receiveShadows),
-                    new PropertyDescriptor( "Materials", editor.Component, materials, materials),
-                    new PropertyDescriptor( "Light Probes", editor.Component, lightProbes, lightProbes),
-                    new PropertyDescriptor( "Reflection Probes", editor.Component, reflectionProbes, reflectionProbes),
-                    new PropertyDescriptor( "Anchor Override", editor.Component, anchorOverride, anchorOverride),
+                    new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_MeshRenderer_CastShadows", "Cast Shadows"), editor.Component, shadowCastingMode),
+                    new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_MeshRenderer_ReceiveShadows", "Receive Shadows"), editor.Component, receiveShadows, "m_ReceiveShadows"),
+                    new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_MeshRenderer_Materials", "Materials"), editor.Component, materials),
+                    new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_MeshRenderer_LightProbes", "Light Probes"), editor.Component, lightProbes),
+                    new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_MeshRenderer_ReflectionProbes", "Reflection Probes"), editor.Component, reflectionProbes),
+                    new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_MeshRenderer_AnchorOverride", "Anchor Override"), editor.Component, anchorOverride),
                 };
         }
     }

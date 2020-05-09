@@ -396,11 +396,7 @@ namespace Battlehub.UIControls.DockPanels
             {
                 m_region.Root.CursorHelper.ResetCursor(this);
             }
-            
         }
-
-       
     }
-
 }
 

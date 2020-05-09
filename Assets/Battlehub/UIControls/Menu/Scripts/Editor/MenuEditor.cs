@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 using Battlehub.Utils;
@@ -41,4 +42,4 @@ namespace Battlehub.UIControls.MenuControl
         }
     }
 }
-
+#endif

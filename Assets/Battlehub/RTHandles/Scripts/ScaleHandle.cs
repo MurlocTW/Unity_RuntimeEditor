@@ -6,7 +6,7 @@ namespace Battlehub.RTHandles
     [DefaultExecutionOrder(2)]
     public class ScaleHandle : BaseHandle
     {
-        public bool AbsouluteGrid = false;
+        public bool AbsoluteGrid = false;
         public float GridSize = 0.1f;
         public Vector3 MinScale = new Vector3(float.MinValue, float.MinValue, float.MinValue);
         private Vector3 m_prevPoint;
@@ -17,6 +17,19 @@ namespace Battlehub.RTHandles
         private Vector3 m_scale;
         private Vector3[] m_refScales;
         private float m_screenScale;
+        private MaterialPropertyBlock[] m_propertyBlocks;
+
+        public override bool SnapToGrid
+        {
+            get { return AbsoluteGrid; }
+            set { AbsoluteGrid = value; }
+        }
+
+        public override float SizeOfGrid
+        {
+            get { return GridSize; }
+            set { GridSize = value; }
+        }
 
         public override RuntimeTool Tool
         {
@@ -25,7 +38,7 @@ namespace Battlehub.RTHandles
 
         protected override float CurrentGridUnitSize
         {
-            get { return GridSize; }
+            get { return SizeOfGrid; }
         }
 
         protected override void AwakeOverride()
@@ -34,6 +47,7 @@ namespace Battlehub.RTHandles
         
             m_scale = Vector3.one;
             m_roundedScale = m_scale;
+            m_propertyBlocks = new[] { new MaterialPropertyBlock(), new MaterialPropertyBlock(), new MaterialPropertyBlock() };
         }
 
         protected override void UpdateOverride()
@@ -122,7 +136,7 @@ namespace Battlehub.RTHandles
             m_refScales = new Vector3[ActiveTargets.Length];
             for (int i = 0; i < m_refScales.Length; ++i)
             {
-                Quaternion rotation = Editor.Tools.PivotRotation == RuntimePivotRotation.Global ? ActiveTargets[i].rotation : Quaternion.identity;
+                Quaternion rotation = PivotRotation == RuntimePivotRotation.Global ? ActiveTargets[i].rotation : Quaternion.identity;
                 m_refScales[i] = rotation * ActiveTargets[i].localScale;
             }
 
@@ -212,18 +226,20 @@ namespace Battlehub.RTHandles
                     }
                 }
 
-                if(AbsouluteGrid)
+                if(SnapToGrid)
                 {
                     for (int i = 0; i < m_refScales.Length; ++i)
                     {
-                        Quaternion rotation = Editor.Tools.PivotRotation == RuntimePivotRotation.Global ? Targets[i].rotation : Quaternion.identity;
+                        Quaternion rotation = PivotRotation == RuntimePivotRotation.Global ? Targets[i].rotation : Quaternion.identity;
+
+                        float gridSize = EffectiveGridUnitSize * 2;
 
                         m_roundedScale = Vector3.Scale(m_refScales[i], m_scale);
                         if (EffectiveGridUnitSize > 0.01)
                         {
-                            m_roundedScale.x = Mathf.RoundToInt(m_roundedScale.x / EffectiveGridUnitSize) * EffectiveGridUnitSize;
-                            m_roundedScale.y = Mathf.RoundToInt(m_roundedScale.y / EffectiveGridUnitSize) * EffectiveGridUnitSize;
-                            m_roundedScale.z = Mathf.RoundToInt(m_roundedScale.z / EffectiveGridUnitSize) * EffectiveGridUnitSize;
+                            m_roundedScale.x = Mathf.RoundToInt(m_roundedScale.x / gridSize) * gridSize;
+                            m_roundedScale.y = Mathf.RoundToInt(m_roundedScale.y / gridSize) * gridSize;
+                            m_roundedScale.z = Mathf.RoundToInt(m_roundedScale.z / gridSize) * gridSize;
                         }
 
                         Vector3 scale = Quaternion.Inverse(rotation) * m_roundedScale;
@@ -256,9 +272,10 @@ namespace Battlehub.RTHandles
 
                     for (int i = 0; i < m_refScales.Length; ++i)
                     {
-                        Quaternion rotation = Editor.Tools.PivotRotation == RuntimePivotRotation.Global ? Targets[i].rotation : Quaternion.identity;
+                        Quaternion rotation = PivotRotation == RuntimePivotRotation.Global ? Targets[i].rotation : Quaternion.identity;
 
                         Vector3 scale = Quaternion.Inverse(rotation) * Vector3.Scale(m_refScales[i], m_roundedScale);
+                        
                         scale.x = Mathf.Max(MinScale.x, scale.x);
                         scale.y = Mathf.Max(MinScale.y, scale.y);
                         scale.z = Mathf.Max(MinScale.z, scale.z);
@@ -282,9 +299,9 @@ namespace Battlehub.RTHandles
             }
         }
 
-        protected override void DrawOverride(Camera camera)
+        protected override void RefreshCommandBuffer(IRTECamera camera)
         {
-            Appearance.DoScaleHandle(camera, m_roundedScale, Target.position, Rotation,  SelectedAxis, LockObject);
+            Appearance.DoScaleHandle(camera.CommandBuffer, m_propertyBlocks, camera.Camera, m_roundedScale, Target.position, Rotation, SelectedAxis, LockObject);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Reflection;
-using System;
 using Battlehub.Utils;
+using Battlehub.RTCommon;
 
 namespace Battlehub.RTEditor
 {
@@ -9,10 +9,12 @@ namespace Battlehub.RTEditor
     {
         public override PropertyDescriptor[] GetProperties(ComponentEditor editor, object converter)
         {
+            ILocalization lc = IOC.Resolve<ILocalization>();
+
             MemberInfo sharedMeshInfo = Strong.PropertyInfo((MeshFilter x) => x.sharedMesh, "sharedMesh");
             return new[]
             {
-                new PropertyDescriptor("Mesh", editor.Component, sharedMeshInfo, sharedMeshInfo)
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_MeshFilter_Mesh", "Mesh"), editor.Component, sharedMeshInfo, sharedMeshInfo)
             };
         }
     }

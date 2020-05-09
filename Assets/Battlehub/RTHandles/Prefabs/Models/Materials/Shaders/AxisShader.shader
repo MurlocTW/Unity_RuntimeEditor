@@ -2,17 +2,18 @@
 {
 	Properties
 	{
-		_Color("Color", Color) = (1, 1, 1, 1) // color
+		_Color("Color", Color) = (1, 1, 1, 1) 
+		[Enum(Off,0,On,1)]_ZWrite("ZWrite", Float) = 1.0
 	}
 
 	SubShader
 	{
-		//ZTest Always
 		Tags{ "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
 		LOD 100
 	
 		Pass
 		{ 
+			ZWrite[_ZWrite]
 			Blend SrcAlpha OneMinusSrcAlpha
 			CGPROGRAM
 			#pragma vertex vert

@@ -14,6 +14,13 @@ namespace Battlehub.RTCommon
             get;
             set;
         }
+
+        bool EnableUndo
+        {
+            get;
+            set;
+        }
+
         GameObject activeGameObject
         {
             get;
@@ -104,6 +111,13 @@ namespace Battlehub.RTCommon
             }
         }
 
+        private bool m_enableUndo = true;
+        public bool EnableUndo
+        {
+            get { return m_enableUndo; }
+            set { m_enableUndo = value; }
+        }
+
         private HashSet<Object> m_selectionHS;
 
         protected void RaiseSelectionChanged(Object[] unselectedObjects)
@@ -150,9 +164,9 @@ namespace Battlehub.RTCommon
 
                 if (IsSelectionChanged(value))
                 {
-                    if(m_editor.Undo.Enabled)
+                    if(m_editor.Undo.Enabled && EnableUndo)
                     {
-                        m_editor.Undo.Select(value, null);
+                        m_editor.Undo.Select(this, value, null);
                     }
                     else
                     {

@@ -9,9 +9,21 @@ namespace Battlehub.RTHandles
 {
     public enum BoxSelectionMethod
     {
+        Vertex,
+        PixelPerfectDepthTest,
         LooseFitting,
         BoundsCenter,
-        TansformCenter
+        TansformCenter,
+        Default = Vertex
+    }
+
+    public class BeginBoxSelectionArgs : EventArgs
+    {
+        public bool Cancel
+        {
+            get;
+            set;
+        }
     }
 
     public class FilteringArgs : EventArgs
@@ -50,6 +62,7 @@ namespace Battlehub.RTHandles
 
     public interface IBoxSelection
     {
+        event EventHandler<BeginBoxSelectionArgs> Begin;
         event EventHandler<FilteringArgs> Filtering;
         event EventHandler<BoxSelectionArgs> Selection;
         bool IsDragging
@@ -59,6 +72,17 @@ namespace Battlehub.RTHandles
         Bounds SelectionBounds
         {
             get;
+        }
+
+        Canvas Canvas
+        {
+            get;
+        }
+
+        BoxSelectionMethod MethodOverride
+        {
+            get;
+            set;
         }
     }
 
@@ -76,9 +100,33 @@ namespace Battlehub.RTHandles
         protected Vector2 m_startPt;
         protected Vector2 m_endPt;
 
+        private Camera m_windowCanvasCamera;
+        private RectTransform m_windowRectTransform;
+
+        public Vector2 ScreenSpaceMargin = new Vector2(2, 2);
         public bool UseCameraSpace = true;
-        public BoxSelectionMethod Method;
-       
+
+        [SerializeField]
+        private BoxSelectionMethod m_method = BoxSelectionMethod.Default;
+        private BoxSelectionMethod m_methodOverride = BoxSelectionMethod.Default;
+        public BoxSelectionMethod MethodOverride
+        {
+            get
+            {
+                if(m_methodOverride != BoxSelectionMethod.Default)
+                {
+                    return m_methodOverride;
+                }
+
+                return m_method;
+            }
+            set
+            {
+                m_methodOverride = value;
+            }
+        }
+
+        public event EventHandler<BeginBoxSelectionArgs> Begin;
         public event EventHandler<FilteringArgs> Filtering;
         public event EventHandler<BoxSelectionArgs> Selection;
 
@@ -93,6 +141,11 @@ namespace Battlehub.RTHandles
             get { return m_isDragging; }
         }
 
+        public Canvas Canvas
+        {
+            get { return m_canvas; }
+        }
+
         protected override void AwakeOverride()
         {
             base.AwakeOverride();
@@ -101,8 +154,10 @@ namespace Battlehub.RTHandles
             if (m_canvas == null)
             {
                 GameObject go = new GameObject("BoxSelection");
+                go.layer = gameObject.layer;
                 go.transform.SetParent(transform.parent, false);
                 m_canvas = go.AddComponent<Canvas>();
+                m_canvas.sortingOrder = 2;
             }
             if (UseCameraSpace)
             {
@@ -153,6 +208,12 @@ namespace Battlehub.RTHandles
             m_image.raycastTarget = false;
         }
 
+        protected virtual void Start()
+        {
+            m_windowRectTransform = (RectTransform)m_window.transform;
+            Canvas windowCanvas = m_windowRectTransform.GetComponentInParent<Canvas>();
+            m_windowCanvasCamera = windowCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? windowCanvas.worldCamera : null;
+        }
 
         protected override void OnDestroyOverride()
         {
@@ -167,8 +228,17 @@ namespace Battlehub.RTHandles
             }
         }
 
+        protected override void OnWindowActivated()
+        {
+            base.OnWindowActivated();
+            m_canvas.enabled = true;
+
+        }
+
         protected override void OnWindowDeactivated()
         {
+            m_canvas.enabled = false;
+
             base.OnWindowDeactivated();
             if (Editor != null && Editor.Tools != null && Editor.Tools.ActiveTool == this)
             {
@@ -184,6 +254,16 @@ namespace Battlehub.RTHandles
             if(Editor.Tools.ActiveTool != null)
             {
                 return;
+            }
+
+            if(Begin != null)
+            {
+                BeginBoxSelectionArgs args = new BeginBoxSelectionArgs();
+                Begin(this, args);
+                if(args.Cancel)
+                {
+                    return;
+                }
             }
 
             m_startMousePosition = Window.Pointer.ScreenPoint;
@@ -222,7 +302,7 @@ namespace Battlehub.RTHandles
                 return;
             }
 
-            if (Editor.Tools.IsViewing)
+            if (Editor.Tools.IsViewing || Editor.Tools.Current == RuntimeTool.None || !Editor.Tools.IsBoxSelectionEnabled)
             {
                 if(Editor.Tools.ActiveTool == this)
                 {
@@ -251,7 +331,7 @@ namespace Battlehub.RTHandles
 
         private void HitTest()
         {
-            if (m_rectTransform.sizeDelta.magnitude < 5f)
+            if (m_rectTransform.sizeDelta.magnitude < 25f)
             {
                 return;
             }
@@ -261,25 +341,73 @@ namespace Battlehub.RTHandles
             Bounds selectionBounds = new Bounds(center, m_rectTransform.sizeDelta);
             SelectionBounds = selectionBounds;
 
-            Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Window.Camera);
-            
-            HashSet<GameObject> selection = new HashSet<GameObject>();
+            FilteringArgs filteringArgs = new FilteringArgs();
+            HashSet<GameObject> selection;
             Renderer[] renderers = FindObjectsOfType<Renderer>();
-            Collider[] colliders = FindObjectsOfType<Collider>();
-            FilteringArgs args = new FilteringArgs();
-            for (int i = 0; i < renderers.Length; ++i)
+
+            if(MethodOverride == BoxSelectionMethod.PixelPerfectDepthTest)
             {
-                Renderer r = renderers[i];
-                Bounds bounds = r.bounds;
-                GameObject go = r.gameObject;
-                TrySelect(ref selectionBounds, selection, args, ref bounds, go, frustumPlanes);
+                Vector2 min = SelectionBounds.min;
+                Vector2 max = SelectionBounds.max;
+                Canvas canvas = Window.GetComponentInParent<Canvas>();
+
+                RectTransform sceneOutput = (RectTransform)Window.GetComponent<RectTransform>().GetChild(0);
+
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(sceneOutput, min, canvas.worldCamera, out min);
+                min.y = sceneOutput.rect.height - min.y;
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(sceneOutput, max, canvas.worldCamera, out max);
+                max.y = sceneOutput.rect.height - max.y;
+
+                Rect rect = new Rect(new Vector2(Mathf.Min(min.x, max.x), Mathf.Min(min.y, max.y)), new Vector2(Mathf.Abs(max.x - min.x), Mathf.Abs(max.y - min.y)));
+                rect.x += Window.Camera.pixelRect.x;
+                rect.y += canvas.pixelRect.height - (Window.Camera.pixelRect.y + Window.Camera.pixelRect.height);
+
+                IEnumerable<GameObject> gameObjects = BoxSelectionRenderer.PickObjectsInRect(Window.Camera, rect, renderers, Mathf.RoundToInt(canvas.pixelRect.width), Mathf.RoundToInt(canvas.pixelRect.height)).Select(r => r.gameObject);
+                selection = new HashSet<GameObject>();
+                foreach(GameObject go in gameObjects)
+                {
+                    if (!selection.Contains(go))
+                    {
+                        if (Filtering != null)
+                        {
+                            filteringArgs.Object = go;
+                            Filtering(this, filteringArgs);
+                            if (!filteringArgs.Cancel)
+                            {
+                                selection.Add(go);
+                            }
+                            filteringArgs.Reset();
+                        }
+                        else
+                        {
+                            selection.Add(go);
+                        }
+                    }
+                }
             }
-            for (int i = 0; i < colliders.Length; ++i)
+            else
             {
-                Collider c = colliders[i];
-                Bounds bounds = c.bounds;
-                GameObject go = c.gameObject;
-                TrySelect(ref selectionBounds, selection, args, ref bounds, go, frustumPlanes);
+                selection = new HashSet<GameObject>();
+
+                Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Window.Camera);
+                for (int i = 0; i < renderers.Length; ++i)
+                {
+                    Renderer r = renderers[i];
+                    Bounds bounds = r.bounds;
+                    GameObject go = r.gameObject;
+                    TrySelect(ref selectionBounds, selection, filteringArgs, ref bounds, go, frustumPlanes);
+                }
+            }
+
+            SpriteGizmo[] spriteGizmos = FindObjectsOfType<SpriteGizmo>();
+            for (int i = 0; i < spriteGizmos.Length; ++i)
+            {
+                SpriteGizmo spriteGizmo = spriteGizmos[i];
+                bool select = TransformCenter(ref selectionBounds, spriteGizmo.transform);
+                if (select)
+                {
+                    Filter(selection, filteringArgs, spriteGizmo.gameObject);
+                }
             }
 
             if(Selection != null)
@@ -294,12 +422,74 @@ namespace Battlehub.RTHandles
 
         private void TrySelect(ref Bounds selectionBounds, HashSet<GameObject> selection, FilteringArgs args, ref Bounds bounds, GameObject go, Plane[] frustumPlanes)
         {
+            if (!GeometryUtility.TestPlanesAABB(frustumPlanes, bounds))
+            {
+                return;
+            }
             bool select;
-            if (Method == BoxSelectionMethod.LooseFitting)
+            if (MethodOverride == BoxSelectionMethod.LooseFitting)
+            {
+                select = LooseFitting(ref selectionBounds, ref bounds);              
+            }
+            else if(MethodOverride == BoxSelectionMethod.Vertex)
             {
                 select = LooseFitting(ref selectionBounds, ref bounds);
+                if (select && !selection.Contains(go))
+                {
+                    select = false;
+                    MeshFilter meshFilter = go.GetComponent<MeshFilter>();
+                    if (meshFilter != null && meshFilter.sharedMesh != null)
+                    {
+                        Vector3[] vertices = meshFilter.sharedMesh.vertices;
+
+                        for (int i = 0; i < vertices.Length; ++i)
+                        {
+                            Vector3 vertex = go.transform.TransformPoint(vertices[i]);
+                            vertex = Window.Camera.WorldToScreenPoint(vertex);
+                            vertex.z = 0;
+                            if (selectionBounds.Contains(vertex))
+                            {
+                                select = true;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        SkinnedMeshRenderer smr = go.GetComponent<SkinnedMeshRenderer>();
+                        
+                        if (smr != null && smr.sharedMesh != null)
+                        {
+                            Mesh bakedMesh = new Mesh();
+                            smr.BakeMesh(bakedMesh);
+
+                            Matrix4x4 m = Matrix4x4.TRS(go.transform.localPosition, go.transform.localRotation, Vector3.one);
+                            if(smr.transform.parent != null)
+                            {
+                                m = m * smr.transform.parent.localToWorldMatrix;
+                            }
+
+                            Vector3[] vertices = bakedMesh.vertices;
+
+                            for (int i = 0; i < vertices.Length; ++i)
+                            {
+                                Vector3 vertex = m.MultiplyPoint(vertices[i]);
+                                vertex = Window.Camera.WorldToScreenPoint(vertex);
+                                vertex.z = 0;
+                                if (selectionBounds.Contains(vertex))
+                                {
+                                    select = true;
+                                    break;
+                                }
+                            }
+
+                           Destroy(bakedMesh);
+                        }
+                    }
+                    
+                }
             }
-            else if (Method == BoxSelectionMethod.BoundsCenter)
+            else if (MethodOverride == BoxSelectionMethod.BoundsCenter)
             {
                 select = BoundsCenter(ref selectionBounds, ref bounds);
             }
@@ -308,29 +498,29 @@ namespace Battlehub.RTHandles
                 select = TransformCenter(ref selectionBounds, go.transform);
             }
 
-            if (!GeometryUtility.TestPlanesAABB(frustumPlanes, bounds))
-            {
-                select = false;
-            }
-
             if (select)
             {
-                if (!selection.Contains(go))
+                Filter(selection, args, go);
+            }
+        }
+
+        private void Filter(HashSet<GameObject> selection, FilteringArgs args, GameObject go)
+        {
+            if (!selection.Contains(go))
+            {
+                if (Filtering != null)
                 {
-                    if (Filtering != null)
-                    {
-                        args.Object = go;
-                        Filtering(this, args);
-                        if (!args.Cancel)
-                        {
-                            selection.Add(go);
-                        }
-                        args.Reset();
-                    }
-                    else
+                    args.Object = go;
+                    Filtering(this, args);
+                    if (!args.Cancel)
                     {
                         selection.Add(go);
                     }
+                    args.Reset();
+                }
+                else
+                {
+                    selection.Add(go);
                 }
             }
         }
@@ -388,7 +578,24 @@ namespace Battlehub.RTHandles
                 cam = m_canvas.worldCamera;
             }
 
-            return RectTransformUtility.ScreenPointToLocalPointInRectangle(m_canvas.GetComponent<RectTransform>(), Window.Pointer.ScreenPoint, cam, out localPoint);
+            Vector3 screenPoint;
+            if (UseCameraSpace)
+            {
+                screenPoint = Window.Pointer.ScreenPoint;
+            }
+            else
+            {
+                screenPoint = m_window.Editor.Input.GetPointerXY(0);
+                Rect rect = m_windowRectTransform.rect;
+
+                Vector2 min = RectTransformUtility.WorldToScreenPoint(m_windowCanvasCamera, m_windowRectTransform.TransformPoint(rect.min)) + ScreenSpaceMargin;
+                Vector2 max = RectTransformUtility.WorldToScreenPoint(m_windowCanvasCamera, m_windowRectTransform.TransformPoint(rect.max)) - ScreenSpaceMargin;
+
+                screenPoint.x = Mathf.Clamp(screenPoint.x, min.x, max.x);
+                screenPoint.y = Mathf.Clamp(screenPoint.y, min.y, max.y);
+            }
+
+            return RectTransformUtility.ScreenPointToLocalPointInRectangle(m_canvas.GetComponent<RectTransform>(), screenPoint, cam, out localPoint);
         }
     }
 

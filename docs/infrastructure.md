@@ -604,7 +604,7 @@ Methods:
 
  * `void Reset()` - cancel current drag & drop operation.
  * `void SetCursor(KnownCursor cursorType)` - set cursor. 
-	* _KnownCursor.DropNowAllowed_
+	* _KnownCursor.DropNotAllowed_
     * _KnownCursor.DropAllowed_
  * `void RaiseBeginDrag(object source, object[] dragItems, PointerEventData pointerEventData)`   
  \- begin drag & drop.
@@ -702,7 +702,7 @@ public class CustomWindow : RuntimeWindow
     public override void DragLeave(PointerEventData eventData)
     {
         base.DragLeave(eventData);
-        Editor.DragDrop.SetCursor(KnownCursor.DropNowAllowed);
+        Editor.DragDrop.SetCursor(KnownCursor.DropNotAllowed);
 		Debug.Log("On Drag Leave");
     }
 

@@ -18,7 +18,7 @@ MonoBehaviour:
     m_ID: 0
     m_Name: Root
     m_Depth: -1
-    Identity: 74
+    Identity: 79
     FolderIdentity: 5
     Folders:
     - m_ID: 0
@@ -346,6 +346,36 @@ MonoBehaviour:
         m_Name: Sky_c10
         m_Depth: 0
         Object: {fileID: 2800000, guid: 83f160211234f79498ac79146554970b, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 74
+        m_Name: ScrollBarHandleHorizontal
+        m_Depth: 0
+        Object: {fileID: 21300000, guid: 973fa938a865ea24da5dbf5783e457b4, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 75
+        m_Name: DarkBackH
+        m_Depth: 0
+        Object: {fileID: 21300000, guid: ae0fd232a77d8e344a645b7716e25d2f, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 76
+        m_Name: Logo
+        m_Depth: 0
+        Object: {fileID: 21300000, guid: 7b7aa4d5a6bf5ae42b903bdf2cc89896, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 77
+        m_Name: ScrollBarHandleVertical
+        m_Depth: 0
+        Object: {fileID: 21300000, guid: 290e2c1e684ac3b48a1742a613f9981c, type: 3}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 78
+        m_Name: DarkBackV
+        m_Depth: 0
+        Object: {fileID: 21300000, guid: 5215f91f57f175d489f05614e9fc56e5, type: 3}
         IsEnabled: 0
         PrefabParts: []
       IsEnabled: 1

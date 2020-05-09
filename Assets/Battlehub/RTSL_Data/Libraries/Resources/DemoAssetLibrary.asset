@@ -18,7 +18,7 @@ MonoBehaviour:
     m_ID: 0
     m_Name: Root
     m_Depth: -1
-    Identity: 3078
+    Identity: 3079
     FolderIdentity: 19
     Folders:
     - m_ID: 0
@@ -8268,6 +8268,11 @@ MonoBehaviour:
         - ParentPersistentID: -1
           PersistentID: 2028
           Object: {fileID: 114000012087550298, guid: bd65bfa8f5e668141bf41ce66b0cbbec,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 3078
+          Object: {fileID: 1792287101373332074, guid: bd65bfa8f5e668141bf41ce66b0cbbec,
             type: 3}
           Depth: 0
         - ParentPersistentID: -1

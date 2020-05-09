@@ -1,5 +1,4 @@
-﻿using Battlehub.RTCommon;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,12 +10,23 @@ namespace Battlehub.RTSL.Interface
     public delegate void ProjectEventHandler<T>(Error error, T result);
     public delegate void ProjectEventHandler<T, T2>(Error error, T result, T2 result2);
 
+    public enum OpenProjectFlags
+    {
+        None = 0,
+        ClearScene = 1,
+        CreateNewScene = 3,
+        DestroyObjects = 4,
+        Default = CreateNewScene | DestroyObjects
+    }
+
     public interface IProject
     {
         event ProjectEventHandler NewSceneCreating;
         event ProjectEventHandler NewSceneCreated;
         event ProjectEventHandler<ProjectInfo> CreateProjectCompleted;
         event ProjectEventHandler<ProjectInfo> OpenProjectCompleted;
+        event ProjectEventHandler<string> ExportProjectCompleted;
+        event ProjectEventHandler<string> ImportProjectCompleted;
         event ProjectEventHandler<string> DeleteProjectCompleted;
         event ProjectEventHandler<ProjectInfo[]> ListProjectsCompleted;
         event ProjectEventHandler CloseProjectCompleted;
@@ -33,7 +43,7 @@ namespace Battlehub.RTSL.Interface
         event ProjectEventHandler<ProjectItem[]> DeleteCompleted;
         event ProjectEventHandler<ProjectItem[], ProjectItem[]> MoveCompleted;
         event ProjectEventHandler<ProjectItem> RenameCompleted;
-        event ProjectEventHandler<ProjectItem> CreateCompleted;
+        event ProjectEventHandler<ProjectItem[]> CreateCompleted;
 
         bool IsBusy
         {
@@ -61,6 +71,11 @@ namespace Battlehub.RTSL.Interface
             set;
         }
 
+        AssetBundle[] LoadedAssetBundles
+        {
+            get;
+        }
+
         bool IsStatic(ProjectItem projectItem);
         bool IsScene(ProjectItem projectItem);
         Type ToType(AssetItem assetItem);
@@ -69,18 +84,26 @@ namespace Battlehub.RTSL.Interface
         T FromID<T>(long id) where T : UnityObject;
         AssetItem ToAssetItem(UnityObject obj);
         AssetItem[] GetDependantAssetItems(AssetItem[] assetItems);
-        
+        object[] FindDeepDependencies(object obj);
+
         string GetExt(object obj);
         string GetExt(Type type);
+        
         string GetUniqueName(string name, string[] names);
-        string GetUniqueName(string name, Type type, ProjectItem folder);
-        string GetUniquePath(string path, Type type, ProjectItem folder);
+        string GetUniqueName(string name, Type type, ProjectItem folder, bool noSpace = false);
+        string GetUniqueName(string name, string ext, ProjectItem folder, bool noSpace = false);
+        string GetUniquePath(string path, Type type, ProjectItem folder, bool noSpace = false);
 
+        void ClearScene();
         void CreateNewScene();
+        ProjectAsyncOperation<ProjectInfo[]> GetProjects(ProjectEventHandler<ProjectInfo[]> callback = null);
         ProjectAsyncOperation<ProjectInfo> CreateProject(string project, ProjectEventHandler<ProjectInfo> callback = null);
         ProjectAsyncOperation<ProjectInfo> OpenProject(string project, ProjectEventHandler<ProjectInfo> callback = null);
-        ProjectAsyncOperation<ProjectInfo[]> GetProjects(ProjectEventHandler<ProjectInfo[]> callback = null);
+        ProjectAsyncOperation<ProjectInfo> OpenProject(string project, OpenProjectFlags flags, ProjectEventHandler<ProjectInfo> callback = null);
+        ProjectAsyncOperation<string> CopyProject(string project, string targetProject, ProjectEventHandler<string> callback = null);
         ProjectAsyncOperation<string> DeleteProject(string project, ProjectEventHandler<string> callback = null);
+        ProjectAsyncOperation<string> ExportProject(string project, string targetPath, ProjectEventHandler<string> callback = null);
+        ProjectAsyncOperation<string> ImportProject(string projectName, string sourcePath, ProjectEventHandler<string> callback = null);
         void CloseProject();
 
         ProjectAsyncOperation<AssetItem[]> GetAssetItems(AssetItem[] assetItems, ProjectEventHandler<AssetItem[]> callback = null); /*no events raised*/
@@ -90,6 +113,7 @@ namespace Battlehub.RTSL.Interface
 
         ProjectAsyncOperation<AssetItem[]> Save(AssetItem[] assetItems, object[] obj, ProjectEventHandler<AssetItem[]> callback = null);
         ProjectAsyncOperation<AssetItem[]> Save(ProjectItem[] parents, byte[][] previewData, object[] obj, string[] nameOverrides, ProjectEventHandler<AssetItem[]> callback = null);
+        ProjectAsyncOperation<AssetItem[]> Save(ProjectItem[] parents, byte[][] previewData, object[] obj, string[] nameOverrides, bool isUserAction, ProjectEventHandler<AssetItem[]> callback = null);
         ProjectAsyncOperation<AssetItem[]> SavePreview(AssetItem[] assetItems, ProjectEventHandler<AssetItem[]> callback = null);
         ProjectAsyncOperation<AssetItem[]> Duplicate(AssetItem[] assetItems, ProjectEventHandler<AssetItem[]> callback = null);
 
@@ -101,16 +125,19 @@ namespace Battlehub.RTSL.Interface
         void UnloadImportItems(ProjectItem importItemsRoot);
         ProjectAsyncOperation<AssetItem[]> Import(ImportItem[] importItems, ProjectEventHandler<AssetItem[]> callback = null);
 
+        ProjectAsyncOperation CreatePrefab(string folderPath, GameObject prefab, bool includeDeps, Func<UnityObject, byte[]> createPreview = null);
         ProjectAsyncOperation<ProjectItem> CreateFolder(ProjectItem projectItem, ProjectEventHandler<ProjectItem> callback = null);
+        ProjectAsyncOperation<ProjectItem[]> CreateFolders(ProjectItem[] projectItem, ProjectEventHandler<ProjectItem[]> callback = null);
         ProjectAsyncOperation<ProjectItem> Rename(ProjectItem projectItem, string oldName, ProjectEventHandler<ProjectItem> callback = null);
         ProjectAsyncOperation<ProjectItem[], ProjectItem[]> Move(ProjectItem[] projectItems, ProjectItem target, ProjectEventHandler<ProjectItem[], ProjectItem[]> callback = null);
         ProjectAsyncOperation<ProjectItem[]> Delete(ProjectItem[] projectItems, ProjectEventHandler<ProjectItem[]> callback = null);
+        ProjectAsyncOperation Delete(string projectPath, string[] files, ProjectEventHandler callback = null);
 
         ProjectAsyncOperation<string[]> GetAssetBundles(ProjectEventHandler<string[]> callback = null);
         Dictionary<int, string> GetStaticAssetLibraries();
 
-        ProjectAsyncOperation<T[]> GetValues<T>(string searchPattern, ProjectEventHandler<T[]> callback = null) where T : new();
-        ProjectAsyncOperation<T> GetValue<T>(string key, ProjectEventHandler<T> callback = null) where T : new();
+        ProjectAsyncOperation<T[]> GetValues<T>(string searchPattern, ProjectEventHandler<T[]> callback = null);
+        ProjectAsyncOperation<T> GetValue<T>(string key, ProjectEventHandler<T> callback = null);
         ProjectAsyncOperation SetValue<T>(string key, T obj, ProjectEventHandler callback = null);
         ProjectAsyncOperation DeleteValue<T>(string key, ProjectEventHandler callback = null);
     }
@@ -178,7 +205,12 @@ namespace Battlehub.RTSL.Interface
 
         public static string[] Find(this IProject project, string filter, bool allowSubclasses, Type typeofT)
         {
-            List<string> result = new List<string>();
+            return project.FindAssetItems(filter, allowSubclasses, typeofT).Select(item => item.RelativePath(allowSubclasses)).ToArray();
+        }
+
+        public static AssetItem[] FindAssetItems(this IProject project, string filter, bool allowSubclasses, Type typeofT)
+        {
+            List<AssetItem> result = new List<AssetItem>();
             ProjectItem[] projectItems = project.Root.Flatten(true);
             for (int i = 0; i < projectItems.Length; ++i)
             {
@@ -202,7 +234,7 @@ namespace Battlehub.RTSL.Interface
                     continue;
                 }
 
-                result.Add(assetItem.RelativePath(allowSubclasses));
+                result.Add(assetItem);
             }
             return result.ToArray();
         }
@@ -275,6 +307,31 @@ namespace Battlehub.RTSL.Interface
             return project.CreateFolder(folder);
         }
 
+        public static ProjectAsyncOperation CreateFolders(this IProject project, string[] path)
+        {
+            ProjectItem[] folders = path.Select(p => project.Root.Get(string.Format("{0}/{1}", project.Root.Name, p), true)).ToArray();
+            return project.CreateFolders(folders);
+        }
+
+        public static ProjectAsyncOperation RenameFolder(this IProject project, string path, string newName)
+        {
+            if (!project.IsOpened)
+            {
+                throw new InvalidOperationException("OpenProject first");
+            }
+
+            path = string.Format("{0}/{1}", project.Root.Name, path);
+            ProjectItem projectItem = project.Root.Get(path) as ProjectItem;
+            if (projectItem == null)
+            {
+                throw new ArgumentException("not found", "path");
+            }
+
+            string oldName = projectItem.Name;
+            projectItem.Name = newName;
+            return project.Rename(projectItem, oldName);
+        }
+
         public static ProjectAsyncOperation DeleteFolder(this IProject project, string path)
         {
             if (!project.IsOpened)
@@ -292,75 +349,6 @@ namespace Battlehub.RTSL.Interface
             return project.Delete(new[] { projectItem });
         }
 
-        public static ProjectAsyncOperation CreatePrefab(this IProject project, string folderPath, GameObject prefab, bool includeDeps, Func<UnityObject, byte[]> createPreview = null)
-        {
-            ProjectAsyncOperation ao = new ProjectAsyncOperation();
-
-            folderPath = string.Format("{0}/{1}", project.Root.Name, folderPath);
-            ProjectItem folder = project.Root.Get(folderPath, true) as ProjectItem;
-            if(folder is AssetItem)
-            {
-                throw new ArgumentException("folderPath");
-            }
-
-            if(includeDeps)
-            {
-                project.GetDependencies(prefab, true, (error, deps) =>
-                {
-                    object[] objects;
-                    if (!deps.Contains(prefab))
-                    {
-                        objects = new object[deps.Length + 1];
-                        objects[deps.Length] = prefab;
-                        for (int i = 0; i < deps.Length; ++i)
-                        {
-                            objects[i] = deps[i];
-                        }
-                    }
-                    else
-                    {
-                        objects = deps;
-                    }
-
-                    IUnityObjectFactory uoFactory = IOC.Resolve<IUnityObjectFactory>();
-                    objects = objects.Where(obj => uoFactory.CanCreateInstance(obj.GetType())).ToArray();
-
-                    byte[][] previewData = new byte[objects.Length][];
-                    if (createPreview != null)
-                    {
-                        for (int i = 0; i < objects.Length; ++i)
-                        {
-                            if (objects[i] is UnityObject)
-                            {
-                                previewData[i] = createPreview((UnityObject)objects[i]);
-                            }
-                        }
-                    }
-
-                    project.Save(new[] { folder }, previewData, objects, null, (saveErr, assetItems) =>
-                    {
-                        ao.Error = saveErr;
-                        ao.IsCompleted = true;
-                    });
-                });
-            }
-            else
-            {
-                byte[][] previewData = new byte[1][];
-                if (createPreview != null)
-                {
-                    previewData[0] = createPreview(prefab);
-                }
-
-                project.Save(new[] { folder }, previewData, new[] { prefab }, null, (saveErr, assetItems) =>
-                {
-                    ao.Error = saveErr;
-                    ao.IsCompleted = true;
-                });
-            }
-
-            return ao;
-        }
 
         public static ProjectAsyncOperation<AssetItem[]> Save(this IProject project, string path, object obj, byte[] preview = null)
         {
@@ -417,6 +405,31 @@ namespace Battlehub.RTSL.Interface
             }
 
             return project.Load(new[] { assetItem });
+        }
+
+        public static ProjectAsyncOperation<ProjectItem> Rename<T>(this IProject project, string path, string newName)
+        {
+            Type type = typeof(T);
+            return Rename(project, path, newName, type);
+        }
+
+        public static ProjectAsyncOperation<ProjectItem> Rename(this IProject project, string path, string newName, Type type)
+        {
+            if (!project.IsOpened)
+            {
+                throw new InvalidOperationException("OpenProject first");
+            }
+
+            path = string.Format("{0}/{1}", project.Root.Name, path);
+
+            AssetItem projectItem = project.Root.Get(path + project.GetExt(type)) as AssetItem;
+            if (projectItem == null)
+            {
+                throw new ArgumentException("not found", "path");
+            }
+            string oldName = projectItem.Name;
+            projectItem.Name = newName;
+            return project.Rename(projectItem, oldName);
         }
 
         public static ProjectAsyncOperation Delete<T>(this IProject project, string path)

@@ -40,8 +40,8 @@ namespace Battlehub.UIControls
             {
                 TDataBindingArgs args = new TDataBindingArgs();
                 args.Item = itemContainer.Item;
-                args.ItemPresenter = itemContainer.ItemPresenter == null ? gameObject : itemContainer.ItemPresenter;
-                args.EditorPresenter = itemContainer.EditorPresenter == null ? gameObject : itemContainer.EditorPresenter;
+                args.ItemPresenter = itemContainer.ItemPresenter == null ? itemContainer.gameObject : itemContainer.ItemPresenter;
+                args.EditorPresenter = itemContainer.EditorPresenter == null ? itemContainer.gameObject : itemContainer.EditorPresenter;
                 ItemBeginEdit(this, args);
             }
         }
@@ -58,8 +58,8 @@ namespace Battlehub.UIControls
             {
                 TDataBindingArgs args = new TDataBindingArgs();
                 args.Item = itemContainer.Item;
-                args.ItemPresenter = itemContainer.ItemPresenter == null ? gameObject : itemContainer.ItemPresenter;
-                args.EditorPresenter = itemContainer.EditorPresenter == null ? gameObject : itemContainer.EditorPresenter;
+                args.ItemPresenter = itemContainer.ItemPresenter == null ? itemContainer.gameObject : itemContainer.ItemPresenter;
+                args.EditorPresenter = itemContainer.EditorPresenter == null ? itemContainer.gameObject : itemContainer.EditorPresenter;
                 ItemEndEdit(this, args);
             } 
             IsSelected = true;
@@ -69,8 +69,8 @@ namespace Battlehub.UIControls
         {
             TDataBindingArgs args = new TDataBindingArgs();
             args.Item = item;
-            args.ItemPresenter = itemContainer.ItemPresenter == null ? gameObject : itemContainer.ItemPresenter;
-            args.EditorPresenter = itemContainer.EditorPresenter == null ? gameObject : itemContainer.EditorPresenter;
+            args.ItemPresenter = itemContainer.ItemPresenter == null ? itemContainer.gameObject : itemContainer.ItemPresenter;
+            args.EditorPresenter = itemContainer.EditorPresenter == null ? itemContainer.gameObject : itemContainer.EditorPresenter;
 
             itemContainer.Clear();
 
@@ -82,6 +82,7 @@ namespace Battlehub.UIControls
                 itemContainer.CanDrag = args.CanDrag;
                 itemContainer.CanBeParent = args.CanBeParent;
                 itemContainer.CanChangeParent = args.CanChangeParent;
+                itemContainer.CanSelect = args.CanSelect;
             }
             else
             {
@@ -89,6 +90,7 @@ namespace Battlehub.UIControls
                 itemContainer.CanDrag = false;
                 itemContainer.CanBeParent = false;
                 itemContainer.CanChangeParent = false;
+                itemContainer.CanSelect = false;
             }
         }
 
@@ -98,9 +100,7 @@ namespace Battlehub.UIControls
             {
                 ItemDataBinding(this, args);
             }
-        }
-
-      
+        } 
     }
 
     public class ItemContainerData
@@ -133,7 +133,7 @@ namespace Battlehub.UIControls
         }
     }
 
-    public class VirtualizingItemsControl : Selectable,  IDropHandler, IUpdateSelectedHandler, IUpdateFocusedHandler, IPointerClickHandler
+    public class VirtualizingItemsControl : Selectable, IBeginDragHandler,  IDropHandler, IEndDragHandler, IUpdateSelectedHandler, IUpdateFocusedHandler, IPointerClickHandler
     {
         /// <summary>
         /// Raised on begin drag
@@ -210,9 +210,12 @@ namespace Battlehub.UIControls
         public EventSystem m_eventSystem;
 
         public InputProvider InputProvider;
+        private bool m_isDragInProgress;
         public bool SelectOnPointerUp = false;
+        public bool SelectUsingLeftButtonOnly = false;
         public bool CanUnselectAll = true;
         public bool CanSelectAll = true;
+        public bool CanMultiSelect = true;
         public bool CanEdit = true;
         public bool CanRemove = true;
         private bool m_prevCanDrag;
@@ -226,6 +229,7 @@ namespace Battlehub.UIControls
         public bool ExpandChildrenWidth = true;
         public bool ExpandChildrenHeight;
 
+        
         private bool m_isDropInProgress;
         /// <summary>
         /// Protection against stack overflow
@@ -299,6 +303,7 @@ namespace Battlehub.UIControls
         /// Root canvas
         /// </summary>
         private Canvas m_canvas;
+        private CanvasGroup m_canvasGroup;
 
         /// <summary>
         /// Raycasting camera (used with world space canvas)
@@ -703,12 +708,15 @@ namespace Battlehub.UIControls
                     m_itemContainerData.Add(items[i], InstantiateItemContainerData(items[i]));
                 }
 
-                m_scrollRect.Items = items;
-                if (updateSelection && !CanUnselectAll)
+                if(m_scrollRect != null)
                 {
-                    if (IsFocused && SelectedIndex == -1 && m_selectedItems != null && m_selectedItems.Count > 0)
+                    m_scrollRect.Items = items;
+                    if (updateSelection && !CanUnselectAll)
                     {
-                        SelectedIndex = 0;
+                        if (IsFocused && SelectedIndex == -1 && m_selectedItems != null && m_selectedItems.Count > 0)
+                        {
+                            SelectedIndex = 0;
+                        }
                     }
                 }
             }
@@ -783,6 +791,7 @@ namespace Battlehub.UIControls
                 }
             }
             m_canvas = GetComponentInParent<Canvas>();
+            m_canvasGroup = GetComponentInParent<CanvasGroup>();
             StartOverride();
         }
 
@@ -793,6 +802,11 @@ namespace Battlehub.UIControls
 
         private void Update()
         {
+            if(m_canvasGroup != null && !m_canvasGroup.interactable)
+            {
+                return;
+            }
+
             if (m_scrollDir != ScrollDir.None)
             {
                 float verDelta = (m_scrollRect.content.rect.height - m_scrollRect.viewport.rect.height);
@@ -1112,15 +1126,22 @@ namespace Battlehub.UIControls
             }
 
             VirtualizingItemContainer.Unselected -= OnItemUnselected;
-            if (InputProvider.IsFunctionalButtonPressed)
+            if (CanMultiSelect)
             {
-                IList selectedItems = m_selectedItems != null ? m_selectedItems.ToList() : new List<object>();
-                selectedItems.Add(((VirtualizingItemContainer)sender).Item);
-                SelectedItems = selectedItems;
-            }
-            else if (InputProvider.IsFunctional2ButtonPressed)
-            {
-                SelectRange((VirtualizingItemContainer)sender);
+                if (InputProvider.IsFunctionalButtonPressed)
+                {
+                    IList selectedItems = m_selectedItems != null ? m_selectedItems.ToList() : new List<object>();
+                    selectedItems.Add(((VirtualizingItemContainer)sender).Item);
+                    SelectedItems = selectedItems;
+                }
+                else if (InputProvider.IsFunctional2ButtonPressed)
+                {
+                    SelectRange((VirtualizingItemContainer)sender);
+                }
+                else
+                {
+                    SelectedIndex = IndexOf(((VirtualizingItemContainer)sender).Item);
+                }
             }
             else
             {
@@ -1233,7 +1254,7 @@ namespace Battlehub.UIControls
             m_dragItemsData = null;
             m_isDropInProgress = false;
 
-            if (sender.IsSelected && eventData.button == PointerEventData.InputButton.Right)
+            if (SelectUsingLeftButtonOnly && eventData.button != PointerEventData.InputButton.Left || sender.IsSelected && eventData.button == PointerEventData.InputButton.Right)
             {
                 return;
             }
@@ -1261,14 +1282,14 @@ namespace Battlehub.UIControls
                 return;
             }
 
-            if(sender.IsSelected && eventData.button == PointerEventData.InputButton.Right)
+            if (SelectUsingLeftButtonOnly && eventData.button != PointerEventData.InputButton.Left || sender.IsSelected && eventData.button == PointerEventData.InputButton.Right)
             {
                 return;
             }
 
             if (SelectOnPointerUp)
             {
-                if (!m_isDropInProgress)
+                if (!m_isDropInProgress && !m_isDragInProgress)
                 {
                     TryToSelect(sender);
                 }
@@ -1365,7 +1386,7 @@ namespace Battlehub.UIControls
             {
                 return;
             }
-
+            
             if(sender.Item == null)
             {
                 if(Click != null)
@@ -1663,6 +1684,16 @@ namespace Battlehub.UIControls
             return m_scrollRect.IsParentOf(itemContainer.transform);
         }
 
+        void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
+        {
+            m_isDragInProgress = true;
+        }
+
+        void IEndDragHandler.OnEndDrag(PointerEventData eventData)
+        {
+            m_isDragInProgress = false;
+        }
+
         void IDropHandler.OnDrop(PointerEventData eventData)
         {
             if (!CanReorder)
@@ -1773,7 +1804,12 @@ namespace Battlehub.UIControls
 
         public virtual void DataBindVisible()
         {
-            for(int i = VisibleItemIndex; i < VisibleItemIndex + VisibleItemsCount; ++i)
+            if(m_scrollRect == null)
+            {
+                return;
+            }
+
+            for(int i = VisibleItemIndex; i < VisibleItemIndex + VisibleItemsCount && i < m_scrollRect.ItemsCount; ++i)
             {
                 object item = m_scrollRect.Items[i];
                 DataBindItem(item);

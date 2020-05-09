@@ -9,6 +9,7 @@ namespace Battlehub.RTHandles
         public KeyCode MoveKey = KeyCode.W;
         public KeyCode RotateKey = KeyCode.E;
         public KeyCode ScaleKey = KeyCode.R;
+        public KeyCode RectToolKey = KeyCode.T;
         public KeyCode PivotRotationKey = KeyCode.X;
         public KeyCode PivotModeKey = KeyCode.Z;
 
@@ -18,7 +19,6 @@ namespace Battlehub.RTHandles
         {
             m_editor = IOC.Resolve<IRTE>();
 
-            UnityEditorToolsListener.ToolChanged += OnUnityEditorToolChanged;
         }
 
         private void Start()
@@ -26,18 +26,9 @@ namespace Battlehub.RTHandles
             m_editor.Tools.Current = RuntimeTool.Move;
         }
 
-        private void OnDestroy()
-        {
-            UnityEditorToolsListener.ToolChanged -= OnUnityEditorToolChanged;
-        }
 
-   
         private void Update()
         {
-            #if UNITY_EDITOR
-            //UnityEditorToolsListener.Update();
-            #endif
-
             if(m_editor.Tools.ActiveTool != null || m_editor.IsInputFieldActive)
             {
                 return;
@@ -62,6 +53,10 @@ namespace Battlehub.RTHandles
                 else if (ScaleAction())
                 {
                     m_editor.Tools.Current = RuntimeTool.Scale;
+                }
+                else if(RectToolAction())
+                {
+                    m_editor.Tools.Current = RuntimeTool.Rect;
                 }
 
                 if (PivotRotationAction())
@@ -89,34 +84,6 @@ namespace Battlehub.RTHandles
             }
         }
 
-        private void OnUnityEditorToolChanged()
-        {
-            #if UNITY_EDITOR    
-            switch (UnityEditor.Tools.current)
-            {
-                case UnityEditor.Tool.None:
-                    m_editor.Tools.Current = RuntimeTool.None;
-                    break;
-                case UnityEditor.Tool.Move:
-                    m_editor.Tools.Current = RuntimeTool.Move;
-                    break;
-                case UnityEditor.Tool.Rotate:
-                    m_editor.Tools.Current = RuntimeTool.Rotate;
-                    break;
-                case UnityEditor.Tool.Scale:
-                    m_editor.Tools.Current = RuntimeTool.Scale;
-                    break;
-                case UnityEditor.Tool.View:
-                    m_editor.Tools.Current = RuntimeTool.View;
-                    break;
-                default:
-                    m_editor.Tools.Current = RuntimeTool.None;
-                    break;
-            }
-            #endif
-        }
-
-      
         protected virtual bool ViewAction()
         {
             return m_editor.Input.GetKeyDown(ViewKey);
@@ -135,6 +102,11 @@ namespace Battlehub.RTHandles
         protected virtual bool ScaleAction()
         {
             return m_editor.Input.GetKeyDown(ScaleKey);
+        }
+
+        protected virtual bool RectToolAction()
+        {
+            return m_editor.Input.GetKeyDown(RectToolKey);
         }
 
         protected virtual bool PivotRotationAction()

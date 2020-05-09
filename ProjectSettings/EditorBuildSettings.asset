@@ -5,7 +5,7 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/Battlehub/RTEditor/Demo/RTEditor.unity
     guid: 4215a0f4652834c40978a0dc505ae257
   - enabled: 0
@@ -20,7 +20,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Battlehub/RTHandles/Demo/RTHandles.unity
     guid: 486e7a8839af68b42923ba8833fa237a
-  - enabled: 1
+  - enabled: 0
     path: Assets/Battlehub/ARCore/RTHandles/Demo/RTHandlesAR.unity
     guid: 773bc21ee352a2942aeb5f5ac20524b3
   - enabled: 0

@@ -1,4 +1,5 @@
 ﻿using System;
+using Battlehub.RTCommon;
 using UnityEngine;
 
 namespace Battlehub.RTGizmos
@@ -13,15 +14,20 @@ namespace Battlehub.RTGizmos
             }
         }
 
-        protected override void DrawOverride(Camera camera)
+        protected override void AwakeOverride()
         {
-            base.DrawOverride(camera);
+            base.AwakeOverride();
+            RefreshOnCameraChanged = true;
+        }
+ 
+        protected override void OnCommandBufferRefresh(IRTECamera camera)
+        {
+            base.OnCommandBufferRefresh(camera);
             if (Target == null)
             {
                 return;
             }
-            RuntimeGizmos.DrawDirectionalLight(camera, Target.position, Target.rotation, Vector3.one, LineColor);
-
+            GizmoUtility.DrawDirectionalLight(camera.CommandBuffer, camera.Camera, Target.position, Target.rotation, Vector3.one, LineProperties);
         }
 
         private void Reset()

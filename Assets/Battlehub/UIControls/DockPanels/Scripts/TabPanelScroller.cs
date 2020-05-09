@@ -20,7 +20,6 @@ namespace Battlehub.UIControls.DockPanels
         [SerializeField]
         private float m_sensitivity = 500;
 
-
         private float ViewportLeft
         {
             get { return m_viewport.localPosition.x; }
@@ -53,48 +52,87 @@ namespace Battlehub.UIControls.DockPanels
             }
         }
 
+        private float m_contentSize;
         private float ContentSize
         {
-            get { return m_content.transform.childCount * (m_tabSize + m_content.spacing); }
+            get { return m_contentSize; }
         }
 
-
-        private float m_tabSize;
-
         private Region m_region;
-
         private TransformChildrenChangeListener m_transformChildrenChangeListener;
-
         private bool m_updateButtonsState;
+        private bool m_isStarted;
+        private bool m_isDraggingRegion;
 
         private void Awake()
         {
             m_region = GetComponentInParent<Region>();
+
+            m_region.Root.TabBeginDrag += OnTabBeginDrag;
+            m_region.Root.TabEndDrag += OnTabEndDrag;
             LayoutElement layoutElement = m_region.TabPrefab.GetComponent<LayoutElement>();
 
-            m_tabSize = layoutElement.minWidth;
+            UpdateContentSize();
             m_viewport = GetComponent<RectTransform>();
             m_transformChildrenChangeListener = m_content.gameObject.AddComponent<TransformChildrenChangeListener>();
-            m_transformChildrenChangeListener.TransformChildrenChanged += UpdateButtonsState;
         }
 
         private void Start()
         {
             m_updateButtonsState = true;
+            m_isStarted = true;
+            m_transformChildrenChangeListener.TransformChildrenChanged += OnTabPanelChildrenChanged;
         }
 
         private void OnDestroy()
         {
-       
+            if (m_region != null && m_region.Root != null)
+            {
+                m_region.Root.TabBeginDrag -= OnTabBeginDrag;
+                m_region.Root.TabEndDrag -= OnTabEndDrag;
+            }
+
             if (m_transformChildrenChangeListener != null)
             {
-                m_transformChildrenChangeListener.TransformChildrenChanged -= UpdateButtonsState;
+                m_transformChildrenChangeListener.TransformChildrenChanged -= OnTabPanelChildrenChanged;
             }
+        }
+
+        private void OnTabBeginDrag(Region region)
+        {
+            m_isDraggingRegion = true;
+            m_left.gameObject.SetActive(false);
+            m_right.gameObject.SetActive(false);
+        }
+
+        private void OnTabEndDrag(Region region)
+        {
+            m_isDraggingRegion = false;
+            m_updateButtonsState = true;
         }
 
         private void OnRectTransformDimensionsChange()
         {
-            m_updateButtonsState = true;
+            if (m_isStarted)
+            {
+                m_updateButtonsState = true;
+            }
+        }
+
+        private void OnTabPanelChildrenChanged()
+        {
+            UpdateContentSize();
+            UpdateButtonsState();
+        }
+
+        private void UpdateContentSize()
+        {
+            m_contentSize = 0;
+            foreach (Transform child in m_content.transform)
+            {
+                LayoutElement layoutElement = child.GetComponent<LayoutElement>();
+                m_contentSize += layoutElement.minWidth;
+            }
         }
 
         private void UpdateButtonsState()
@@ -108,7 +146,7 @@ namespace Battlehub.UIControls.DockPanels
                 }
             }
 
-            if (m_viewport.rect.width < ContentSize)
+            if (m_viewport.rect.width < ContentSize && !m_isDraggingRegion)
             {
                 if (ContentLeft < ViewportLeft)
                 {
@@ -155,9 +193,9 @@ namespace Battlehub.UIControls.DockPanels
 
         private void Update()
         {
-            if(m_updateButtonsState)
+            if (m_updateButtonsState)
             {
-                UpdateButtonsState();
+                OnTabPanelChildrenChanged();
                 m_updateButtonsState = false;
             }
 
@@ -198,7 +236,7 @@ namespace Battlehub.UIControls.DockPanels
                 ContentRight = ViewportRight;
                 DisableRight();
 
-                UpdateButtonsState();
+                OnTabPanelChildrenChanged();
             }
         }
 
@@ -207,8 +245,7 @@ namespace Battlehub.UIControls.DockPanels
             ContentLeft = ViewportLeft;
             DisableLeft();
 
-            UpdateButtonsState();
+            OnTabPanelChildrenChanged();
         }
     }
 }
-

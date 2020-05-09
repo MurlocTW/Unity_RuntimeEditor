@@ -29,15 +29,19 @@ namespace Battlehub.RTSL
         [ProtoMember(5)]
         public string Name;
 
+        [ProtoMember(6)]
+        public Guid RuntimeTypeGuid;
+
         public PersistentDescriptor()
         {
         }
 
-        public PersistentDescriptor(Guid persistentTypeGuid, long persistentID, string name)
+        public PersistentDescriptor(Guid persistentTypeGuid, long persistentID, string name, Guid runtimeTypeGuid)
         {
             PersistentID = persistentID;
             PersistentTypeGuid = persistentTypeGuid;
             Name = name;
+            RuntimeTypeGuid = runtimeTypeGuid;
 
             Children = new PersistentDescriptor[0];
             Components = new PersistentDescriptor[0];
@@ -79,8 +83,16 @@ namespace Battlehub.RTSL
                     descriptor = descriptor.Parent;
                 }
             }
-            return string.Format("Descriptor InstanceId = {0}, Type = {1}, Path = {2}, Children = {3} Components = {4}", PersistentID, PersistentTypeGuid, pathToDesriptor, Children != null ? Children.Length : 0, Components != null ? Components.Length : 0);
+            return string.Format("Descriptor InstanceId = {0}, Type = {1}, Path = {2}, Children = {3} Components = {4}, RuntimeTypeGuid = {5}", PersistentID, PersistentTypeGuid, pathToDesriptor, Children != null ? Children.Length : 0, Components != null ? Components.Length : 0, RuntimeTypeGuid);
         }
+
+        #region Obsolete
+        [Obsolete]
+        public PersistentDescriptor(Guid persistentTypeGuid, long persistentID, string name) : this(persistentTypeGuid, persistentID, name, Guid.Empty)
+        {
+        }
+
+        #endregion
     }
 }
 

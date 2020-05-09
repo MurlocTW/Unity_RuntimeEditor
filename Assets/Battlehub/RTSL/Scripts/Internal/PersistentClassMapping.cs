@@ -4,13 +4,7 @@ using UnityEngine;
 namespace Battlehub.RTSL.Battlehub.SL2
 {
 }
-namespace Battlehub.RTSL
-{
-    public class RuntimePrefab : UnityEngine.Object
-    { }
-    public class RuntimeScene : RuntimePrefab
-    { }
-}
+
 
 namespace Battlehub.RTSL
 {
@@ -71,7 +65,11 @@ namespace Battlehub.RTSL
         
 
         //True if property (or field) is non-unityobject persistent class
-        public bool UseSurrogate; 
+        public bool UseSurrogate;
+
+        //True if property (or field) is non-unityobject persistent class (used for second generic argument of dictionary)
+        public bool UseSurrogate2; 
+
 
         //True if property (or field) is unity object or non-unity object with dependencies
         public bool HasDependenciesOrIsDependencyItself;

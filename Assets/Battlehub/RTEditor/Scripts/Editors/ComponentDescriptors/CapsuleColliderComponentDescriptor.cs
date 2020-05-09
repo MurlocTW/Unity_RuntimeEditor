@@ -2,6 +2,7 @@
 using System.Reflection;
 using Battlehub.Utils;
 using Battlehub.RTGizmos;
+using Battlehub.RTCommon;
 
 namespace Battlehub.RTEditor
 {
@@ -53,6 +54,8 @@ namespace Battlehub.RTEditor
 
         public override PropertyDescriptor[] GetProperties(ComponentEditor editor, object converterObj)
         {
+            ILocalization lc = IOC.Resolve<ILocalization>();
+
             CapsuleColliderPropertyConverter converter = (CapsuleColliderPropertyConverter)converterObj;
 
             MemberInfo isTriggerInfo = Strong.PropertyInfo((CapsuleCollider x) => x.isTrigger, "isTrigger");
@@ -65,12 +68,12 @@ namespace Battlehub.RTEditor
 
             return new[]
             {
-                new PropertyDescriptor("Is Trigger", editor.Component, isTriggerInfo, isTriggerInfo),
-                new PropertyDescriptor("Material", editor.Component, materialInfo, materialInfo),
-                new PropertyDescriptor("Center", editor.Component, centerInfo, centerInfo),
-                new PropertyDescriptor("Radius", editor.Component, radiusInfo, radiusInfo),
-                new PropertyDescriptor("Height", editor.Component, heightInfo, heightInfo),
-                new PropertyDescriptor("Direction", converter, directionConvertedInfo, directionInfo),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_CapsuleCollider_IsTrigger", "Is Trigger"), editor.Component, isTriggerInfo, "m_IsTrigger"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_CapsuleCollider_Material", "Material"), editor.Component, materialInfo),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_CapsuleCollider_Center", "Center"), editor.Component, centerInfo, "m_Center"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_CapsuleCollider_Radius", "Radius"), editor.Component, radiusInfo, "m_Radius"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_CapsuleCollider_Height", "Height"), editor.Component, heightInfo, "m_Height"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_CapsuleCollider_Direction", "Direction"), converter, directionConvertedInfo, "m_Direction"),
             };
         }
     }

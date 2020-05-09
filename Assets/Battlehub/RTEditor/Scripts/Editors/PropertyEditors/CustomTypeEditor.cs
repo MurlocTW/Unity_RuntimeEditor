@@ -60,7 +60,7 @@ namespace Battlehub.RTEditor
         {
             base.InitOverride(target, accessor, memberInfo, eraseTargetCallback, label);
            
-            FieldInfo[] serializableFields = Reflection.GetSerializableFields(memberInfo.GetType());
+            FieldInfo[] serializableFields = Reflection.GetSerializableFields(memberInfo.GetType(), false);
 
             if (StartExpanded)
             {
@@ -99,7 +99,7 @@ namespace Battlehub.RTEditor
 
         private void CreateElementEditors(object value)
         {
-            FieldInfo[] fields = Reflection.GetSerializableFields(MemberInfoType);
+            FieldInfo[] fields = Reflection.GetSerializableFields(MemberInfoType, false);
             for (int i = 0; i < fields.Length; ++i)
             {
                 MemberInfo memberInfo = fields[i];
@@ -178,12 +178,12 @@ namespace Battlehub.RTEditor
             }
         }
 
-        protected override void ReloadOverride()
+        protected override void ReloadOverride(bool force)
         {
-            base.ReloadOverride();
+            base.ReloadOverride(force);
 
             object value = GetValue();
-            if (!EqualityComparer<object>.Default.Equals(m_currentValue, value))
+            if (force || !EqualityComparer<object>.Default.Equals(m_currentValue, value))
             {
                 value = Activator.CreateInstance(MemberInfoType);
                 SetValue(value);

@@ -126,8 +126,8 @@ namespace Battlehub.UIControls
         {
             get
             {
-                //return Mathf.CeilToInt(((float)ItemsCount) / ContainersPerGroup) * ContainersPerGroup;
-                return Mathf.RoundToInt(((float)ItemsCount) / ContainersPerGroup) * ContainersPerGroup;
+                return Mathf.CeilToInt(((float)ItemsCount) / ContainersPerGroup) * ContainersPerGroup;
+                //return Mathf.RoundToInt(((float)ItemsCount) / ContainersPerGroup) * ContainersPerGroup;
             }
         }
 
@@ -696,7 +696,7 @@ namespace Battlehub.UIControls
             {
                 int i = 0;
 
-                foreach (RectTransform container in m_containers)
+                foreach (RectTransform container in m_containers.ToArray())
                 {
                     int index = firstItemIndex + i;
                     if(index < Items.Count)

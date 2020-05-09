@@ -11,6 +11,7 @@ namespace Battlehub.RTEditor
         public TMP_InputField Field;
         public float IncrementFactor = 0.1f;
         public Texture2D DragCursor;
+        public bool ShowCursorOnDrag;
         public UnityEvent BeginDrag;
         public UnityEvent EndDrag;
 
@@ -29,17 +30,32 @@ namespace Battlehub.RTEditor
 
         void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
         {
-            BeginDrag.Invoke();  
+            BeginDrag.Invoke();
+
+            if (ShowCursorOnDrag)
+            {
+                m_editor.CursorHelper.SetCursor(this, DragCursor, new Vector2(0.5f, 0.5f), CursorMode.Auto);
+            }
         }
 
         void IDropHandler.OnDrop(PointerEventData eventData)
         {
             EndDrag.Invoke();
+
+            if (ShowCursorOnDrag)
+            {
+                m_editor.CursorHelper.ResetCursor(this);
+            }
         }
 
         void IEndDragHandler.OnEndDrag(PointerEventData eventData)
         {
             EndDrag.Invoke();
+
+            if (ShowCursorOnDrag)
+            {
+                m_editor.CursorHelper.ResetCursor(this);
+            }
         }
 
         void IDragHandler.OnDrag(PointerEventData eventData)
@@ -59,12 +75,18 @@ namespace Battlehub.RTEditor
 
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
         {
-            m_editor.CursorHelper.SetCursor(this, DragCursor, new Vector2(0.5f, 0.5f), CursorMode.Auto);
+            if(!ShowCursorOnDrag)
+            {
+                m_editor.CursorHelper.SetCursor(this, DragCursor, new Vector2(0.5f, 0.5f), CursorMode.Auto);
+            } 
         }
 
         void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
         {
-            m_editor.CursorHelper.ResetCursor(this);
+            if(!ShowCursorOnDrag)
+            {
+                m_editor.CursorHelper.ResetCursor(this);
+            }
         }
     }
 

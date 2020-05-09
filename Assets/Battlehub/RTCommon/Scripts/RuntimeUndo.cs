@@ -420,23 +420,28 @@ namespace Battlehub.RTCommon
 
         Record CreateRecord(UndoRedoCallback redoCallback, UndoRedoCallback undoCallback, PurgeCallback purgeCallback = null, EraseReferenceCallback eraseCallback = null);
         Record CreateRecord(object target, object newState, object oldState, UndoRedoCallback redoCallback, UndoRedoCallback undoCallback, PurgeCallback purgeCallback = null, EraseReferenceCallback eraseCallback = null);
-        void Select(UnityObject[] objects, UnityObject activeObject);    
+        void Select(IRuntimeSelection selection, UnityObject[] objects, UnityObject activeObject);
 
-        void RegisterCreatedObjects(ExposeToEditor[] createdObjects);
-        void DestroyObjects(ExposeToEditor[] destoryedObjects);
+        void RegisterCreatedObjects(ExposeToEditor[] createdObjects, Action afterRedo = null, Action afterUndo = null);
+        void DestroyObjects(ExposeToEditor[] destoryedObjects, Action afterRedo = null, Action afterUndo = null);
 
-        void RecordValue(object target, MemberInfo memberInfo);
-        void RecordValue(object target, object accessor, MemberInfo memberInfo);
+        void RecordValue(object target, MemberInfo memberInfo, Action afterRedo = null, Action afterUndo = null);
+        void RecordValue(object target, object accessor, MemberInfo memberInfo, Action afterRedo = null, Action afterUndo = null);
         void BeginRecordValue(object target, MemberInfo memberInfo);
         void BeginRecordValue(object target, object accessor, MemberInfo memberInfo);
-        void EndRecordValue(object target, MemberInfo memberInfo);
-        void EndRecordValue(object target, object accessor, MemberInfo memberInfo, Action<object, object> targetErased);
+        void EndRecordValue(object target, MemberInfo memberInfo, Action afterRedo = null, Action afterUndo = null);
+        void EndRecordValue(object target, object accessor, MemberInfo memberInfo, Action<object, object> targetErased = null, Action afterRedo = null, Action afterUndo = null);
 
         void BeginRecordTransform(Transform target, Transform parent = null, int siblingIndex = -1);
         void EndRecordTransform(Transform target, Transform parent = null, int siblingIndex = -1);
 
         void AddComponent(ExposeToEditor obj, Type type);
         void DestroyComponent(Component destroy, MemberInfo[] memberInfo);
+
+        #region Obsolete
+        [Obsolete("Use void Select(IRuntimeSelection selection, UnityObject[] objects, UnityObject activeObject) instead")]
+        void Select(UnityObject[] objects, UnityObject activeObject);
+        #endregion
     }
 
 
@@ -543,6 +548,8 @@ namespace Battlehub.RTCommon
         private Stack<UndoStack<Record[]>> m_stacks;
         private List<Record[]> m_purgeRecords;
         private List<UndoStack<Record[]>.Node> m_purgeNodes;
+
+
         private IRTE m_rte;
         public RuntimeUndo(IRTE rte)
         {
@@ -603,6 +610,7 @@ namespace Battlehub.RTCommon
                     }
                 }
                 m_purgeRecords.Clear();
+                m_markAsDestroyedDuringLastOperation.Clear();
 
                 if (StateChanged != null)
                 {
@@ -791,7 +799,7 @@ namespace Battlehub.RTCommon
                         }
                     }
 
-                    if(node.Data.Length == erased)
+                    if(erased > 0 && node.Data.Length == erased)
                     {
                         m_purgeNodes.Add(node);
                     }
@@ -905,6 +913,7 @@ namespace Battlehub.RTCommon
                     }
                 }
 
+
                 m_purgeRecords.Clear();
 
                 if (StateChanged != null)
@@ -999,7 +1008,7 @@ namespace Battlehub.RTCommon
             return hasChanged;
         }
 
-        public void Select(UnityObject[] objects, UnityObject activeObject)
+        public void Select(IRuntimeSelection selection, UnityObject[] objects, UnityObject activeObject)
         {
             if (!Enabled)
             {
@@ -1009,14 +1018,14 @@ namespace Battlehub.RTCommon
             {
                 return;
             }
-            if (!HasSelectionChanged(objects, activeObject, m_rte.Selection))
+            if (!HasSelectionChanged(objects, activeObject, selection))
             {
                 return;
             }
 
-            Record newRecord = CreateRecord(m_rte.Selection,
+            Record newRecord = CreateRecord(selection,
                 new SelectionState(objects, activeObject),
-                new SelectionState(m_rte.Selection),
+                new SelectionState(selection),
                 record => ApplySelection((SelectionState)record.NewState, (IRuntimeSelection)record.Target),
                 record => ApplySelection((SelectionState)record.OldState, (IRuntimeSelection)record.Target),
                 record => { /*do nothing*/ },
@@ -1041,7 +1050,9 @@ namespace Battlehub.RTCommon
             }
         }
 
-        private static bool MarkAsDestroyed(Record record, bool destroyed)
+
+        
+        private bool MarkAsDestroyed(Record record, bool destroyed)
         {
             ExposeToEditor[] objects = (ExposeToEditor[])record.Target;
             for (int i = 0; i < objects.Length; ++i)
@@ -1055,15 +1066,19 @@ namespace Battlehub.RTCommon
             return true;
         }
 
-        private static void PurgeMarkedAsDestoryed(Record record)
+        private void PurgeMarkedAsDestoryed(Record record)
         {
             ExposeToEditor[] objects = (ExposeToEditor[])record.Target;
             for (int i = 0; i < objects.Length; ++i)
             {
                 ExposeToEditor obj = objects[i];
+
                 if (obj != null && obj.MarkAsDestroyed)
                 {
-                    UnityObject.DestroyImmediate(obj.gameObject);
+                    if(!m_markAsDestroyedDuringLastOperation.Contains(obj))
+                    {
+                        UnityObject.DestroyImmediate(obj.gameObject);
+                    }
                 }
             }
         }
@@ -1107,7 +1122,7 @@ namespace Battlehub.RTCommon
             return objects.Length == 0;
         }
 
-        public void RegisterCreatedObjects(ExposeToEditor[] createdObjects)
+        public void RegisterCreatedObjects(ExposeToEditor[] createdObjects, Action afterRedo = null, Action afterUndo = null)
         {
             if (!Enabled)
             {
@@ -1118,8 +1133,8 @@ namespace Battlehub.RTCommon
                 return;
             }
             Record newRecord = CreateRecord(createdObjects, false, true,
-                record => MarkAsDestroyed(record, (bool)record.NewState),
-                record => MarkAsDestroyed(record, (bool)record.OldState),
+                record => { bool result = MarkAsDestroyed(record, (bool)record.NewState); afterRedo?.Invoke(); return result; },
+                record => { bool result = MarkAsDestroyed(record, (bool)record.OldState); afterUndo?.Invoke(); return result; },
                 record => PurgeMarkedAsDestoryed(record),
                 (record, oldReference, newReference) => EraseMarkedAsDestroyed(record, newReference, oldReference));
 
@@ -1129,7 +1144,9 @@ namespace Battlehub.RTCommon
             }
         }
 
-        public void DestroyObjects(ExposeToEditor[] destoryedObjects)
+        //To prevent gameobject from being destroyed during purge operation (in case if they are referenced somewhere in the stack)
+        private HashSet<ExposeToEditor> m_markAsDestroyedDuringLastOperation = new HashSet<ExposeToEditor>();
+        public void DestroyObjects(ExposeToEditor[] destoryedObjects, Action afterRedo = null, Action afterUndo = null)
         {
             if (!Enabled)
             {
@@ -1139,9 +1156,18 @@ namespace Battlehub.RTCommon
             {
                 return;
             }
+
+            for(int i = 0; i < destoryedObjects.Length; ++i)
+            {
+                if (!m_markAsDestroyedDuringLastOperation.Contains(destoryedObjects[i]))
+                {
+                    m_markAsDestroyedDuringLastOperation.Add(destoryedObjects[i]);
+                }
+            }
+
             Record newRecord = CreateRecord(destoryedObjects, true, false,
-               record => MarkAsDestroyed(record, (bool)record.NewState),
-               record => MarkAsDestroyed(record, (bool)record.OldState),
+               record => { bool result = MarkAsDestroyed(record, (bool)record.NewState); afterRedo?.Invoke(); return result; },
+               record => { bool result = MarkAsDestroyed(record, (bool)record.OldState); afterUndo?.Invoke(); return result; },
                record => PurgeMarkedAsDestoryed(record),
                (record, oldReference, newReference) => EraseMarkedAsDestroyed(record, newReference, oldReference));
 
@@ -1149,6 +1175,11 @@ namespace Battlehub.RTCommon
             {
                 newRecord.Redo();
             }
+
+            if(!IsRecording)
+            {
+                m_markAsDestroyedDuringLastOperation.Clear();
+            }    
         }
 
         private static object GetDefault(Type type)
@@ -1252,7 +1283,7 @@ namespace Battlehub.RTCommon
             }
         }
 
-        private bool AssignValues(SetValuesState state)
+        private bool AssignValues(SetValuesState state, Action callback)
         {
             if(state.Accessor == null || (state.Accessor is UnityObject) && null == (UnityObject)state.Accessor)
             {
@@ -1271,6 +1302,11 @@ namespace Battlehub.RTCommon
                 AssignValue(state.Accessor, state.MemberInfo[i], newValue);
             }
 
+            if(callback != null)
+            {
+                callback();
+            }
+            
             return isValueChanged;
         }
 
@@ -1347,7 +1383,7 @@ namespace Battlehub.RTCommon
             }
         }
 
-        private void RecordValues(object target, object accessor, MemberInfo[] memberInfo, object[] oldValues, Action<object, object> targetErased )
+        private void RecordValues(object target, object accessor, MemberInfo[] memberInfo, object[] oldValues, Action<object, object> targetErased, Action afterRedo, Action afterUndo)
         {
             if (!Enabled)
             {
@@ -1360,8 +1396,8 @@ namespace Battlehub.RTCommon
             Record newRecord = CreateRecord(target,
                 new SetValuesState(accessor, memberInfo, GetValues(accessor, memberInfo)),
                 new SetValuesState(accessor, memberInfo, oldValues),
-                record => AssignValues((SetValuesState)record.NewState),
-                record => AssignValues((SetValuesState)record.OldState),
+                record => AssignValues((SetValuesState)record.NewState, afterRedo),
+                record => AssignValues((SetValuesState)record.OldState, afterUndo),
                 record => { },
                 (record, oldReference, newReference) =>
                 {
@@ -1398,20 +1434,15 @@ namespace Battlehub.RTCommon
                 });
         }
 
-        private void RecordValues(object target, MemberInfo[] memberInfo, object[] oldValues)
+        private void RecordValues(object target, MemberInfo[] memberInfo, object[] oldValues, Action afterRedo, Action afterUndo)
         {
-            RecordValues(target, target, memberInfo, oldValues, null);
+            RecordValues(target, target, memberInfo, oldValues, null, afterRedo, afterUndo);
         }
 
-        private void RecordValue(object target, object accessor, MemberInfo memberInfo, object oldValue, Action<object, object> targetErased)
+        private void RecordValue(object target, object accessor, MemberInfo memberInfo, object oldValue, Action<object, object> targetErased, Action afterRedo, Action afterUndo)
         {
-            RecordValues(target, accessor, new[] { memberInfo }, new[] { oldValue }, targetErased);
+            RecordValues(target, accessor, new[] { memberInfo }, new[] { oldValue }, targetErased, afterRedo, afterUndo);
         }
-
-        //private void RecordValue(object target, MemberInfo memberInfo, object oldValue)
-        //{
-        //    RecordValue(target, target, memberInfo, oldValue, null);
-        //}
 
         private bool ApplyRecordedValue(Record record, MemberInfo memberInfo)
         {
@@ -1459,14 +1490,14 @@ namespace Battlehub.RTCommon
             return hasChanged;
         }
 
-        public void RecordValue(object target, MemberInfo memberInfo)
+        public void RecordValue(object target, MemberInfo memberInfo, Action afterRedo, Action afterUndo)
         {
-            RecordValue(target, target, memberInfo, GetValue(target, memberInfo), null);
+            RecordValue(target, target, memberInfo, GetValue(target, memberInfo), null, afterRedo, afterUndo);
         }
 
-        public void RecordValue(object target, object accessor, MemberInfo memberInfo)
+        public void RecordValue(object target, object accessor, MemberInfo memberInfo, Action afterRedo, Action afterUndo)
         {
-            RecordValue(target, accessor, memberInfo, GetValue(accessor, memberInfo), null);
+            RecordValue(target, accessor, memberInfo, GetValue(accessor, memberInfo), null, afterRedo, afterUndo);
         }
 
         public void BeginRecordValue(object target, MemberInfo memberInfo)
@@ -1499,12 +1530,12 @@ namespace Battlehub.RTCommon
             memberInfoToValue[memberInfo] = GetValue(accessor, memberInfo);
         }
 
-        public void EndRecordValue(object target, MemberInfo memberInfo)
+        public void EndRecordValue(object target, MemberInfo memberInfo, Action afterRedo, Action afterUndo)
         {
-            EndRecordValue(target, target, memberInfo, null);
+            EndRecordValue(target, target, memberInfo, null, afterRedo, afterUndo);
         }
 
-        public void EndRecordValue(object target, object accessor, MemberInfo memberInfo, Action<object, object> targetErased)
+        public void EndRecordValue(object target, object accessor, MemberInfo memberInfo, Action<object, object> targetErased, Action afterRedo, Action afterUndo)
         {
             if (!Enabled)
             {
@@ -1532,7 +1563,7 @@ namespace Battlehub.RTCommon
                 m_objToValue.Remove(target);
             }
 
-            RecordValue(target, accessor, memberInfo, oldValue, targetErased);
+            RecordValue(target, accessor, memberInfo, oldValue, targetErased, afterRedo, afterUndo);
         }
 
         public void BeginRecordTransform(Transform target, Transform parent = null, int siblingIndex = -1)
@@ -1715,6 +1746,20 @@ namespace Battlehub.RTCommon
                 if(record.OldState == oldReference)
                 {
                     record.OldState = newReference;
+
+                    //Handling runtime script reload;
+                    if(record.NewState != null && newReference != null)
+                    {
+                        if(record.NewState is Type)
+                        {
+                            Type t = (Type)record.NewState;
+                            Type refType = newReference.GetType();
+                            if(t.FullName == refType.FullName)
+                            {
+                                record.NewState = refType;
+                            }
+                        }
+                    }
                 }
 
                 if ((record.Target as ExposeToEditor) == null)
@@ -1762,7 +1807,7 @@ namespace Battlehub.RTCommon
                 GameObject go = record.Target as GameObject;
                 Component component = AddComponent(go, componentType);
                 AssingValues(component, memberInfo, (object[])record.NewState);
-
+                
                 object repacement = record.OldState;
                 Erase(repacement, component, true);
                 record.OldState = component;
@@ -1825,6 +1870,16 @@ namespace Battlehub.RTCommon
                 newRecord.Redo();
             }
         }
+
+        #region Obsolete
+
+        [Obsolete("Use void Select(IRuntimeSelection selection, UnityObject[] objects, UnityObject activeObject) instead")]
+        public void Select(UnityObject[] objects, UnityObject activeObject)
+        {
+            Select(m_rte.Selection, objects, activeObject);
+        }
+
+        #endregion
     }
 
     public class DisabledUndo : IRuntimeUndo
@@ -1896,27 +1951,33 @@ namespace Battlehub.RTCommon
             return null;
         }
 
+        public void Select(IRuntimeSelection selection, UnityObject[] objects, UnityObject activeObject)
+        {
+
+        }
+
+        [Obsolete]
         public void Select(UnityObject[] objects, UnityObject activeObject)
         {
          
         }
 
-        public void RegisterCreatedObjects(ExposeToEditor[] createdObjects)
+        public void RegisterCreatedObjects(ExposeToEditor[] createdObjects, Action afterRedo = null, Action afterUndo = null)
         {
          
         }
 
-        public void DestroyObjects(ExposeToEditor[] destoryedObjects)
+        public void DestroyObjects(ExposeToEditor[] destoryedObjects, Action afterRedo = null, Action afterUndo = null)
         {
             
         }
 
-        public void RecordValue(object target, MemberInfo memberInfo)
+        public void RecordValue(object target, MemberInfo memberInfo, Action afterRedo, Action afterUndo)
         {
 
         }
 
-        public void RecordValue(object target, object accessor, MemberInfo memberInfo)
+        public void RecordValue(object target, object accessor, MemberInfo memberInfo, Action afterRedo, Action afterUndo)
         {
 
         }
@@ -1931,20 +1992,15 @@ namespace Battlehub.RTCommon
             
         }
 
-        public void EndRecordValue(object target, MemberInfo memberInfo)
+        public void EndRecordValue(object target, MemberInfo memberInfo, Action afterRedo, Action afterUndo)
         {
             
         }
 
-        public void EndRecordValue(object target, object accessor, MemberInfo memberInfo, Action<object, object> targetErased)
+        public void EndRecordValue(object target, object accessor, MemberInfo memberInfo, Action<object, object> targetErased, Action afterRedo, Action afterUndo)
         {
             
         }
-
-        //public void RecordTransform(Transform target, Transform parent = null, int siblingIndex = -1)
-        //{
-
-        //}
 
         public void BeginRecordTransform(Transform target, Transform parent = null, int siblingIndex = -1)
         {

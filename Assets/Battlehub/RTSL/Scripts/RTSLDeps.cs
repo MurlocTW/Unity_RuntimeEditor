@@ -19,16 +19,19 @@ namespace Battlehub.RTSL
         private IProject m_project;
         private IRuntimeShaderUtil m_shaderUtil;
         private IAssetBundleLoader m_assetBundleLoader;
+        private IPlayerPrefsStorage m_playerPrefs;
 
         protected virtual IAssetBundleLoader AssetBundleLoader
         {
             get
             {
+                #if USE_GOOGLE_DRIVE
                 if(File.Exists(Application.streamingAssetsPath + "/credentials.json"))
                 {
                     return new GoogleDriveAssetBundleLoader();
                 }
                 else
+                #endif
                 {
                     return new AssetBundleLoader();
                 }
@@ -78,11 +81,16 @@ namespace Battlehub.RTSL
             }
         }
 
+        protected virtual IPlayerPrefsStorage PlayerPrefs
+        {
+            get { return new PlayerPrefsStorage(); }
+        }
+
         private void Awake()
         {
             if(m_instance != null)
             {
-                Debug.LogWarning("AnotherInstance of RTSL exists");
+                Debug.LogWarning("Another instance of RTSL exists");
             }
             m_instance = this;
 
@@ -104,6 +112,7 @@ namespace Battlehub.RTSL
             m_serializer = Serializer;
             m_storage = Storage;
             m_project = Project;
+            m_playerPrefs = PlayerPrefs;
         }
 
         private void OnDestroy()
@@ -123,6 +132,7 @@ namespace Battlehub.RTSL
             m_serializer = null;
             m_storage = null;
             m_project = null;
+            m_playerPrefs = null;
         }
 
         protected virtual void OnDestroyOverride()
@@ -154,17 +164,6 @@ namespace Battlehub.RTSL
             }    
         }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void Init()
-        {
-            if(!Application.isPlaying)
-            {
-                return;
-            }
-
-            RegisterRTSL();
-            SceneManager.sceneUnloaded += OnSceneUnloaded;
-        }
 
         private static void RegisterRTSL()
         {
@@ -177,11 +176,35 @@ namespace Battlehub.RTSL
             IOC.RegisterFallback<IIDMap>(() => Instance.m_assetDB);
             IOC.RegisterFallback(() => Instance.m_project);
             IOC.RegisterFallback(() => Instance.m_shaderUtil);
+            IOC.RegisterFallback(() => Instance.m_playerPrefs);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void Init()
+        {
+            if(!Application.isPlaying)
+            {
+                return;
+            }
+
+            RegisterRTSL();
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
+        }
+
+        private static int m_loadedScenes;
+        private static void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
+        {
+            m_loadedScenes++;
         }
 
         private static void OnSceneUnloaded(Scene arg0)
         {
-            m_instance = null;
+            m_loadedScenes--;
+            if(m_loadedScenes == 0)
+            {
+                m_instance = null;
+            }
         }
     }
 }

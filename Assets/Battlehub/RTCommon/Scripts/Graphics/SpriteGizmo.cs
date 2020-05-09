@@ -2,68 +2,68 @@
 
 namespace Battlehub.RTCommon
 {
-    public class SpriteGizmo : MonoBehaviour, IGL
+    public class SpriteGizmo : MonoBehaviour
     {
-        public Material Material;
+        public Mesh Mesh;
+
+        private Vector3 m_position;
+        private Quaternion m_rotation;
+
         [SerializeField, HideInInspector]
         private SphereCollider m_collider;
+        private SphereCollider m_destroyedCollider;
 
-        private void Awake()
+        [SerializeField]
+        private float m_scale = 1.0f;
+        public float Scale
         {
-            if (GLRenderer.Instance == null)
+            get { return m_scale; }
+            set
             {
-                GameObject glRenderer = new GameObject();
-                glRenderer.name = "GLRenderer";
-                glRenderer.AddComponent<GLRenderer>();
+                if(m_scale != value)
+                {
+                    m_scale = value;
+                    UpdateCollider();
+                }
             }
         }
-
+        
         private void OnEnable()
-        {    
-            GLRenderer glRenderer = GLRenderer.Instance;
-            if(glRenderer)
-            {
-                glRenderer.Add(this);
-            }
-
+        {
             m_collider = GetComponent<SphereCollider>();
 
-            if(m_collider == null)
+            if (m_collider == null || m_collider == m_destroyedCollider)
             {
                 m_collider = gameObject.AddComponent<SphereCollider>();
-                m_collider.radius = 0.25f;
             }
-            if(m_collider != null)
+            if (m_collider != null)
             {
-                if(m_collider.hideFlags == HideFlags.None)
+                if (m_collider.hideFlags == HideFlags.None)
                 {
                     m_collider.hideFlags = HideFlags.HideInInspector;
                 }
-            } 
+
+                UpdateCollider();
+            }
         }
 
         private void OnDisable()
         {
-            GLRenderer glRenderer = GLRenderer.Instance;
-            if (glRenderer)
-            {
-                glRenderer.Remove(this);
-            }
-
             if(m_collider != null)
             {
                 Destroy(m_collider);
+                m_destroyedCollider = m_collider;
                 m_collider = null;
             }
         }
 
-        void IGL.Draw(int cullingMask, Camera camera)
+        private void UpdateCollider()
         {
-            Material.SetPass(0);
-            RuntimeGraphics.DrawQuad(transform.localToWorldMatrix);
+            if(m_collider != null)
+            {
+                m_collider.radius = 0.25f * m_scale;
+            }
         }
-
-
     }
 }
 

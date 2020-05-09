@@ -6,12 +6,21 @@ using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Battlehub.RTEditor
 {
     public interface IRTEAppearance
     {
+        AssetIcon[] AssetIcons
+        {
+            get;
+            set;
+        }
+
+        Sprite GetAssetIcon(string type);
+        
         RTECursor[] CursorSettings
         {
             get;
@@ -24,25 +33,39 @@ namespace Battlehub.RTEditor
             set;
         }
 
-        [Obsolete("Use UIScaler instead")]
         CanvasScaler UIBackgroundScaler
         {
             get;
         }
 
-        [Obsolete("Use UIScaler instead")]
         CanvasScaler UIForegroundScaler
         {
             get;
         }
 
+        [Obsolete("Use scale property instead")]
         CanvasScaler UIScaler
         {
             get;
         }
 
+        float UIScale
+        {
+            get;
+            set;
+        }
+
         void ApplyColors(GameObject root);
+        void RegisterPrefab(GameObject prefab);
     }
+
+    [Serializable]
+    public class AssetIcon
+    {
+        public string AssetTypeName;
+        public Sprite Icon;
+    }
+
 
     [Serializable]
     public struct RTECursor
@@ -150,9 +173,9 @@ namespace Battlehub.RTEditor
         public static readonly Color DefaultText = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
         public static readonly Color DefaultText2 = new Color32(0xFF, 0xFF, 0xFF, 0x7F);
         public static readonly Color DefaultModalOverlay = new Color32(0x00, 0x00, 0x00, 0x40);
-        public static readonly Color DefaultMainMenuBar = new Color32(0x6F, 0x6F, 0x6F, 0xFF);
+        public static readonly Color DefaultMainMenuBar = new Color32(0x38, 0x38, 0x38, 0xFF);
         public static readonly Color DefaultToolsToggle = new Color32(0xC8, 0xC8, 0xC8, 0x7F);
-        public static readonly Color DefaultFooter = new Color32(0x6F, 0x6F, 0x6F, 0xFF);
+        public static readonly Color DefaultFooter = new Color32(0x38, 0x38, 0x38, 0xFF);
         public static readonly RTESelectableColors DefaultMainMenuButton = new RTESelectableColors(new Color32(0xff, 0xff, 0xff, 0x00), new Color32(0x0, 0x97, 0xFF, 0x7F), new Color32(0x0, 0x97, 0xFF, 0xFF), new Color32(0, 0, 0, 0));
         public static readonly RTEMenuItemColors DefaultMenuItem = new RTEMenuItemColors(new Color32(0x00, 0x97, 0xFF, 0xFF), new Color32(0xFF, 0xFF, 0xFF, 0xFF), new Color32(0x95, 0x93, 0x93, 0x7F), new Color32(0x71, 0x71, 0x71, 0xFF));
         public static readonly RTEHierarchyColors DefaultHierarchy = new RTEHierarchyColors(Color.white, new Color32(0x93, 0x92, 0x92, 0xFF));
@@ -161,6 +184,7 @@ namespace Battlehub.RTEditor
         public static readonly RTESelectableColors DefaultScrollBar = new RTESelectableColors(DefaultPrimary, DefaultPrimary, DefaultSecondary, new Color32(0xC8, 0xC8, 0xC8, 0x7F));
         public static readonly Color DefaultScrollBarBackground = new Color32(0xB2, 0xB2, 0xB2, 0xFF);
         public static readonly RTESelectableColors DefaultToggle = new RTESelectableColors(DefaultSecondary, DefaultSecondary, new Color32(0x20, 0x20, 0x20, 0xFF), new Color32(0x38, 0x38, 0x38, 0x7F));
+        public static readonly RTESelectableColors DefaultToggle2 = new RTESelectableColors(DefaultSecondary, DefaultSecondary, new Color32(0x20, 0x20, 0x20, 0xFF), new Color32(0x38, 0x38, 0x38, 0x7F));
         public static readonly RTESelectableColors DefaultToggleButton = new RTESelectableColors(new Color32(0x44, 0x44, 0x44, 0xFF), new Color32(0x38, 0x38, 0x38, 0xFF), new Color32(0x27, 0x27, 0x27, 0xFF), new Color32(0xC8, 0xC8, 0xC8, 0x7F));
         public static readonly RTESelectableColors DefaultInputField = new RTESelectableColors(DefaultSecondary, DefaultSecondary, new Color32(0x20, 0x20, 0x20, 0xFF), new Color32(0x5C, 0x5C, 0x5C, 0x7F), new Color32(0, 0x97, 0xFF, 0xFF));
         public static readonly RTESelectableColors DefaultInputField2 = new RTESelectableColors(DefaultSecondary, DefaultSecondary, new Color32(0x20, 0x20, 0x20, 0xFF), new Color32(0x5C, 0x5C, 0x5C, 0x7F), new Color32(0x20, 0x20, 0x20, 0xFF));
@@ -168,6 +192,7 @@ namespace Battlehub.RTEditor
         public static readonly RTESelectableColors DefaultButton2 = new RTESelectableColors(new Color(0xFF, 0xFF, 0xFF, 0xFF), new Color32(0xF5, 0xF5, 0xF5, 0xFF), new Color32(0xC8, 0xC8, 0xC8, 0xFF), new Color32(0xC8, 0xC8, 0xC8, 0x7F));
         public static readonly RTESelectableColors DefaultSlider = new RTESelectableColors(new Color32(0x44, 0x44, 0x44, 0xFF), new Color32(0x55, 0x55, 0x55, 0xFF), new Color32(0x38, 0x38, 0x38, 0x7F), new Color32(0x5C, 0x5C, 0x5C, 0x66));
         public static readonly RTESelectableColors DefaultDropdown = new RTESelectableColors(new Color32(0x44, 0x44, 0x44, 0xFF), new Color32(0x55, 0x55, 0x55, 0xFF), new Color32(0x38, 0x38, 0x38, 0x7F), new Color32(0x5C, 0x5C, 0x5C, 0x66));
+        public static readonly RTESelectableColors DefaultToolCmdItem = new RTESelectableColors(new Color32(0x00, 0x97, 0xFF, 0xC0), new Color32(0x00, 0x97, 0xFF, 0xFF), new Color32(0x00, 0xB0, 0xFF, 0xFF), new Color32());
 
         public Color Primary;
         public Color Secondary;
@@ -190,6 +215,7 @@ namespace Battlehub.RTEditor
         public RTESelectableColors ScrollBar;
         public Color ScrollBarBackground;
         public RTESelectableColors Toggle;
+        public RTESelectableColors Toggle2;
         public RTESelectableColors ToggleButton;
         public RTESelectableColors InputField;
         public RTESelectableColors InputField2;
@@ -197,6 +223,7 @@ namespace Battlehub.RTEditor
         public RTESelectableColors Button2;
         public RTESelectableColors Slider;
         public RTESelectableColors Dropdown;
+        public RTESelectableColors ToolCmdItem;
         
         public RTEColors()
         {
@@ -221,6 +248,7 @@ namespace Battlehub.RTEditor
             ScrollBar = DefaultScrollBar;
             ScrollBarBackground = DefaultScrollBarBackground;
             Toggle = DefaultToggle;
+            Toggle2 = DefaultToggle2;
             ToggleButton = DefaultToggleButton;
             InputField = DefaultInputField;
             InputField2 = DefaultInputField2;
@@ -228,6 +256,7 @@ namespace Battlehub.RTEditor
             Button2 = DefaultButton2;
             Slider = DefaultSlider;
             Dropdown = DefaultDropdown;
+            ToolCmdItem = DefaultToolCmdItem;
         }
 
         public bool IsDefault
@@ -256,14 +285,15 @@ namespace Battlehub.RTEditor
                     ScrollBar.EqualTo(DefaultScrollBar) &&
                     ScrollBarBackground == DefaultScrollBarBackground &&
                     Toggle.EqualTo(DefaultToggle) &&
+                    Toggle2.EqualTo(DefaultToggle2) &&
                     ToggleButton.EqualTo(DefaultToggleButton) &&
                     InputField.EqualTo(DefaultInputField) &&
                     InputField2.EqualTo(DefaultInputField2) &&
                     Button.EqualTo(DefaultButton) &&
                     Button2.EqualTo(DefaultButton2) &&
                     Slider.EqualTo(DefaultSlider) &&
-                    Dropdown.EqualTo(DefaultDropdown);
-                    
+                    Dropdown.EqualTo(DefaultDropdown) &&
+                    ToolCmdItem.EqualTo(DefaultToolCmdItem);   
             }
         }
     }
@@ -271,6 +301,50 @@ namespace Battlehub.RTEditor
     [DefaultExecutionOrder(-90)]
     public class RTEAppearance : MonoBehaviour, IRTEAppearance
     {
+        [SerializeField]
+        public AssetIcon[] m_assetIcons;
+        public AssetIcon[] AssetIcons
+        {
+            get { return m_assetIcons; }
+            set
+            {
+                m_assetIcons = value;
+                UpdateAssetTypeToIconDictionary();
+            }
+        }
+
+        private readonly Dictionary<string, Sprite> m_assetTypeToIcon = new Dictionary<string, Sprite>();
+        public Sprite GetAssetIcon(string type)
+        {
+            Sprite sprite;
+            if(m_assetTypeToIcon.TryGetValue(type, out sprite))
+            {
+                return sprite;
+            }
+            return null;
+        }
+
+        private void UpdateAssetTypeToIconDictionary()
+        {
+            m_assetTypeToIcon.Clear();
+            if(m_assetIcons == null)
+            {
+                return;
+            }
+
+            for(int i = 0; i < m_assetIcons.Length; ++i)
+            {
+                AssetIcon icon = m_assetIcons[i];
+                if(icon.AssetTypeName != null && icon.Icon != null)
+                {
+                    if(!m_assetTypeToIcon.ContainsKey(icon.AssetTypeName))
+                    {
+                        m_assetTypeToIcon.Add(icon.AssetTypeName, icon.Icon);
+                    }
+                }
+            }
+        }
+
         [SerializeField]
         private RTECursor[] m_cursorSettings = null;
         public RTECursor[] CursorSettings
@@ -288,7 +362,6 @@ namespace Battlehub.RTEditor
 
         [SerializeField]
         private CanvasScaler m_uiBackgroundScaler = null;
-        [Obsolete("Use UIScaler instead")]
         public CanvasScaler UIBackgroundScaler
         {
             get { return m_uiBackgroundScaler; }
@@ -296,17 +369,34 @@ namespace Battlehub.RTEditor
 
         [SerializeField]
         private CanvasScaler m_uiForegroundScaler = null;
-        [Obsolete("Use UIScaler instead")]
         public CanvasScaler UIForegroundScaler
         {
             get { return m_uiForegroundScaler; }
         }
 
-        [SerializeField]
+        [SerializeField, Obsolete]
         private CanvasScaler m_uiScaler = null;
+        [Obsolete]
         public CanvasScaler UIScaler
         {
             get { return m_uiScaler; }
+        }
+
+        public float UIScale
+        {
+            get { return m_uiForegroundScaler.scaleFactor; }
+            set
+            {
+                if(m_uiForegroundScaler != null)
+                {
+                    m_uiForegroundScaler.scaleFactor = value;
+                }
+                
+                if(m_uiBackgroundScaler != null)
+                {
+                    m_uiBackgroundScaler.scaleFactor = value;
+                }
+            }
         }
 
         [SerializeField]
@@ -322,12 +412,27 @@ namespace Battlehub.RTEditor
         }
 
         [SerializeField]
-        private GameObject[] m_prefabs = null;
+        private List<GameObject> m_prefabs = null;
 
         private IRTE m_editor;
         private void Awake()
         {
+            if(m_assetIcons == null || m_assetIcons.Length == 0)
+            {
+                AssetIcons =  new[]
+                {
+                    new AssetIcon { AssetTypeName = "Folder", Icon = Resources.Load<Sprite>("FolderLarge")  },
+                    new AssetIcon { AssetTypeName = "Default", Icon = Resources.Load<Sprite>("RTE_Object")  },
+                    new AssetIcon { AssetTypeName = "None", Icon = Resources.Load<Sprite>("None")  },
+                    new AssetIcon { AssetTypeName = typeof(Scene).FullName, Icon = Resources.Load<Sprite>("FileLarge")  },
+                    new AssetIcon { AssetTypeName = typeof(Mesh).FullName, Icon = Resources.Load<Sprite>("RTE_Mesh")  },
+                    new AssetIcon { AssetTypeName = typeof(RuntimeAnimationClip).FullName, Icon = Resources.Load<Sprite>("RTE_AnimationClip")  },
+                };
+            }
+
             m_editor = IOC.Resolve<IRTE>();
+
+            UpdateAssetTypeToIconDictionary();
 
             List<RTECursor> cursorSettings;
             if (m_cursorSettings == null)
@@ -450,10 +555,10 @@ namespace Battlehub.RTEditor
                         style.ApplyImageColor(Colors.MainMenuBar);
                         break;
                     case "MainMenuButtonColor":
-                        style.ApplyMainButtonColor(Colors.MainMenuButton.Normal, Colors.MainMenuButton.Highlight, Colors.MainMenuButton.Pressed);
+                        UIMenuStyle.ApplyMainButtonColor(style, Colors.MainMenuButton.Normal, Colors.MainMenuButton.Highlight, Colors.MainMenuButton.Pressed);
                         break;
                     case "MenuItemColor":
-                        style.ApplyMenuItemColor(Colors.MenuItem.SelectionColor, Colors.MenuItem.TextColor, Colors.MenuItem.DisabledSelectionColor, Colors.MenuItem.DisabledTextColor);
+                        UIMenuStyle.ApplyMenuItemColor(style, Colors.MenuItem.SelectionColor, Colors.MenuItem.TextColor, Colors.MenuItem.DisabledSelectionColor, Colors.MenuItem.DisabledTextColor);
                         break;
                     case "ToolsToggleColor":
                         style.ApplyImageColor(Colors.ToolsToggle);
@@ -462,25 +567,28 @@ namespace Battlehub.RTEditor
                         style.ApplyImageColor(Colors.Footer);
                         break;
                     case "HierarchyColor":
-                        style.ApplyHierarchyColors(Colors.Hierarchy.NormalItem, Colors.Hierarchy.DisabledItem);
+                        UIEditorStyle.ApplyHierarchyColors(style, Colors.Hierarchy.NormalItem, Colors.Hierarchy.DisabledItem);
                         break;
                     case "ProjectFolderColor":
                         style.ApplyImageColor(Colors.ProjectFolder);
                         break;
                     case "ConsoleButtonColor":
-                        style.ApplySelectableColor (Colors.ConsoleButton.Normal, Colors.ConsoleButton.Highlight, Colors.ConsoleButton.Pressed, Colors.ConsoleButton.Disabled);
+                        style.ApplySelectableColor (Colors.ConsoleButton.Normal, Colors.ConsoleButton.Highlight, Colors.ConsoleButton.Pressed, Colors.ConsoleButton.Disabled, Colors.ConsoleButton.Selected);
                         break;
                     case "ScrollBarColor":
-                        style.ApplySelectableColor(Colors.ScrollBar.Normal, Colors.ScrollBar.Highlight, Colors.ScrollBar.Pressed, Colors.ScrollBar.Disabled);
+                        style.ApplySelectableColor(Colors.ScrollBar.Normal, Colors.ScrollBar.Highlight, Colors.ScrollBar.Pressed, Colors.ScrollBar.Disabled, Colors.ScrollBar.Selected);
                         break;
                     case "ScrollBarBackgroundColor":
                         style.ApplyImageColor(Colors.ScrollBarBackground);
                         break;
                     case "ToggleColor":
-                        style.ApplySelectableColor(Colors.Toggle.Normal, Colors.Toggle.Highlight, Colors.Toggle.Pressed, Colors.Toggle.Disabled);
+                        style.ApplySelectableColor(Colors.Toggle.Normal, Colors.Toggle.Highlight, Colors.Toggle.Pressed, Colors.Toggle.Disabled, Colors.Toggle.Selected);
+                        break;
+                    case "Toggle2Color":
+                        style.ApplySelectableColor(Colors.Toggle2.Normal, Colors.Toggle2.Highlight, Colors.Toggle2.Pressed, Colors.Toggle2.Disabled, Colors.Toggle2.Selected);
                         break;
                     case "ToggleButtonColor":
-                        style.ApplySelectableColor(Colors.ToggleButton.Normal, Colors.ToggleButton.Highlight, Colors.ToggleButton.Pressed, Colors.ToggleButton.Disabled);
+                        style.ApplySelectableColor(Colors.ToggleButton.Normal, Colors.ToggleButton.Highlight, Colors.ToggleButton.Pressed, Colors.ToggleButton.Disabled, Colors.ToggleButton.Selected);
                         break;
                     case "InputFieldColor":
                         style.ApplyInputFieldColor(Colors.InputField.Normal, Colors.InputField.Highlight, Colors.InputField.Pressed, Colors.InputField.Disabled, Colors.InputField.Selected);
@@ -489,19 +597,31 @@ namespace Battlehub.RTEditor
                         style.ApplyInputFieldColor(Colors.InputField2.Normal, Colors.InputField2.Highlight, Colors.InputField2.Pressed, Colors.InputField2.Disabled, Colors.InputField2.Selected);
                         break;
                     case "ButtonColor":
-                        style.ApplySelectableColor(Colors.Button.Normal, Colors.Button.Highlight, Colors.Button.Pressed, Colors.Button.Disabled);
+                        style.ApplySelectableColor(Colors.Button.Normal, Colors.Button.Highlight, Colors.Button.Pressed, Colors.Button.Disabled, Colors.Button.Selected);
                         break;
                     case "Button2Color":
-                        style.ApplySelectableColor(Colors.Button2.Normal, Colors.Button2.Highlight, Colors.Button2.Pressed, Colors.Button2.Disabled);
+                        style.ApplySelectableColor(Colors.Button2.Normal, Colors.Button2.Highlight, Colors.Button2.Pressed, Colors.Button2.Disabled, Colors.Button2.Selected);
                         break;
                     case "SliderColor":
-                        style.ApplySelectableColor(Colors.Slider.Normal, Colors.Slider.Highlight, Colors.Slider.Pressed, Colors.Slider.Disabled);
+                        style.ApplySelectableColor(Colors.Slider.Normal, Colors.Slider.Highlight, Colors.Slider.Pressed, Colors.Slider.Disabled, Colors.Slider.Selected);
                         break;
                     case "DropdownColor":
-                        style.ApplySelectableColor(Colors.Dropdown.Normal, Colors.Dropdown.Highlight, Colors.Dropdown.Pressed, Colors.Dropdown.Disabled);
+                        style.ApplySelectableColor(Colors.Dropdown.Normal, Colors.Dropdown.Highlight, Colors.Dropdown.Pressed, Colors.Dropdown.Disabled, Colors.Dropdown.Selected);
                         break;
+                    case "ToolCmdItemColor":
+                        UIEditorStyle.ApplyToolCmdItemColor(style, Colors.ToolCmdItem.Normal, Colors.ToolCmdItem.Highlight, Colors.ToolCmdItem.Pressed);
+                        break;
+                    case "TimlineControlBackgroundColor":
+                        UIEditorStyle.ApplyTimelineControlBackgroundColor(style, Colors.Secondary);
+                        break;
+                        
                 }
             }
+        }
+
+        public void RegisterPrefab(GameObject prefab)
+        {
+            m_prefabs.Add(prefab);
         }
     }
 

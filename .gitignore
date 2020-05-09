@@ -6,10 +6,7 @@ Library
 
 Temp
 obj
-Assets/GoogleARCore
-Assets/GoogleARCore.meta
-Assets/PlayServicesResolver
-Assets/PlayServicesResolver.meta
+
 
 Assets/Battlehub/Cubeman.meta
 Blender/Arrows14.blend

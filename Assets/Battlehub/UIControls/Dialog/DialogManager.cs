@@ -98,7 +98,7 @@ namespace Battlehub.UIControls.Dialogs
             return dialog;      
         }
 
-        private void OnDestroyed(Dialog sender)
+        private void OnDestroyed(Dialog sender, bool? result)
         {
             sender.Closed -= OnDestroyed;
             if (m_dialogStack.Contains(sender))

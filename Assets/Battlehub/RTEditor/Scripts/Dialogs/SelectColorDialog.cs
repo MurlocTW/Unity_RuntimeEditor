@@ -15,10 +15,14 @@ namespace Battlehub.RTEditor
 
         private Dialog m_parentDialog;
 
+        private ILocalization m_localization;
+
         protected override void AwakeOverride()
         {
             WindowType = RuntimeWindowType.SelectColor;
             base.AwakeOverride();
+
+            m_localization = IOC.Resolve<ILocalization>();
         }
 
         private void Start()
@@ -26,9 +30,9 @@ namespace Battlehub.RTEditor
             m_parentDialog = GetComponentInParent<Dialog>();
             m_parentDialog.Ok += OnOk;
             m_parentDialog.IsOkVisible = true;
-            m_parentDialog.OkText = "Select";
+            m_parentDialog.OkText = m_localization.GetString("ID_RTEditor_SelectColorDialog_Select", "Select");
             m_parentDialog.IsCancelVisible = true;
-            m_parentDialog.CancelText = "Cancel";
+            m_parentDialog.CancelText = m_localization.GetString("ID_RTEditor_SelectColorDialog_Cancel", "Cancel");
             m_colorPicker.CurrentColor = SelectedColor;
         }
 

@@ -10,6 +10,8 @@ namespace Battlehub.UIControls.DockPanels
         public event RegionEventHandler<Transform> TabActivated;
         public event RegionEventHandler<Transform> TabDeactivated;
         public event RegionEventHandler<Transform> TabClosed;
+        public event RegionEventHandler TabBeginDrag;
+        public event RegionEventHandler TabEndDrag;
 
         public event RegionEventHandler RegionSelected;
         public event RegionEventHandler RegionUnselected;
@@ -163,6 +165,8 @@ namespace Battlehub.UIControls.DockPanels
             Region.TabActivated += OnTabActivated;
             Region.TabDeactivated += OnTabDeactivated;
             Region.TabClosed += OnTabClosed;
+            Region.TabBeginDrag += OnTabBeginDrag;
+            Region.TabEndDrag += OnTabEndDrag;
 
             if (m_rootRegion == null)
             {
@@ -209,6 +213,8 @@ namespace Battlehub.UIControls.DockPanels
             Region.TabActivated -= OnTabActivated;
             Region.TabDeactivated -= OnTabDeactivated;
             Region.TabClosed -= OnTabClosed;
+            Region.TabBeginDrag -= OnTabBeginDrag;
+            Region.TabEndDrag -= OnTabEndDrag;
         }
 
         private void OnRectTransformDimensionsChange()
@@ -267,6 +273,33 @@ namespace Battlehub.UIControls.DockPanels
             if (TabClosed != null)
             {
                 TabClosed(region, arg);
+            }
+        }
+
+        private void OnTabBeginDrag(Region region)
+        {
+            if (region.Root != this)
+            {
+                return;
+            }
+
+            if (TabBeginDrag != null)
+            {
+                TabBeginDrag(region);
+            }
+        }
+
+
+        private void OnTabEndDrag(Region region)
+        {
+            if (region.Root != this)
+            {
+                return;
+            }
+
+            if(TabEndDrag != null)
+            {
+                TabEndDrag(region);
             }
         }
 

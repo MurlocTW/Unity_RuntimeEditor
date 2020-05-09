@@ -1,4 +1,5 @@
-﻿using Battlehub.Utils;
+﻿using Battlehub.RTCommon;
+using Battlehub.Utils;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -41,6 +42,8 @@ namespace Battlehub.RTEditor
 
         public override PropertyDescriptor[] GetProperties(ComponentEditor editor, object converter)
         {
+            ILocalization lc = IOC.Resolve<ILocalization>();
+
             Camera camera = (Camera)editor.Component;
 
             PropertyEditorCallback valueChanged = () => editor.BuildEditor();
@@ -50,15 +53,15 @@ namespace Battlehub.RTEditor
             MemberInfo orthographicSize = Strong.PropertyInfo((Camera x) => x.orthographicSize, "orthographicSize");
 
             List<PropertyDescriptor> descriptors = new List<PropertyDescriptor>();
-            descriptors.Add(new PropertyDescriptor("Projection", converter, projection, orthographic, valueChanged));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Camera_Projection", "Projection"), converter, projection, orthographic, valueChanged));
             
             if(!camera.orthographic)
             {
-                descriptors.Add(new PropertyDescriptor("Field Of View", editor.Component, fov, fov));
+                descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Camera_Fov", "Field Of View"), editor.Component, fov, "field of view"));
             }
             else
             {
-                descriptors.Add(new PropertyDescriptor("Size", editor.Component, orthographicSize, orthographicSize));
+                descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Camera_Size", "Size"), editor.Component, orthographicSize, "orthographic size"));
             }
             
             return descriptors.ToArray();

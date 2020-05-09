@@ -1,11 +1,18 @@
 ﻿using Battlehub.RTCommon;
+using Battlehub.RTHandles;
 using System;
 using System.Collections;
 using UnityEngine;
 
 namespace Battlehub.RTEditor
 {
-    public class EditorOverride : MonoBehaviour
+    //For backward compatibility
+    public class EditorOverride : EditorExtension
+    {
+
+    }
+
+    public class EditorExtension : MonoBehaviour
     {
         private IRTEState m_rteState;
         private IRTE m_editor;
@@ -90,6 +97,69 @@ namespace Battlehub.RTEditor
         {
             yield return new WaitForEndOfFrame();
             action();
+        }
+    }
+
+    public class SceneComponentExtension : EditorExtension
+    {
+        private IRTE m_editor;
+        private IRuntimeSceneComponent m_sceneComponent;
+
+        protected override void OnEditorExist()
+        {
+            base.OnEditorExist();
+            m_editor = IOC.Resolve<IRTE>();
+            m_editor.ActiveWindowChanged += OnActiveWindowChanged;
+            OnActiveWindowChanged(m_editor.ActiveWindow);
+        }
+
+        protected override void OnEditorClosed()
+        {
+            base.OnEditorClosed();
+            m_editor.ActiveWindowChanged -= OnActiveWindowChanged;
+            if (m_sceneComponent != null)
+            {
+                OnSceneDeactivated(m_sceneComponent);
+            }
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            m_editor.ActiveWindowChanged -= OnActiveWindowChanged;
+            if (m_sceneComponent != null)
+            {
+                OnSceneDeactivated(m_sceneComponent);
+            }
+        }
+
+        private void OnActiveWindowChanged(RuntimeWindow deactivatedWindow)
+        {
+            if (m_sceneComponent != null)
+            {
+                OnSceneDeactivated(m_sceneComponent);
+            }
+
+            if (m_editor.ActiveWindow != null)
+            {
+                m_sceneComponent = m_editor.ActiveWindow.IOCContainer.Resolve<IRuntimeSceneComponent>();
+                if (m_sceneComponent != null)
+                {
+                    OnSceneActivated(m_sceneComponent);
+                }
+
+            }
+        }
+
+        protected virtual void OnSceneActivated(IRuntimeSceneComponent sceneComponent)
+        {
+
+
+        }
+
+        protected virtual void OnSceneDeactivated(IRuntimeSceneComponent sceneComponent)
+        {
+
         }
     }
 }

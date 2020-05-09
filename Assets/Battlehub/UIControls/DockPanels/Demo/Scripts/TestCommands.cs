@@ -306,6 +306,7 @@ namespace Battlehub.UIControls.DockPanels
                 layoutInfo.Header = persistentLayoutInfo.WindowType;
                 layoutInfo.CanDrag = persistentLayoutInfo.CanDrag;
                 layoutInfo.CanClose = persistentLayoutInfo.CanClose;
+                layoutInfo.IsHeaderVisible = persistentLayoutInfo.IsHeaderVisible;
             }
             else
             {

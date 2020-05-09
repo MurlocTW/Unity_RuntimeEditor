@@ -78,7 +78,7 @@ namespace Battlehub.RTHandles
         protected override void LateUpdate()
         {
             base.LateUpdate();
-            
+                    
             if (m_component.Editor.Input.GetPointerDown(1))
             {
                 m_component.Editor.Tools.IsViewing = true;

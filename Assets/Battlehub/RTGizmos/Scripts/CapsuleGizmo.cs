@@ -78,30 +78,17 @@ namespace Battlehub.RTGizmos
             return true;
         }
 
-        protected override void DrawOverride(Camera camera)
+        protected override void OnCommandBufferRefresh(IRTECamera camera)
         {
-            base.DrawOverride(camera);
-
-           
+            base.OnCommandBufferRefresh(camera);
             float hs = GetMaxHorizontalScale(true);
             Vector3 scale = GetHandlesScale(true);
-            RuntimeGizmos.DrawCubeHandles(Target.TransformPoint(Center), Target.rotation,
 
-                GetHandlesScale(true),
-                
-                HandlesColor);
-           
-            RuntimeGizmos.DrawWireCapsuleGL(Direction, 
-                
-                GetHeight(), 
-
-                Radius, Target.TransformPoint(Center), Target.rotation,
-
-                new Vector3(hs, hs, hs), LineColor);
-
+            GizmoUtility.DrawCubeHandles(camera.CommandBuffer, Target.TransformPoint(Center), Target.rotation, scale, HandleProperties);
+            GizmoUtility.DrawWireCapsule(camera.CommandBuffer, Direction, GetHeight(), Radius, Target.TransformPoint(Center), Target.rotation, new Vector3(hs, hs, hs), LineProperties);
             if (IsDragging)
             {
-                RuntimeGizmos.DrawSelection(HandlesTransform.MultiplyPoint(Center + HandlesPositions[DragIndex]), Target.rotation, Target.lossyScale, SelectionColor);
+                GizmoUtility.DrawSelection(camera.CommandBuffer, HandlesTransform.MultiplyPoint(Center + HandlesPositions[DragIndex]), Target.rotation, Target.lossyScale, SelectionProperties);
             }
         }
 

@@ -390,6 +390,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_window: {fileID: 0}
   HightlightOnHover: 0
+  EnableUndo: 1
+  HitTester: {fileID: 0}
   Appearance: {fileID: 0}
   Model: {fileID: 114767379241590584, guid: adb919ab9b79d7f4baf715f244ee94c7, type: 3}
   m_targets: []
@@ -813,7 +815,13 @@ MonoBehaviour:
   CustomBounds:
     m_Center: {x: 0, y: 0, z: 0}
     m_Extent: {x: 0, y: 0, z: 0}
-  CanSelect: 1
+  CanTransform: 1
+  CanInspect: 1
+  CanDuplicate: 1
+  CanDelete: 1
+  CanRename: 1
+  CanCreatePrefab: 1
+  ShowSelectionGizmo: 1
   CanSnap: 1
   AddColliders: 1
 --- !u!1 &790443764
@@ -1005,6 +1013,9 @@ MonoBehaviour:
     SelectionColor:
       serializedVersion: 2
       rgba: 4282445551
+    SelectionAltColor:
+      serializedVersion: 2
+      rgba: 419430400
     BoundsColor:
       serializedVersion: 2
       rgba: 4278255360
@@ -1015,6 +1026,7 @@ MonoBehaviour:
   m_selectionMargin: 1.5
   m_invertZAxis: 0
   m_positionHandleArrowOnly: 0
+  m_sceneGizmoScale: 1
 --- !u!4 &849492139
 Transform:
   m_ObjectHideFlags: 0
@@ -1379,6 +1391,7 @@ MonoBehaviour:
   MoveKey: 119
   RotateKey: 101
   ScaleKey: 114
+  RectToolKey: 116
   PivotRotationKey: 120
   PivotModeKey: 122
 --- !u!4 &1542577451
@@ -1426,6 +1439,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_window: {fileID: 0}
   HightlightOnHover: 0
+  EnableUndo: 1
+  HitTester: {fileID: 0}
   Appearance: {fileID: 0}
   Model: {fileID: 114244960618619326, guid: d3fd87b8a132d624f846fd97fbb89c85, type: 3}
   m_targets: []
@@ -1439,7 +1454,9 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: Battlehub.RTHandles.BaseHandleUnityEvent, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
+  AbsouluteGrid: 0
   GridSize: 0.1
+  MinScale: {x: -3.4028235e+38, y: -3.4028235e+38, z: -3.4028235e+38}
 --- !u!4 &1564471776
 Transform:
   m_ObjectHideFlags: 0
@@ -1485,6 +1502,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_window: {fileID: 0}
   HightlightOnHover: 0
+  EnableUndo: 1
+  HitTester: {fileID: 0}
   Appearance: {fileID: 0}
   Model: {fileID: 114798909188857192, guid: e853e678f4be9c249a551a35b3366492, type: 3}
   m_targets: []
@@ -1515,6 +1534,49 @@ Transform:
   m_Father: {fileID: 1911405871}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1595065626
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1595065627}
+  - component: {fileID: 1595065628}
+  m_Layer: 0
+  m_Name: OutlineManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1595065627
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1595065626}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1911405871}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1595065628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1595065626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e80b589043a09543a8eae0047813bb9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1604174524
 GameObject:
   m_ObjectHideFlags: 0
@@ -1717,6 +1779,7 @@ MonoBehaviour:
   Offset: {x: 0, y: 0}
   Up: {x: 0, y: 1, z: 0}
   Appearance: {fileID: 0}
+  m_output: {fileID: 0}
   OrientationChanging:
     m_PersistentCalls:
       m_Calls: []
@@ -1732,6 +1795,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
+  m_textColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!20 &1663442427
 Camera:
   m_ObjectHideFlags: 0
@@ -1957,17 +2021,32 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_window: {fileID: 0}
+  m_outlineManager: {fileID: 0}
   m_positionHandle: {fileID: 394367926}
   m_rotationHandle: {fileID: 1579011940}
   m_scaleHandle: {fileID: 1564471775}
+  m_rectTool: {fileID: 0}
   m_boxSelection: {fileID: 1604174525}
+  m_selectionGizmoPrefab: {fileID: 0}
+  m_grid: {fileID: 0}
   m_pivot: {fileID: 0}
   m_secondaryPivot: {fileID: 0}
+  m_isPositionHandleEnabled: 1
+  m_isRotationHandleEnabled: 1
+  m_isScaleHandleEnabled: 1
+  m_isRectToolEnabled: 1
+  m_isBoxSelectionEnabled: 1
+  m_canSelect: 1
+  m_canSelectAll: 1
   ViewTexture: {fileID: 0}
   MoveTexture: {fileID: 0}
-  GridSize: 1
   m_sceneGizmo: {fileID: 1663442426}
-  m_grid: {fileID: 0}
+  m_sceneGizmoTransform: {fileID: 0}
+  m_isSceneGizmoEnabled: 1
+  m_canPan: 1
+  m_canZoom: 1
+  m_changeOrthographicSizeOnly: 1
+  m_canRotate: 1
 --- !u!114 &1911405870
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2002,6 +2081,7 @@ Transform:
   - {fileID: 1564471776}
   - {fileID: 1663442428}
   - {fileID: 1940780361}
+  - {fileID: 1595065627}
   m_Father: {fileID: 1959571563}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

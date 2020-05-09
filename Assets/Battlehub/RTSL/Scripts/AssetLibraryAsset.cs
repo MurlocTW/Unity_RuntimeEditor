@@ -83,14 +83,6 @@ namespace Battlehub.RTSL
                 m_offset = m_ordinal << AssetLibraryInfo.ORDINAL_OFFSET;
             }
         }
-
-        //[SerializeField]
-        //private bool m_keepRuntimeProjectInSync = true;
-        //public bool KeepRuntimeProjectInSync
-        //{
-        //    get { return m_keepRuntimeProjectInSync; }
-        //    set { m_keepRuntimeProjectInSync = value; }
-        //}
         
         [SerializeField]
         private AssetLibraryInfo m_assetLibrary;

@@ -13,37 +13,21 @@ namespace Battlehub.RTEditor
     public class GameObjectCmd : MonoBehaviour, IGameObjectCmd
     {
         private IRuntimeEditor m_editor;
+        private ILocalization m_localization;
 
         [SerializeField]
         private Material m_defaultMaterial = null;
 
-        private IScenePivot GetScenePivot()
-        {
-            if(m_editor.ActiveWindow != null)
-            {
-                IScenePivot scenePivot = m_editor.ActiveWindow.IOCContainer.Resolve<IScenePivot>();
-                if(scenePivot != null)
-                {
-                    return scenePivot;
-                }
-            }
-
-            RuntimeWindow sceneWindow = m_editor.GetWindow(RuntimeWindowType.Scene);
-            if(sceneWindow != null)
-            {
-                IScenePivot scenePivot = sceneWindow.IOCContainer.Resolve<IScenePivot>();
-                if(scenePivot != null)
-                {
-                    return scenePivot;
-                }
-            }
-
-            return null;
-        }
-
+     
         private void Awake()
         {
-            m_editor = IOC.Resolve<IRuntimeEditor>();   
+            m_editor = IOC.Resolve<IRuntimeEditor>();
+            m_localization = IOC.Resolve<ILocalization>();
+
+            if(RenderPipelineInfo.Type != RPType.Standard)
+            {
+                m_defaultMaterial = RenderPipelineInfo.DefaultMaterial;
+            }
         }
 
         public bool CanExec(string cmd)
@@ -59,7 +43,7 @@ namespace Battlehub.RTEditor
             {
                 case "createempty":
                     go = new GameObject();
-                    go.name = "Empty";
+                    go.name = m_localization.GetString("ID_RTEditor_GameObjectCmd_Empty", "Empty");
                     break;
                 case "createemptychild":
                     go = new GameObject();
@@ -94,7 +78,7 @@ namespace Battlehub.RTEditor
                 case "directionallight":
                     {
                         go = new GameObject();
-                        go.name = "Directional Light";
+                        go.name = m_localization.GetString("ID_RTEditor_GameObjectCmd_DirectionalLight", "Directional Light");
                         Light light = go.AddComponent<Light>();
                         light.type = LightType.Directional;
                     }
@@ -102,7 +86,7 @@ namespace Battlehub.RTEditor
                 case "pointlight":
                     {
                         go = new GameObject();
-                        go.name = "Point Light";
+                        go.name = m_localization.GetString("ID_RTEditor_GameObjectCmd_PointLight", "Point Light");
                         Light light = go.AddComponent<Light>();
                         light.type = LightType.Point;
                     }
@@ -110,16 +94,16 @@ namespace Battlehub.RTEditor
                 case "spotlight":
                     {
                         go = new GameObject();
-                        go.name = "Spot Light";
+                        go.name = m_localization.GetString("ID_RTEditor_GameObjectCmd_SpotLight", "Spot Light");
                         Light light = go.AddComponent<Light>();
-                        light.type = LightType.Point;
+                        light.type = LightType.Spot;
                     }
                     break;
                 case "camera":
                     {
                         go = new GameObject();
                         go.SetActive(false);
-                        go.name = "Camera";
+                        go.name = m_localization.GetString("ID_RTEditor_GameObjectCmd_Camera", "Camera");
                         go.AddComponent<Camera>();
                         go.AddComponent<GameViewCamera>();
                     }
@@ -128,16 +112,7 @@ namespace Battlehub.RTEditor
 
             if(go != null)
             {
-                Vector3 pivot = Vector3.zero;
-                IScenePivot scenePivot = GetScenePivot();
-                if (scenePivot != null)
-                {
-                    pivot = scenePivot.SecondaryPivot;
-                }
-                go.transform.position = pivot;
-                go.AddComponent<ExposeToEditor>();
-                go.SetActive(true);
-                m_editor.RegisterCreatedObjects(new[] { go });
+                m_editor.AddGameObjectToScene(go);
             }
             
         }

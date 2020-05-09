@@ -88,7 +88,16 @@ namespace Battlehub.RTEditor
     public class IListElementAccessor
     {
         private int m_index;
+        public int Index
+        {
+            get { return m_index; }
+        }
+
         private IListEditor m_editor;
+        public IListEditor Editor
+        {
+            get { return m_editor; }
+        }
 
         public string Name
         {
@@ -146,6 +155,10 @@ namespace Battlehub.RTEditor
         private PropertyEditorCallback m_valueChangingCallback;
         private PropertyEditorCallback m_valueChangedCallback;
         private PropertyEditorCallback m_endEditCallback;
+        private PropertyEditorCallback m_beginRecordCallback;
+        private PropertyEditorCallback m_endRecordCallback;
+        private PropertyEditorCallback m_afterRedoCallback;
+        private PropertyEditorCallback m_afterUndoCallback;
 
         private Dictionary<MemberInfo, PropertyDescriptor> m_childDescriptors;
         protected Dictionary<MemberInfo, PropertyDescriptor> ChildDescriptors
@@ -160,23 +173,65 @@ namespace Battlehub.RTEditor
         private int m_effectiveIndent;
         private bool m_enableUndo;
         private bool m_isEditing;
+
         private bool m_lockValue;
         protected bool LockValue
         {
             get { return m_lockValue; }
         }
 
-        protected object Target
+        public object Target
         {
             get;
             private set;
         }
+
+        public object Accessor
+        {
+            get;
+            private set;
+        }
+
+        //protected object[] m_targets;
+        //protected object[] m_accessors;
+
+        //protected object Target
+        //{
+        //    get
+        //    {
+        //        return m_targets != null && m_targets.Length > 0 ? m_targets[0] : null;
+        //    }
+        //    private set
+        //    {
+        //        if(value == null)
+        //        {
+        //            m_targets = null;
+        //        }
+        //        else
+        //        {
+        //            m_targets = new[] { value };
+        //        }
+        //    }
+        //}
         
-        protected object Accessor
-        {
-            get;
-            private set;
-        }
+        //protected object Accessor
+        //{
+        //    get
+        //    {
+        //        return m_accessors != null && m_accessors.Length > 0 ? m_accessors[0] : null;
+        //    }
+        //    private set
+        //    {
+        //        if (value == null)
+        //        {
+        //            m_accessors = null;
+        //        }
+        //        else
+        //        {
+        //            m_accessors = new[] { value };
+        //        }
+        //    }
+        //}
 
         private Action<object, object> m_eraseTargetCallback;
 
@@ -259,6 +314,15 @@ namespace Battlehub.RTEditor
 
         }
 
+        public void Init(object target, MemberInfo memberInfo, string label, bool enableUndo = true,
+            PropertyEditorCallback beginRecordCallback = null,
+            PropertyEditorCallback endRecordCallback = null,
+            PropertyEditorCallback afterRedoCallback = null,
+            PropertyEditorCallback afterUndoCallback = null)
+        {
+            Init(target, target, memberInfo, null, label, null, null, null, enableUndo, null, beginRecordCallback, endRecordCallback, afterRedoCallback, afterUndoCallback);
+        }
+
         public void Init(object target, object accessor,
             MemberInfo memberInfo,
             Action<object, object> eraseTargetCallback = null,
@@ -267,12 +331,21 @@ namespace Battlehub.RTEditor
             PropertyEditorCallback valueChangedCallback = null,
             PropertyEditorCallback endEditCallback = null,
             bool enableUndo = true,
-            PropertyDescriptor[] childDescriptors = null)
+            PropertyDescriptor[] childDescriptors = null,
+            PropertyEditorCallback beginRecordCallback = null,
+            PropertyEditorCallback endRecordCallback = null,
+            PropertyEditorCallback afterRedoCallback = null,
+            PropertyEditorCallback afterUndoCallback = null)
         {
             m_enableUndo = enableUndo;
             m_valueChangingCallback = valueChangingCallback;
             m_valueChangedCallback = valueChangedCallback;
             m_endEditCallback = endEditCallback;
+            m_beginRecordCallback = beginRecordCallback;
+            m_endRecordCallback = endRecordCallback;
+            m_afterRedoCallback = afterRedoCallback;
+            m_afterUndoCallback = afterUndoCallback;
+
             if (childDescriptors != null)
             {
                 m_childDescriptors = childDescriptors.ToDictionary(d => d.MemberInfo);
@@ -280,33 +353,42 @@ namespace Battlehub.RTEditor
             m_lockValue = true;
             InitOverride(target, accessor, memberInfo, eraseTargetCallback, label);
             m_lockValue = false;
-        }
+        }       
 
         protected virtual void InitOverride(object target, object accessor, MemberInfo memberInfo, Action<object, object> eraseTargetCallback = null, string label = null)
         {
             if(target == null)
             {
-                throw new ArgumentNullException("target");
+                if (Label != null)
+                {
+                    if (label != null)
+                    {
+                        Label.text = label;
+                    }
+                }
+                return;
+                //throw new ArgumentNullException("target");
             }
 
             IListElementAccessor arrayElement = target as IListElementAccessor;
             if (arrayElement == null)
             {
-                if (!(memberInfo is PropertyInfo) && !(memberInfo is FieldInfo))
-                {
-                    throw new ArgumentException("memberInfo should be PropertyInfo or FieldInfo");
-                }
+                //if (!(memberInfo is PropertyInfo) && !(memberInfo is FieldInfo))
+                //{
+                //    throw new ArgumentException("memberInfo should be PropertyInfo or FieldInfo");
+                //}
 
                 if (memberInfo is PropertyInfo)
                 {
                     Type propType = ((PropertyInfo)memberInfo).PropertyType;
                     MemberInfoType = propType;
                 }
-                else
+                else if(memberInfo is FieldInfo)
                 {
                     Type fieldType = ((FieldInfo)memberInfo).FieldType;
                     MemberInfoType = fieldType;
                 }
+
                 if(Label != null)
                 {
                     if (label != null)
@@ -335,7 +417,7 @@ namespace Battlehub.RTEditor
             m_eraseTargetCallback = eraseTargetCallback;
         }
 
-        public void Reload()
+        public void Reload(bool force = false)
         {
             if(m_isEditing)
             {
@@ -343,11 +425,11 @@ namespace Battlehub.RTEditor
             }
 
             m_lockValue = true;
-            ReloadOverride();
+            ReloadOverride(force);
             m_lockValue = false;
         }
 
-        protected virtual void ReloadOverride()
+        protected virtual void ReloadOverride(bool force)
         {
 
         }
@@ -355,12 +437,12 @@ namespace Battlehub.RTEditor
         protected void BeginEdit(bool record = true)
         {
             if(!m_isEditing && !m_lockValue)
-            {
+            {                
                 if(record)
                 {
                     BeginRecord();
                 }
-                
+                              
                 m_isEditing = true;
             }
         }
@@ -393,13 +475,34 @@ namespace Battlehub.RTEditor
             {
                 Editor.Undo.BeginRecordValue(Target, Accessor, MemberInfo);
             }
+            else
+            {
+                if (m_beginRecordCallback != null)
+                {
+                    m_beginRecordCallback();
+                }
+            }
         }
 
         protected void EndRecord()
         {
             if(m_enableUndo)
             {
-                Editor.Undo.EndRecordValue(Target, Accessor, MemberInfo, m_eraseTargetCallback);
+                if(m_afterRedoCallback != null && m_afterUndoCallback != null)
+                {
+                    Editor.Undo.EndRecordValue(Target, Accessor, MemberInfo, m_eraseTargetCallback, () => m_afterRedoCallback(), () => m_afterUndoCallback());
+                }
+                else
+                {
+                    Editor.Undo.EndRecordValue(Target, Accessor, MemberInfo, m_eraseTargetCallback);
+                }
+            }
+            else
+            {
+                if (m_endRecordCallback != null)
+                {
+                    m_endRecordCallback();
+                }
             }
         }
 
@@ -417,6 +520,37 @@ namespace Battlehub.RTEditor
             {
                 m_valueChangedCallback();
             }
+        }
+    }
+    public abstract class ConvertablePropertyEditor<T> : PropertyEditor<T>
+    {
+        [SerializeField]
+        protected bool m_convertUnits = false;
+
+        private ISettingsComponent m_settings;
+
+        protected override void AwakeOverride()
+        {
+            m_settings = IOC.Resolve<ISettingsComponent>();
+            base.AwakeOverride();
+        }
+
+        protected float FromMeters(float units)
+        {
+            if (m_convertUnits && m_settings != null && m_settings.SystemOfMeasurement == SystemOfMeasurement.Imperial)
+            {
+                return UnitsConverter.MetersToFeet(units);
+            }
+            return units;
+        }
+
+        protected float ToMeters(float units)
+        {
+            if (m_convertUnits && m_settings != null && m_settings.SystemOfMeasurement == SystemOfMeasurement.Imperial)
+            {
+                return UnitsConverter.FeetToMeters(units);
+            }
+            return units;
         }
     }
 
@@ -481,12 +615,18 @@ namespace Battlehub.RTEditor
             if (MemberInfo is PropertyInfo)
             {
                 PropertyInfo prop = (PropertyInfo)MemberInfo;
-                prop.SetValue(Accessor, value, null);
+                if(Accessor != null)
+                {
+                    prop.SetValue(Accessor, value, null);
+                }
             }
             else
             {
                 FieldInfo field = (FieldInfo)MemberInfo;
-                field.SetValue(Accessor, value);
+                if(Accessor != null)
+                {
+                    field.SetValue(Accessor, value);
+                }
             }
 
             m_currentValue = value;
@@ -495,12 +635,13 @@ namespace Battlehub.RTEditor
 
         private const float m_updateInterval = 0.25f;
         private float m_nextUpate;
-        protected void Update()
+        protected virtual void Update()
         {
             if(m_nextUpate > Time.time)
             {
                 return;
             }
+            
             
             m_nextUpate = Time.time + m_updateInterval;
             
@@ -509,7 +650,6 @@ namespace Battlehub.RTEditor
                 return;
             }
 
-            
             if(Target == null)
             {
                 return;
@@ -527,12 +667,12 @@ namespace Battlehub.RTEditor
             Reload();
         }
 
-        protected override void ReloadOverride()
+        protected override void ReloadOverride(bool force)
         {
-            base.ReloadOverride();
+            base.ReloadOverride(force);
             
             T value = GetValue();
-            if (!EqualityComparer<T>.Default.Equals(m_currentValue, value))
+            if (force || !EqualityComparer<T>.Default.Equals(m_currentValue, value))
             {
                 m_currentValue = value;
                 SetInputField(value);

@@ -32,8 +32,53 @@ namespace Battlehub.RTCommon
             }
         }
 
+        private Dictionary<Type, Dictionary<string, Item>> m_named = new Dictionary<Type, Dictionary<string, Item>>();
         private Dictionary<Type, Item> m_registered = new Dictionary<Type, Item>();
         private Dictionary<Type, Item> m_fallbacks = new Dictionary<Type, Item>();
+
+        public void Register<T>(string name, Func<T> func)
+        {
+            if (func == null)
+            {
+                throw new ArgumentNullException("func");
+            }
+
+            Dictionary<string, Item> nameToItem;
+            if(!m_named.TryGetValue(typeof(T), out nameToItem))
+            {
+                nameToItem = new Dictionary<string, Item>();
+                m_named.Add(typeof(T), nameToItem);
+            }
+
+            if(nameToItem.ContainsKey(name))
+            {
+                Debug.LogWarningFormat("item with name {0} already registered", name);
+            }
+
+            nameToItem[name] = new Item(func);
+        }
+
+        public void Register<T>(string name, T instance)
+        {
+            if (instance == null)
+            {
+                throw new ArgumentNullException("func");
+            }
+
+            Dictionary<string, Item> nameToItem;
+            if (!m_named.TryGetValue(typeof(T), out nameToItem))
+            {
+                nameToItem = new Dictionary<string, Item>();
+                m_named.Add(typeof(T), nameToItem);
+            }
+
+            if (nameToItem.ContainsKey(name))
+            {
+                Debug.LogWarningFormat("item with name {0} already registered", name);
+            }
+
+            nameToItem[name] = new Item(instance);
+        }
 
         public void Register<T>(Func<T> func)
         {
@@ -41,9 +86,10 @@ namespace Battlehub.RTCommon
             {
                 throw new ArgumentNullException("func");
             }
+
             if(m_registered.ContainsKey(typeof(T)))
             {
-                Debug.LogWarning("type {0} already registered.");
+                Debug.LogWarningFormat("type {0} already registered.", typeof(T).FullName);
             }
 
             m_registered[typeof(T)] = new Item(func);
@@ -61,6 +107,46 @@ namespace Battlehub.RTCommon
             }
 
             m_registered[typeof(T)] = new Item(instance);
+        }
+
+        public void Unregister<T>(string name, Func<T> func)
+        {
+            Dictionary<string, Item> nameToItem;
+            if (m_named.TryGetValue(typeof(T), out nameToItem))
+            {
+                Item item;
+                if(nameToItem.TryGetValue(name, out item))
+                {
+                    if (item.Function != null && item.Function.Equals(func))
+                    {
+                        nameToItem.Remove(name);
+                        if(nameToItem.Count == 0)
+                        {
+                            m_named.Remove(typeof(T));
+                        }
+                    }
+                }                
+            }
+        }
+
+        public void Unregister<T>(string name, T instance)
+        {
+            Dictionary<string, Item> nameToItem;
+            if (m_named.TryGetValue(typeof(T), out nameToItem))
+            {
+                Item item;
+                if (nameToItem.TryGetValue(name, out item))
+                {
+                    if (ReferenceEquals(item.Instance, instance))
+                    {
+                        nameToItem.Remove(name);
+                        if (nameToItem.Count == 0)
+                        {
+                            m_named.Remove(typeof(T));
+                        }
+                    }
+                }
+            }
         }
 
         public void Unregister<T>(Func<T> func)
@@ -139,6 +225,20 @@ namespace Battlehub.RTCommon
             }
         }
 
+        public T Resolve<T>(string name)
+        {
+            Dictionary<string, Item> nameToItem;
+            if(m_named.TryGetValue(typeof(T), out nameToItem))
+            {
+                Item item;
+                if(nameToItem.TryGetValue(name, out item))
+                {
+                    return item.Resolve<T>();
+                }
+            }
+            return default(T);
+        }
+
         public T Resolve<T>()
         {
             Item item;
@@ -159,12 +259,33 @@ namespace Battlehub.RTCommon
         public void Clear()
         {
             m_registered.Clear();
-            m_fallbacks.Clear();  
+            m_fallbacks.Clear();
+            m_named.Clear();
         }
     }
 
     public static class IOC
     {
+        public static void Register<T>(string name, Func<T> func)
+        {
+            m_container.Register(name, func);
+        }
+
+        public static void Register<T>(string name, T instance)
+        {
+            m_container.Register(name, instance);
+        }
+
+        public static void Unregister<T>(string name, Func<T> func)
+        {
+            m_container.Unregister(name, func);
+        }
+
+        public static void Unregister<T>(string name, T instance)
+        {
+            m_container.Unregister(name, instance);
+        }
+
         public static void Register<T>(Func<T> func)
         {
             m_container.Register(func);
@@ -203,6 +324,11 @@ namespace Battlehub.RTCommon
         public static void UnregisterFallback<T>(T instance)
         {
             m_container.UnregisterFallback(instance);
+        }
+
+        public static T Resolve<T>(string name)
+        {
+            return m_container.Resolve<T>(name);
         }
 
         public static T Resolve<T>()

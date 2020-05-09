@@ -1,53 +1,46 @@
 ﻿using UnityEngine;
 using Battlehub.RTCommon;
-using UnityEngine.Events;
 
 namespace Battlehub.RTGizmos
 {
-    public abstract class BoxGizmo : BaseGizmo
+    public class BoxGizmo : BaseGizmo
     {
-        protected abstract Bounds Bounds
+        protected virtual Bounds Bounds
         {
-            get;
-            set;
+            get { return new Bounds(Vector3.zero, Vector3.one); }
+            set { }
         }
 
         protected override Matrix4x4 HandlesTransform
         {
-            get
-            {
-                return Matrix4x4.TRS(Target.TransformPoint(Bounds.center), Target.rotation, Vector3.Scale(Bounds.extents, Target.lossyScale));
-            }
+            get { return Matrix4x4.TRS(Target.TransformPoint(Bounds.center), Target.rotation, Vector3.Scale(Bounds.extents, Target.lossyScale)); }
         }
 
- 
+
         protected override bool OnDrag(int index, Vector3 offset)
         {
-       
-            Bounds b = Bounds;
-            b.center += offset / 2;
-            b.extents += Vector3.Scale(offset / 2, HandlesPositions[index]);
-            Bounds = b;
+            Bounds bounds = Bounds;
+            bounds.center += offset / 2;
+            bounds.extents += Vector3.Scale(offset / 2, HandlesPositions[index]);
+            Bounds = bounds;
             return true;
         }
 
-
-        protected override void DrawOverride(Camera camera)
+        protected override void OnCommandBufferRefresh(IRTECamera camera)
         {
-            base.DrawOverride(camera);
+            base.OnCommandBufferRefresh(camera);
 
-            Bounds b = Bounds;
-
+            Bounds bounds = Bounds;
             Vector3 parentScale = Target.parent == null ? Vector3.one : Target.parent.lossyScale;
-            Vector3 scale = Vector3.Scale(Vector3.Scale(b.extents, Target.localScale), parentScale);
-            RuntimeGizmos.DrawCubeHandles(Target.TransformPoint(b.center) , Target.rotation, scale, HandlesColor);
-            RuntimeGizmos.DrawWireCubeGL(ref b, Target.TransformPoint(b.center), Target.rotation, Target.lossyScale, LineColor);
+            Vector3 scale = Vector3.Scale(Vector3.Scale(bounds.extents, Target.localScale), parentScale);
 
-            if (IsDragging)
+            GizmoUtility.DrawCubeHandles(camera.CommandBuffer, Target.TransformPoint(bounds.center), Target.rotation, scale, HandleProperties);
+            GizmoUtility.DrawWireCube(camera.CommandBuffer, bounds, Target.TransformPoint(bounds.center), Target.rotation, Target.lossyScale, LineProperties);
+
+            if(IsDragging)
             {
-                RuntimeGizmos.DrawSelection(Target.TransformPoint(b.center + Vector3.Scale(HandlesPositions[DragIndex], b.extents)), Target.rotation, Target.lossyScale, SelectionColor);
+                GizmoUtility.DrawSelection(camera.CommandBuffer, Target.TransformPoint(bounds.center + Vector3.Scale(HandlesPositions[DragIndex], bounds.extents)), Target.rotation, Target.lossyScale, SelectionProperties);
             }
         }
     }
-
 }

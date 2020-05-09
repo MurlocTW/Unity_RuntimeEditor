@@ -15,18 +15,45 @@ using TMPro;
 
 namespace Battlehub.RTEditor
 {
-    public class SelectObjectDialog : RuntimeWindow
+    public interface ISelectObjectDialog
+    {
+        Type ObjectType
+        {
+            get;
+            set;
+        }
+
+        bool IsNoneSelected
+        {
+            get;
+        }
+
+        UnityObject SelectedObject
+        {
+            get;
+        }
+    }
+
+    public class SelectObjectDialog : RuntimeWindow, ISelectObjectDialog
     {
         [SerializeField]
         private TMP_InputField m_filter = null;
-        [HideInInspector]
-        public UnityObject SelectedObject;
-        [HideInInspector]
-        public Type ObjectType;
         [SerializeField]
         private VirtualizingTreeView m_treeView = null;
         [SerializeField]
         private Toggle m_toggleAssets = null;
+
+        public UnityObject SelectedObject
+        {
+            get;
+            private set;
+        }
+
+        public Type ObjectType
+        {
+            get;
+            set;
+        }
 
         public bool IsNoneSelected
         {
@@ -37,17 +64,21 @@ namespace Battlehub.RTEditor
         private Dialog m_parentDialog;
         private IWindowManager m_windowManager;
         private IProject m_project;
+        private ILocalization m_localization;
+
         private Guid m_noneGuid = Guid.NewGuid();
         private bool m_previewsCreated;
         private AssetItem[] m_assetsCache;
         private AssetItem[] m_sceneCache;
         private Dictionary<long, UnityObject> m_sceneObjects;
-        
 
         protected override void AwakeOverride()
         {
+            IOC.RegisterFallback<ISelectObjectDialog>(this);
             WindowType = RuntimeWindowType.SelectObject;
             base.AwakeOverride();
+
+            m_localization = IOC.Resolve<ILocalization>();
         }
 
         private void Start()
@@ -55,8 +86,8 @@ namespace Battlehub.RTEditor
             m_parentDialog = GetComponentInParent<Dialog>();
             m_parentDialog.IsOkVisible = true;
             m_parentDialog.IsCancelVisible = true;
-            m_parentDialog.OkText = "Select";
-            m_parentDialog.CancelText = "Cancel";
+            m_parentDialog.OkText = m_localization.GetString("ID_RTEditor_SelectObjectDialog_Select", "Select");
+            m_parentDialog.CancelText = m_localization.GetString("ID_RTEditor_SelectObjectDialog_Cancel", "Cancel");
             m_parentDialog.Ok += OnOk;
 
             m_toggleAssets.onValueChanged.AddListener(OnAssetsTabSelectionChanged);
@@ -68,6 +99,10 @@ namespace Battlehub.RTEditor
             AssetItem[] assetItems = m_project.Root.Flatten(true, false).Where(item =>
             {
                 Type type = m_project.ToType((AssetItem)item);
+                if(type == null)
+                {
+                    return false;
+                }
                 return type == ObjectType || type.IsSubclassOf(ObjectType);
 
             }).OfType<AssetItem>().ToArray();
@@ -81,12 +116,12 @@ namespace Battlehub.RTEditor
                 if (error.HasError)
                 {
                     Editor.IsBusy = false;
-                    m_windowManager.MessageBox("Can't GetAssets", error.ToString());
+                    m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_SelectObjectDialog_CantGetAssets", "Can't GetAssets"), error.ToString());
                     return;
                 }
 
                 AssetItem none = new AssetItem();
-                none.Name = "None";
+                none.Name = m_localization.GetString("ID_RTEditor_SelectObjectDialog_None", "None");
                 none.TypeGuid = m_noneGuid;
 
                 assetItemsWithPreviews = new[] { none }.Union(assetItemsWithPreviews).ToArray();
@@ -173,6 +208,8 @@ namespace Battlehub.RTEditor
             {
                 m_filter.onValueChanged.RemoveListener(OnFilterValueChanged);
             }
+
+            IOC.UnregisterFallback<ISelectObjectDialog>(this);
         }
 
         private void OnItemDataBinding(object sender, VirtualizingTreeViewItemDataBindingArgs e)

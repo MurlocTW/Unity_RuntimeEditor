@@ -1,4 +1,5 @@
-﻿using Battlehub.Utils;
+﻿using Battlehub.RTCommon;
+using Battlehub.Utils;
 using System;
 using System.Reflection;
 using UnityEngine;
@@ -9,6 +10,8 @@ namespace Battlehub.RTEditor
     {
         public override PropertyDescriptor[] GetProperties(ComponentEditor editor, object converter)
         {
+            ILocalization lc = IOC.Resolve<ILocalization>();
+
             MemberInfo connectedBodyInfo = Strong.PropertyInfo((SpringJoint x) => x.connectedBody, "connectedBody");
             MemberInfo anchorInfo = Strong.PropertyInfo((SpringJoint x) => x.anchor, "anchor");
             MemberInfo autoConfigAnchorInfo = Strong.PropertyInfo((SpringJoint x) => x.autoConfigureConnectedAnchor, "autoConfigureConnectedAnchor");
@@ -25,19 +28,19 @@ namespace Battlehub.RTEditor
 
             return new[]
             {
-                new PropertyDescriptor("ConnectedBody", editor.Component, connectedBodyInfo),
-                new PropertyDescriptor("Anchor", editor.Component, anchorInfo),
-                new PropertyDescriptor("Auto Configure Connected Anchor", editor.Component, autoConfigAnchorInfo),
-                new PropertyDescriptor("Connected Anchor", editor.Component, connectedAnchorInfo),
-                new PropertyDescriptor("Spring", editor.Component, springInfo),
-                new PropertyDescriptor("Damper", editor.Component, damperInfo),
-                new PropertyDescriptor("MinDistance", editor.Component, minDistanceInfo),
-                new PropertyDescriptor("MaxDistance", editor.Component, maxDistanceInfo),
-                new PropertyDescriptor("Tolerance", editor.Component, toleranceInfo),
-                new PropertyDescriptor("Break Force", editor.Component, breakForceInfo),
-                new PropertyDescriptor("Break Torque", editor.Component, breakTorqueInfo),
-                new PropertyDescriptor("Enable Collision", editor.Component, enableCollisionInfo),
-                new PropertyDescriptor("Enable Preprocessing", editor.Component, enablePreporcessingInfo),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SpringJoint_ConnectedBody", "ConnectedBody"), editor.Component, connectedBodyInfo),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SpringJoint_Anchor", "Anchor"), editor.Component, anchorInfo, "m_Anchor"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SpringJoint_AutoConfigConnectedAnchor", "Auto Configure Connected Anchor"), editor.Component, autoConfigAnchorInfo, "m_AutoConfigureConnectedAnchor"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SpringJoint_ConnectAnchor", "Connected Anchor"), editor.Component, connectedAnchorInfo, "m_ConnectedAnchor"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SpringJoint_Spring", "Spring"), editor.Component, springInfo, "m_Spring"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SpringJoint_Damper", "Damper"), editor.Component, damperInfo, "m_Damper"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SpringJoint_MinDistance", "MinDistance"), editor.Component, minDistanceInfo, "m_MinDistance"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SpringJoint_MaxDistance", "MaxDistance"), editor.Component, maxDistanceInfo, "m_MaxDistance"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SpringJoint_Tolerance", "Tolerance"), editor.Component, toleranceInfo, "m_Tolerance"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SpringJoint_BreakForce", "Break Force"), editor.Component, breakForceInfo, "m_BreakForce"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SpringJoint_BreakTorque", "Break Torque"), editor.Component, breakTorqueInfo, "m_BreakTorque"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SpringJoint_EnableCollision", "Enable Collision"), editor.Component, enableCollisionInfo, "m_EnableCollision"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SpringJoint_EnablePreprocessing", "Enable Preprocessing"), editor.Component, enablePreporcessingInfo, "m_EnablePreprocessing"),
             };            
         }
     }

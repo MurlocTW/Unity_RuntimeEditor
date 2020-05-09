@@ -35,12 +35,16 @@ namespace Battlehub.RTEditor
                     return !m_editor.IsPlaying;
                 case "stop":
                     return m_editor.IsPlaying;
+                case "settings":
+                    return true;
             }
             return false;
         }
 
         public void Exec(string cmd)
         {
+            ILocalization localization = IOC.Resolve<ILocalization>();
+
             cmd = cmd.ToLower();
             switch (cmd)
             {
@@ -61,6 +65,11 @@ namespace Battlehub.RTEditor
                     break;
                 case "stop":
                     m_editor.IsPlaying = false;
+                    break;
+                case "settings":
+                    IWindowManager wm = IOC.Resolve<IWindowManager>();
+                    wm.CreateDialogWindow("settings", "ID_RTEditor_WM_Header_Settings",
+                        (sender, args) => { }, (sender, args) => { }, 250, 125, 480, 380, true);
                     break;
 
             }

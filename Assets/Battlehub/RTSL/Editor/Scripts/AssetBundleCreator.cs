@@ -5,8 +5,8 @@ namespace Battlehub.RTSL
 
     public class CreateAssetBundles
     {
-        [MenuItem("Tools/Runtime SaveLoad/Build Asset Bundles")]
-        [MenuItem("Assets/Build AssetBundles")]
+        //[MenuItem("Tools/Runtime SaveLoad/Build Asset Bundles")]
+        //[MenuItem("Assets/Build AssetBundles")]
         public static void BuildAllAssetBundles()
         {
             if (!AssetDatabase.IsValidFolder("Assets/StreamingAssets"))

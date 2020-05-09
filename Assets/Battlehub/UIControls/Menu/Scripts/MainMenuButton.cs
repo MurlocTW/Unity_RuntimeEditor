@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -11,7 +12,10 @@ namespace Battlehub.UIControls.MenuControl
         public Menu Menu
         {
             get { return m_menu; }
-            set { m_menu = value; }
+            set
+            {
+                m_menu = value;
+            }
         }
 
         [SerializeField]
@@ -62,7 +66,7 @@ namespace Battlehub.UIControls.MenuControl
         }
 
         [SerializeField]
-        private Text m_text = null;
+        private TextMeshProUGUI m_text = null;
 
         public string Text
         {

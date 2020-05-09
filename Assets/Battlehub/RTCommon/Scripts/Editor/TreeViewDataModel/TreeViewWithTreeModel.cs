@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using UnityEditor;
 
 namespace Battlehub.RTCommon.EditorTreeView
 {
-    internal class TreeViewItem<T> : TreeViewItem where T : TreeElement
+    public class TreeViewItem<T> : TreeViewItem where T : TreeElement
 	{
 		public T data { get; set; }
 
@@ -17,7 +18,7 @@ namespace Battlehub.RTCommon.EditorTreeView
 		}
 	}
 
-	internal class TreeViewWithTreeModel<T> : TreeView where T : TreeElement
+    public class TreeViewWithTreeModel<T> : TreeView where T : TreeElement
 	{
         public bool SupportExternalDragDrop = true;
 		TreeModel<T> m_TreeModel;
@@ -113,8 +114,12 @@ namespace Battlehub.RTCommon.EditorTreeView
 			const int kItemDepth = 0; // tree is flattened when searching
 
 			Stack<T> stack = new Stack<T>();
-			foreach (var element in searchFromThis.children)
-				stack.Push((T)element);
+            if(searchFromThis != null && searchFromThis.children != null)
+            {
+                foreach (var element in searchFromThis.children)
+                    stack.Push((T)element);
+            }
+			
 			while (stack.Count > 0)
 			{
 				T current = stack.Pop();
@@ -293,5 +298,5 @@ namespace Battlehub.RTCommon.EditorTreeView
 		}
 	
 	}
-
 }
+#endif

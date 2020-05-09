@@ -8,13 +8,9 @@ namespace Battlehub.RTSL
 {
     public class UnityObjectFactory : IUnityObjectFactory
     {
-        private static Shader m_standardShader;
         private ITypeMap m_typeMap;
         public UnityObjectFactory()
         {
-            m_standardShader = Shader.Find("Standard");
-            Debug.Assert(m_standardShader != null, "Standard shader is not found");
-
             m_typeMap = IOC.Resolve<ITypeMap>();
         }
 
@@ -29,7 +25,7 @@ namespace Battlehub.RTSL
             return CanCreateInstance(type, surrogate);
         }
 
-        public bool CanCreateInstance(Type type, PersistentSurrogate surrogate)
+        public bool CanCreateInstance(Type type, IPersistentSurrogate surrogate)
         {
             return type == typeof(Material) ||
                 type == typeof(Texture2D) ||
@@ -51,7 +47,7 @@ namespace Battlehub.RTSL
             return CreateInstance(type, surrogate);
         }
 
-        public UnityObject CreateInstance(Type type, PersistentSurrogate surrogate)
+        public UnityObject CreateInstance(Type type, IPersistentSurrogate surrogate)
         {
             if(type == null)
             {
@@ -61,11 +57,16 @@ namespace Battlehub.RTSL
 
             if (type == typeof(Material))
             {
-                Material material = new Material(m_standardShader);
+                Material material = new Material(RenderPipelineInfo.DefaultMaterial);
                 return material;
             }
             else if (type == typeof(Texture2D))
             {
+                if (surrogate != null && surrogate.CanInstantiate(typeof(Texture2D)))
+                {
+                    return (UnityObject)surrogate.Instantiate(type);
+                }
+
                 Texture2D texture = new Texture2D(1, 1, TextureFormat.ARGB32, true);
                 return texture;
             }
@@ -76,7 +77,9 @@ namespace Battlehub.RTSL
             }
             else if(type.IsSubclassOf(typeof(ScriptableObject)))
             {
-                return ScriptableObject.CreateInstance(type);
+                ScriptableObject obj = ScriptableObject.CreateInstance(type);
+                obj.name = type.Name;
+                return obj;
             }
                
             try

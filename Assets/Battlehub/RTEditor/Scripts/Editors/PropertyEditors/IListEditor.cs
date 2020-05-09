@@ -58,13 +58,7 @@ namespace Battlehub.RTEditor
             {
                 rt.offsetMin = new Vector2(Indent, rt.offsetMin.y);
             }
-        }
-
-        protected override void StartOverride()
-        {
-            base.StartOverride();
-
-        }
+        }   
 
         protected override void OnDestroyOverride()
         {
@@ -292,16 +286,16 @@ namespace Battlehub.RTEditor
         {
             if (value == null)
             {
-               
                 IList newArray = (IList)Activator.CreateInstance(PropertyType);
                 SetValue(newArray);
+                SizeInput.text = "0";
                 return;
             }
 
             SizeInput.text = value.Count.ToString();
         }
 
-        protected override void ReloadOverride()
+        protected override void ReloadOverride(bool force)
         {
             if (!Expander.isOn)
             {
@@ -314,10 +308,10 @@ namespace Battlehub.RTEditor
                 return;
             }
 
-            if (m_currentValue == null || value == null || m_currentValue.Count != value.Count)
+            if (force || m_currentValue == null || value == null || m_currentValue.Count != value.Count)
             {
                 m_currentValue = value;
-                SetInputField(value);
+                SetInputField(m_currentValue);
                 BuildEditor();
             }
             else

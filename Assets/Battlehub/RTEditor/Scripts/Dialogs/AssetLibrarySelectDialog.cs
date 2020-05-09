@@ -2,6 +2,7 @@
 using Battlehub.RTSL.Interface;
 using Battlehub.UIControls;
 using Battlehub.UIControls.Dialogs;
+using System.Collections;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -42,21 +43,28 @@ namespace Battlehub.RTEditor
             }
         }
 
+        private IWindowManager m_windowManager;
+        private ILocalization m_localization;
+
         protected override void AwakeOverride()
         {
             WindowType = RuntimeWindowType.SelectAssetLibrary;
             base.AwakeOverride();
+
+            m_localization = IOC.Resolve<ILocalization>();
         }
 
-        private IWindowManager m_windowManager;
         private void Start()
         {
             m_parentDialog = GetComponentInParent<Dialog>();
-            m_parentDialog.IsOkVisible = true;
-            m_parentDialog.OkText = "Select";
-            m_parentDialog.IsCancelVisible = true;
-            m_parentDialog.CancelText = "Cancel";
-            m_parentDialog.Ok += OnOk;
+            if(m_parentDialog != null)
+            {
+                m_parentDialog.IsOkVisible = true;
+                m_parentDialog.OkText = m_localization.GetString("ID_RTEditor_AssetLibSelectDialog_Select", "Select");
+                m_parentDialog.IsCancelVisible = true;
+                m_parentDialog.CancelText = m_localization.GetString("ID_RTEditor_AssetLibSelectDialog_Cancel", "Cancel");
+                m_parentDialog.Ok += OnOk;
+            }
             
             if (m_builtInTreeView == null)
             {
@@ -98,7 +106,7 @@ namespace Battlehub.RTEditor
                 editor.IsBusy = false;
                 if (error.HasError)
                 {
-                    PopupWindow.Show("Unable to list asset bundles", error.ToString(), "OK");
+                    m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_AssetLibSelectDialog_UnableToListBundles", "Unable to list asset bundles"), error.ToString());
                     return;
                 }
                 m_externalTreeView.Items = assetBundles;
@@ -146,7 +154,10 @@ namespace Battlehub.RTEditor
 
         private void OnItemDoubleClick(object sender, ItemArgs e)
         {
-            m_parentDialog.Close(true);
+            if(m_parentDialog != null)
+            {
+                m_parentDialog.Close(true);
+            }
         }
 
         private void OnOk(Dialog sender, DialogCancelArgs args)
@@ -158,7 +169,6 @@ namespace Battlehub.RTEditor
             }
 
             args.Cancel = true;
-            m_parentDialog.Close();
             Import(SelectedLibrary, IsBuiltInLibrary);
         }
 
@@ -168,6 +178,21 @@ namespace Battlehub.RTEditor
             AssetLibraryImportDialog assetLibraryImporter = transform.GetComponentInChildren<AssetLibraryImportDialog>();
             assetLibraryImporter.SelectedLibrary = assetLibrary;
             assetLibraryImporter.IsBuiltIn = isBuiltIn;
+            Dialog dlg = assetLibraryImporter.GetComponentInParent<Dialog>();
+            dlg.Closed += OnAssetLibraryImporterClosed;
+        }
+
+        private void OnAssetLibraryImporterClosed(Dialog sender, bool? args)
+        {
+            sender.Closed -= OnAssetLibraryImporterClosed;
+
+            if(args == true)
+            {
+                if (m_parentDialog != null)
+                {
+                    m_parentDialog.Close();
+                }
+            }
         }
     }
 }

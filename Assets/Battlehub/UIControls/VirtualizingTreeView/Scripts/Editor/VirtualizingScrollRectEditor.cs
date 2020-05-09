@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
 using UnityEditor;
 
 namespace Battlehub.UIControls
@@ -36,5 +36,5 @@ namespace Battlehub.UIControls
         }
 
     }
-
 }
+#endif

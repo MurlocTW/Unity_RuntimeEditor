@@ -9,6 +9,9 @@ using Battlehub.RTCommon;
 using System.Linq;
 using System.Threading;
 using Battlehub.Utils;
+using System.IO.Compression;
+using ICSharpCode.SharpZipLib.Zip;
+using ProtoBuf;
 
 namespace Battlehub.RTSL
 {
@@ -18,7 +21,16 @@ namespace Battlehub.RTSL
 
     public interface IStorage
     {
+        string RootPath
+        {
+            get;
+            set;
+        }
+
         void CreateProject(string projectPath, StorageEventHandler<ProjectInfo> callback);
+        void CopyProject(string projectPath, string targetPath, StorageEventHandler callback);
+        void ExportProject(string projectPath, string targetPath, StorageEventHandler callback);
+        void ImportProject(string projectPath, string sourcePath, StorageEventHandler callback);
         void DeleteProject(string projectPath, StorageEventHandler callback);
         void GetProjects(StorageEventHandler<ProjectInfo[]> callback);
         void GetProject(string projectPath, StorageEventHandler<ProjectInfo, AssetBundleInfo[]> callback);
@@ -44,8 +56,10 @@ namespace Battlehub.RTSL
         private const string MetaExt = ".rtmeta";
         private const string PreviewExt = ".rtview";
         private const string KeyValueStorage = "Values";
+        private const string TempFolder = "Temp";
+        private const string AssetsRootFolder = "Assets";
 
-        private string RootPath
+        public string RootPath
         {
             get;
             set;
@@ -58,12 +72,19 @@ namespace Battlehub.RTSL
 
         private string AssetsFolderPath(string path)
         {
-            return RootPath + path + "/Assets";
+            return RootPath + path + "/" + AssetsRootFolder;
         }
 
         public FileSystemStorage()
         {
             RootPath = Application.persistentDataPath + "/";
+
+            string tempPath = RootPath + "/" + TempFolder;
+            if(Directory.Exists(tempPath))
+            {
+                Directory.Delete(tempPath, true);
+            }
+            Directory.CreateDirectory(tempPath);
             Debug.LogFormat("RootPath : {0}", RootPath);
         }
 
@@ -95,11 +116,130 @@ namespace Battlehub.RTSL
             }
         }
 
+        public void CopyProject(string projectPath, string targetPath, StorageEventHandler callback)
+        {
+            QueueUserWorkItem(() =>
+            {
+                try
+                {
+                    string projectFullPath = FullPath(projectPath);
+                    string projectTargetPath = FullPath(targetPath);
+
+                    DirectoryInfo diSource = new DirectoryInfo(projectFullPath);
+                    DirectoryInfo diTarget = new DirectoryInfo(projectTargetPath);
+
+                    CopyAll(diSource, diTarget);
+
+                    ProjectInfo projectInfo;
+                    using (FileStream fs = File.OpenRead(projectTargetPath + "/Project.rtmeta"))
+                    {
+                        projectInfo = Serializer.Deserialize<ProjectInfo>(fs);
+                    }
+
+                    projectInfo.Name = Path.GetFileNameWithoutExtension(targetPath);
+                    projectInfo.LastWriteTime = File.GetLastWriteTimeUtc(projectTargetPath + "/Project.rtmeta");
+
+                    using (FileStream fs = File.OpenWrite(projectTargetPath + "/Project.rtmeta"))
+                    {
+                        Serializer.Serialize(fs, projectInfo);
+                    }
+
+                    Callback(() => callback(new Error(Error.OK)));
+                }
+                catch (Exception e)
+                {
+                    Callback(() => callback(new Error(Error.E_Exception) { ErrorText = e.ToString() }));
+                }
+            });
+        }
+
+        public static void CopyAll(DirectoryInfo source, DirectoryInfo target)
+        {
+            Directory.CreateDirectory(target.FullName);
+
+            foreach (FileInfo fi in source.GetFiles())
+            {
+                fi.CopyTo(Path.Combine(target.FullName, fi.Name), true);
+            }
+
+            foreach (DirectoryInfo diSourceSubDir in source.GetDirectories())
+            {
+                DirectoryInfo nextTargetSubDir =
+                    target.CreateSubdirectory(diSourceSubDir.Name);
+                CopyAll(diSourceSubDir, nextTargetSubDir);
+            }
+        }
+
+        public void ExportProject(string projectPath, string targetPath, StorageEventHandler callback)
+        {
+            try
+            {
+                string projectFullPath = FullPath(projectPath);
+
+                FastZip fastZip = new FastZip();
+                fastZip.CreateZip(targetPath, projectFullPath, true, null);
+
+                callback(new Error(Error.OK));
+            }
+            catch (Exception e)
+            {
+                callback(new Error(Error.E_Exception) { ErrorText = e.ToString() });
+            }            
+        }
+
+        public void ImportProject(string projectPath, string sourcePath, StorageEventHandler callback)
+        {
+            try
+            {
+                string projectFullPath = FullPath(projectPath);
+                if(Directory.Exists(projectFullPath))
+                {
+                    callback(new Error(Error.E_AlreadyExist) { ErrorText = string.Format("Project {0} already exist", projectPath) });
+                }
+                else
+                {
+                    FastZip fastZip = new FastZip();
+                    fastZip.ExtractZip(sourcePath, projectFullPath, null);
+
+                    ProjectInfo projectInfo;
+                    using (FileStream fs = File.OpenRead(projectFullPath + "/Project.rtmeta"))
+                    {
+                        projectInfo = Serializer.Deserialize<ProjectInfo>(fs);
+                    }
+
+                    projectInfo.Name = Path.GetFileNameWithoutExtension(projectPath);
+                    projectInfo.LastWriteTime = File.GetLastWriteTimeUtc(projectFullPath + "/Project.rtmeta");
+
+                    using (FileStream fs = File.OpenWrite(projectFullPath + "/Project.rtmeta"))
+                    {
+                        Serializer.Serialize(fs, projectInfo);
+                    }
+
+                    callback(new Error(Error.OK));
+                }
+
+            }
+            catch (Exception e)
+            {
+                callback(new Error(Error.E_Exception) { ErrorText = e.ToString() });
+            }
+        }
+
         public void DeleteProject(string projectPath, StorageEventHandler callback)
         {
-            string projectDir = FullPath(projectPath);
-            Directory.Delete(projectDir, true);
-            callback(new Error(Error.OK));
+            QueueUserWorkItem(() =>
+            {
+                string projectDir = FullPath(projectPath);
+                if (Directory.Exists(projectDir))
+                {
+                    Directory.Delete(projectDir, true);
+                }
+                Callback(() =>
+                {
+                    callback(new Error(Error.OK));
+                });
+            });
+  
         }
 
         public void GetProjects(StorageEventHandler<ProjectInfo[]> callback)
@@ -385,9 +525,23 @@ namespace Battlehub.RTSL
                             }
 
                             File.Delete(path + "/" + assetItem.NameExt);
-                            using (FileStream fs = File.Create(path + "/" + assetItem.NameExt))
+
+                            if(persistentObject is PersistentRuntimeTextAsset)
                             {
-                                serializer.Serialize(persistentObject, fs);
+                                PersistentRuntimeTextAsset textAsset = (PersistentRuntimeTextAsset)persistentObject;
+                                File.WriteAllText(path + "/" + assetItem.NameExt, textAsset.Text);
+                            }
+                            else if(persistentObject is PersistentRuntimeBinaryAsset)
+                            {
+                                PersistentRuntimeBinaryAsset binAsset = (PersistentRuntimeBinaryAsset)persistentObject;
+                                File.WriteAllBytes(path + "/" + assetItem.NameExt, binAsset.Data);
+                            }
+                            else
+                            {
+                                using (FileStream fs = File.Create(path + "/" + assetItem.NameExt))
+                                {
+                                    serializer.Serialize(persistentObject, fs);
+                                }
                             }
                         }
                     }
@@ -451,10 +605,30 @@ namespace Battlehub.RTSL
                     {
                         if (File.Exists(assetPath))
                         {
-                            using (FileStream fs = File.OpenRead(assetPath))
+                            if (types[i] == typeof(PersistentRuntimeTextAsset))
                             {
-                                result[i] = (PersistentObject)serializer.Deserialize(fs, types[i]);
+                                PersistentRuntimeTextAsset textAsset = new PersistentRuntimeTextAsset();
+                                textAsset.name = Path.GetFileName(assetPath);
+                                textAsset.Text = File.ReadAllText(assetPath);
+                                textAsset.Ext = Path.GetExtension(assetPath);
+                                result[i] = textAsset;
                             }
+                            else if(types[i] == typeof(PersistentRuntimeBinaryAsset))
+                            {
+                                PersistentRuntimeBinaryAsset binAsset = new PersistentRuntimeBinaryAsset();
+                                binAsset.name = Path.GetFileName(assetPath);
+                                binAsset.Data = File.ReadAllBytes(assetPath);
+                                binAsset.Ext = Path.GetExtension(assetPath);
+                                result[i] = binAsset;
+                            }
+                            else
+                            {
+                                using (FileStream fs = File.OpenRead(assetPath))
+                                {
+                                    result[i] = (PersistentObject)serializer.Deserialize(fs, types[i]);
+                                }
+                            }
+                            
                         }
                         else
                         {
@@ -551,7 +725,18 @@ namespace Battlehub.RTSL
                 }
                 else if (Directory.Exists(path))
                 {
-                    Directory.Move(path, fullPath + paths[i] + "/" + names[i]);
+                    if(string.Equals(Path.GetFullPath(path), Path.GetFullPath(fullPath + paths[i] + "/" + names[i]), StringComparison.OrdinalIgnoreCase))
+                    {
+                        string tempDirName = Guid.NewGuid().ToString();
+
+                        var dir = new DirectoryInfo(path);
+                        dir.MoveTo(fullPath + "/" + tempDirName);
+                        dir.MoveTo(fullPath + paths[i] + "/" + names[i]);
+                    }
+                    else
+                    {
+                        Directory.Move(path, fullPath + paths[i] + "/" + names[i]);
+                    }   
                 }
             }
 
@@ -612,11 +797,30 @@ namespace Battlehub.RTSL
             path = path + "/" + key;
             if (File.Exists(path))
             {
-                ISerializer serializer = IOC.Resolve<ISerializer>();
                 object result = null;
-                using (FileStream fs = File.OpenRead(path))
+                if (type == typeof(PersistentRuntimeTextAsset))
                 {
-                    result = serializer.Deserialize(fs, type);
+                    PersistentRuntimeTextAsset textAsset = new PersistentRuntimeTextAsset();
+                    textAsset.name = Path.GetFileName(path);
+                    textAsset.Text = File.ReadAllText(path);
+                    textAsset.Ext = Path.GetExtension(path);
+                    result = textAsset;
+                }
+                else if(type == typeof(PersistentRuntimeBinaryAsset))
+                {
+                    PersistentRuntimeBinaryAsset binaryAsset = new PersistentRuntimeBinaryAsset();
+                    binaryAsset.name = Path.GetFileName(path);
+                    binaryAsset.Data = File.ReadAllBytes(path);
+                    binaryAsset.Ext = Path.GetExtension(path);
+                    result = binaryAsset;
+                }
+                else
+                {
+                    ISerializer serializer = IOC.Resolve<ISerializer>();
+                    using (FileStream fs = File.OpenRead(path))
+                    {
+                        result = serializer.Deserialize(fs, type);
+                    }
                 }
 
                 callback(new Error(Error.OK), (PersistentObject)result);
@@ -645,10 +849,29 @@ namespace Battlehub.RTSL
                 ISerializer serializer = IOC.Resolve<ISerializer>();
                 for (int i = 0; i < files.Length; ++i)
                 {
-                    using (FileStream fs = File.OpenRead(files[i]))
+                    if (type == typeof(PersistentRuntimeTextAsset))
                     {
-                        result[i] = (PersistentObject)serializer.Deserialize(fs, type);
+                        PersistentRuntimeTextAsset textAsset = new PersistentRuntimeTextAsset();
+                        textAsset.name = Path.GetFileName(files[i]);
+                        textAsset.Text = File.ReadAllText(files[i]);
+                        textAsset.Ext = Path.GetExtension(files[i]);
+                        result[i] = textAsset;
                     }
+                    else if(type == typeof(PersistentRuntimeBinaryAsset))
+                    {
+                        PersistentRuntimeBinaryAsset binaryAsset = new PersistentRuntimeBinaryAsset();
+                        binaryAsset.name = Path.GetFileName(files[i]);
+                        binaryAsset.Data = File.ReadAllBytes(files[i]);
+                        binaryAsset.Ext = Path.GetExtension(files[i]);
+                        result[i] = binaryAsset;
+                    }
+                    else
+                    {
+                        using (FileStream fs = File.OpenRead(files[i]))
+                        {
+                            result[i] = (PersistentObject)serializer.Deserialize(fs, type);
+                        }
+                    }   
                 }
 
                 Callback(() => callback(Error.NoError, result));
@@ -670,13 +893,26 @@ namespace Battlehub.RTSL
                 File.Delete(path);
             }
 
-            ISerializer serializer = IOC.Resolve<ISerializer>();
-            using (FileStream fs = File.Create(path))
+            if (persistentObject is PersistentRuntimeTextAsset)
             {
-                serializer.Serialize(persistentObject, fs);
+                PersistentRuntimeTextAsset textAsset = (PersistentRuntimeTextAsset)persistentObject;
+                File.WriteAllText(path, textAsset.Text);
             }
-            serializer.Serialize(persistentObject);
-
+            else if(persistentObject is PersistentRuntimeBinaryAsset)
+            {
+                PersistentRuntimeBinaryAsset binaryAsset = (PersistentRuntimeBinaryAsset)persistentObject;
+                File.WriteAllBytes(path, binaryAsset.Data);
+            }
+            else
+            {
+                ISerializer serializer = IOC.Resolve<ISerializer>();
+                using (FileStream fs = File.Create(path))
+                {
+                    serializer.Serialize(persistentObject, fs);
+                }
+                serializer.Serialize(persistentObject);
+            }
+            
             callback(new Error(Error.OK));
         }
 
@@ -688,10 +924,107 @@ namespace Battlehub.RTSL
             callback(Error.NoError);
         }
 
+        /*
+        public void CreatePackage(string projectPath, string[] assetsPath, string packagePath, StorageEventHandler callback)
+        {
+            QueueUserWorkItem(() =>
+            {
+                try
+                {
+                    string fullProjectPath = FullPath(projectPath);
+                    string tempPath = RootPath + "/" + TempFolder;
+                    if (!Directory.Exists(tempPath))
+                    {
+                        Directory.CreateDirectory(tempPath);
+                    }
+
+                    tempPath = tempPath + "/" + Path.GetFileNameWithoutExtension(packagePath) + "/" + AssetsRootFolder;
+
+                    for (int i = 0; i < assetsPath.Length; ++i)
+                    {
+                        string sourceDataPath = fullProjectPath + "/" + assetsPath[i];
+
+                        if (File.Exists(sourceDataPath) && File.Exists(sourceDataPath + MetaExt))
+                        {
+                            string targetDataPath = tempPath + "/" + assetsPath[i];
+                            string targetDir = Path.GetDirectoryName(targetDataPath);
+                            Directory.CreateDirectory(targetDir);
+
+                            File.Copy(sourceDataPath, targetDataPath);
+                            File.Copy(sourceDataPath + MetaExt, targetDataPath + MetaExt);
+
+                            if (File.Exists(sourceDataPath + PreviewExt))
+                            {
+                                File.Copy(sourceDataPath + PreviewExt, targetDataPath + PreviewExt);
+                            }
+                        }
+                    }
+
+                    FastZip fastZip = new FastZip();
+                    fastZip.CreateZip(packagePath, tempPath, true, null);
+                    Directory.Delete(tempPath, true);
+
+                    Callback(() => callback(Error.NoError));
+                }
+                catch(Exception e)
+                {
+                    Callback(() => callback(new Error(Error.E_Exception) { ErrorText = e.ToString() }));
+                }
+            });                
+        }
+        */
+        /*
+        public void OpenPackage(string projectPath, string packagePath, StorageEventHandler<AssetItem[]> callback)
+        {
+            QueueUserWorkItem(() =>
+            {
+                try
+                {
+                    if (!File.Exists(packagePath))
+                    {
+                        Callback(() => callback(new Error(Error.E_NotFound) { ErrorText = "File was not found: " + packagePath }, new AssetItem[0]));
+                        return;
+                    }
+
+                    string fullProjectPath = FullPath(projectPath);
+
+                    string tempPath = RootPath + "/" + TempFolder;
+                    if (!Directory.Exists(tempPath))
+                    {
+                        Directory.CreateDirectory(tempPath);
+                    }
+
+                    tempPath = tempPath + "/" + Path.GetFileNameWithoutExtension(packagePath);
+                    Directory.CreateDirectory(tempPath);
+
+                    FastZip fastZip = new FastZip();
+                    fastZip.ExtractZip(packagePath, tempPath, null);
+
+                    tempPath = tempPath + "/" + AssetsRootFolder;
+
+                    ProjectItem assets = new ProjectItem();
+                    assets.ItemID = 0;
+                    assets.Children = new List<ProjectItem>();
+                    assets.Name = "Assets";
+
+                    GetProjectTree(projectPath, assets);
+
+                    AssetItem[] assetItems = assets.Flatten(true).Cast<AssetItem>().ToArray();
+
+                    Callback(() => callback(Error.NoError, assetItems));
+                }
+                catch (Exception e)
+                {
+                    Callback(() => callback(new Error(Error.E_Exception) { ErrorText = e.ToString() }, new AssetItem[0]));
+                }
+            });
+        }
+        */
+
         public void QueueUserWorkItem(Action action)
         {
 #if UNITY_WEBGL
-            callback();
+            action();
 #else
             if (Dispatcher.Current != null)
             {

@@ -20,7 +20,6 @@ Start with following sections:
 
   * Position, Rotation, Scale Handles. 
   * Grid, Box Selection, Scene Gizmo.
-  * Transform Handles __mobile__ &  __Google AR Core__ support.
   * Global & Local coordinates, Local & Center pivot point modes, Vertex & Grid snapping.
   * Gizmos for Colliders, Lights and Audio Sources.
   * Scene navigation, Orthographic & Perspective view.
@@ -43,13 +42,37 @@ Start with following sections:
   * __Static Assets, Asset Bundles and Dynamic Assets support__.
   * Load assets on demand.
   * Multiple Projects support.
+  * __Animation Editor__.
+  * __Terrain Editor__.
+  * __ProBuilder Integration__.
+  * __Runtime Scripting__
   
-##Upgrade note
+##Runtime Editor 2.0.5 to 2.1.0 upgrade procedure
+Following upgrade procedure is intended to make Runtime Editor v2.1.0 compatible with saved files created by Runtime Editor v2.0.5. 
 
-Many breaking changes have been made since version 1.3.2u3. Runtime Save Load and some other parts were completely rewritten because they were too tightly coupled, difficult to extend and maintain.
-I suggest you to start with new version. Those of you who are in the middle of development and cannot just start from scratch, please [let me know](mailto:Battlehub@outlook.com) I will try to do my best to help.
+1. Make sure you have __PersistentClassMappings__ and __PersistentSurrogateMappings__ prefabs in __Assets/Battlehub/RTSL_Data/Mappings/Editor__ folder. In case you don't have these prefabs go to __Tools->Runtime SaveLoad->Persistent Classes->Edit__ and click __Create Persistent Classes__ button.
+![Screenshot](img/rteditor/overview/upgrade_205_210_1.png)
+&nbsp;
+2. Remove all subfolders from __Battlehub__ folder except __RTEditor_Data__ and __RTSL_Data__. Also remove __RTSL_Data/Scripts__ folder.
+	* If you didn't change anything in __RTSL_Data/CustomImplementation__ then remove it also
+	* In case you have your own custom implementations go to Scripting Define Symbols in Player Settings and add __RTSL_MAINTENANCE__. Please __NOTE!__ that after finishing upgrade procedure this define symbol must be removed.
+![Screenshot](img/rteditor/overview/upgrade_205_210_2.png)
+&nbsp;
+![Screenshot](img/rteditor/overview/upgrade_205_210_3.png)
+&nbsp;
+3. Reopen project in Unity 2019.3.0f1 or higher.
+4. Import Runtime Editor 2.1.0.
+5. Open __Tools->Runtime SaveLoad->Persistent Classes->Edit__ and click __Patch Mappings__ button
+![Screenshot](img/rteditor/overview/upgrade_205_210_4.png)
+&nbsp;
+6. Click __Build All__ button.
+![Screenshot](img/rteditor/overview/upgrade_205_210_5.png)
+&nbsp;
+7. Runtime Editor is upgraded, saved files should load without issues.
 
-  
+!!! note   
+		Make sure __RTSL_MAINTENANCE__ scripting define symbol added at step 2 was removed
+		
 ##About
 Hi, I am [Vadym](https://www.facebook.com/vadim.andriyanov). I made a lot of efforts creating Runtime Editor but this was interesting and rewarding experience. First version of Runtime editor was released in June 2016 and was pretty simplistic. Current version is much more sophisticated but in the same time much more flexible and contains a lot of useful features. 
 If you have any questions or suggestions send an email to [Battlehub@outlook.com](mailto:Battlehub@outlook.com) or join this [support group](https://t.me/battlehub). I hope you will enjoy using Runtime Editor and it will be helpful.

@@ -21,40 +21,6 @@ namespace Battlehub.RTSL
         public int[] Array;
     }
 
-    public interface IPersistentSurrogate
-    {
-        void ReadFrom(object obj);
-
-        object WriteTo(object obj);
-
-        void GetDeps(GetDepsContext context);
-
-        void GetDepsFrom(object obj, GetDepsFromContext context);
-    }
-
-    public class GetDepsContext
-    {
-        public readonly HashSet<long> Dependencies = new HashSet<long>();
-        public readonly HashSet<object> VisitedObjects = new HashSet<object>();
-
-        public void Clear()
-        {
-            Dependencies.Clear();
-            VisitedObjects.Clear();
-        }
-    }
-
-    public class GetDepsFromContext
-    {
-        public readonly HashSet<object> Dependencies = new HashSet<object>();
-        public readonly HashSet<object> VisitedObjects = new HashSet<object>();
-
-        public void Clear()
-        {
-            Dependencies.Clear();
-            VisitedObjects.Clear();
-        }
-    }
 
     public abstract class PersistentSurrogate : IPersistentSurrogate
     {
@@ -156,6 +122,46 @@ namespace Battlehub.RTSL
             }
         }
 
+        protected void AddDep(Dictionary<long,long> depenencies, GetDepsContext context)
+        {
+            if (depenencies == null)
+            {
+                return;
+            }
+
+            foreach(KeyValuePair<long, long> kvp in depenencies)
+            {
+                AddDep(kvp.Key, context);
+                AddDep(kvp.Value, context);
+            }
+        }
+
+        protected void AddDep<V>(Dictionary<long, V> depenencies, GetDepsContext context)
+        {
+            if (depenencies == null)
+            {
+                return;
+            }
+
+            foreach (KeyValuePair<long, V> kvp in depenencies)
+            {
+                AddDep(kvp.Key, context);
+            }
+        }
+
+        protected void AddDep<T>(Dictionary<T, long> depenencies, GetDepsContext context)
+        {
+            if (depenencies == null)
+            {
+                return;
+            }
+
+            foreach (KeyValuePair<T, long> kvp in depenencies)
+            {
+                AddDep(kvp.Value, context);
+            }
+        }
+
         protected void AddDep(object obj, GetDepsFromContext context)
         {
             if (obj != null && !context.Dependencies.Contains(obj))
@@ -185,6 +191,34 @@ namespace Battlehub.RTSL
             for (int i = 0; i < dependencies.Count; ++i)
             {
                 AddDep(dependencies[i], context);
+            }
+        }
+
+        protected void AddDep<T>(HashSet<T> dependencies, GetDepsFromContext context)
+        {
+            if (dependencies == null)
+            {
+                return;
+            }
+            foreach(T dep in dependencies)
+            {
+                AddDep(dep, context);
+            }
+        }
+
+        protected void AddDep<T,V>(Dictionary<T,V> dependencies, GetDepsFromContext context)
+        {
+            if (dependencies == null)
+            {
+                return;
+            }
+            foreach(KeyValuePair<T, V> kvp in dependencies)
+            {
+                AddDep(kvp.Key, context);
+                if(kvp.Value != null)
+                {
+                    AddDep(kvp.Value, context);
+                }
             }
         }
 
@@ -224,6 +258,71 @@ namespace Battlehub.RTSL
             }
         }
 
+        protected void AddSurrogateDeps<T>(HashSet<T> surrogatesHS, GetDepsContext context) where T : PersistentSurrogate
+        {
+            if (surrogatesHS == null)
+            {
+                return;
+            }
+            foreach(PersistentSurrogate surrogate in surrogatesHS)
+            {
+                surrogate.GetDeps(context);
+            }
+        }
+
+        protected void AddSurrogateDeps<T,V>(Dictionary<T,V> surrogateDict, GetDepsContext context)
+        {
+            if (surrogateDict == null)
+            {
+                return;
+            }
+
+            foreach(KeyValuePair<T, V> kvp in surrogateDict)
+            {
+                PersistentSurrogate surrogate = kvp.Key as PersistentSurrogate;
+                if(surrogate != null)
+                {
+                    surrogate.GetDeps(context);
+                }
+
+                surrogate = kvp.Value as PersistentSurrogate;
+                if (surrogate != null)
+                {
+                    surrogate.GetDeps(context);
+                }
+            }
+        }
+
+        protected void AddSurrogateDeps<V>(Dictionary<long, V> surrogateDict, GetDepsContext context) where V : PersistentSurrogate
+        {
+            if (surrogateDict == null)
+            {
+                return;
+            }
+
+            foreach (KeyValuePair<long, V> kvp in surrogateDict)
+            {
+                AddDep(kvp.Key, context);
+                if (kvp.Value != null)
+                {
+                    kvp.Value.GetDeps(context);
+                }
+            }
+        }
+
+        protected void AddSurrogateDeps<T>(Dictionary<T, long> surrogateDict, GetDepsContext context) where T : PersistentSurrogate
+        {
+            if (surrogateDict == null)
+            {
+                return;
+            }
+            foreach (KeyValuePair<T, long> kvp in surrogateDict)
+            {
+                kvp.Key.GetDeps(context);
+                AddDep(kvp.Value, context);
+            }
+        }
+
         protected void AddSurrogateDeps<T>(T obj, Func<T, PersistentSurrogate> convert, GetDepsContext context)
         {
             if (obj != null)
@@ -250,15 +349,15 @@ namespace Battlehub.RTSL
             }
         }
 
-        protected void AddSurrogateDeps<T>(List<T> objArray, Func<T, PersistentSurrogate> convert, GetDepsContext context)
+        protected void AddSurrogateDeps<T>(List<T> objList, Func<T, PersistentSurrogate> convert, GetDepsContext context)
         {
-            if (objArray == null)
+            if (objList == null)
             {
                 return;
             }
-            for (int i = 0; i < objArray.Count; ++i)
+            for (int i = 0; i < objList.Count; ++i)
             {
-                T obj = objArray[i];
+                T obj = objList[i];
                 if (obj != null)
                 {
                     PersistentSurrogate surrogate = convert(obj);
@@ -267,6 +366,21 @@ namespace Battlehub.RTSL
             }
         }
 
+        protected void AddSurrogateDeps<T>(HashSet<T> objHs, Func<T, PersistentSurrogate> convert, GetDepsContext context)
+        {
+            if (objHs == null)
+            {
+                return;
+            }
+            foreach(T obj in objHs)
+            {
+                if (obj != null)
+                {
+                    PersistentSurrogate surrogate = convert(obj);
+                    surrogate.GetDeps(context);
+                }
+            }
+        }
 
         protected void AddSurrogateDeps<T>(T obj, Func<T, PersistentSurrogate> convert, GetDepsFromContext context)
         {
@@ -311,19 +425,44 @@ namespace Battlehub.RTSL
             }
         }
 
-        public List<T> Assign<V, T>(List<V> list, Func<V, T> convert)
+        protected void AddSurrogateDeps<T>(HashSet<T> objHs, Func<T, PersistentSurrogate> convert, GetDepsFromContext context)
         {
-            if (list == null)
+            if (objHs == null)
             {
-                return null;
+                return;
             }
+            foreach(T obj in objHs)
+            { 
+                if (obj != null)
+                {
+                    PersistentSurrogate surrogate = convert(obj);
+                    surrogate.GetDepsFrom(obj, context);
+                }
+            }
+        }
 
-            List<T> result = new List<T>(list.Count);
-            for (int i = 0; i < list.Count; ++i)
+        protected void AddSurrogateDeps<T, V, T1, V1>(Dictionary<T, V> dict, Func<T, T1> convertKey, Func<V, V1> convertValue, GetDepsFromContext context)
+        {
+            if (dict == null)
             {
-                result.Add(convert(list[i]));
+                return;
             }
-            return result;
+            foreach (KeyValuePair<T, V> kvp in dict)
+            {
+                T obj = kvp.Key;
+
+                PersistentSurrogate surrogate = convertKey(obj) as PersistentSurrogate;
+                if(surrogate != null)
+                {
+                    surrogate.GetDepsFrom(obj, context);
+                }
+
+                surrogate = convertValue(kvp.Value) as PersistentSurrogate;
+                if(surrogate != null)
+                {
+                    surrogate.GetDepsFrom(obj, context);
+                }
+            }
         }
 
         public T[] Assign<V, T>(V[] arr, Func<V, T> convert)
@@ -341,6 +480,56 @@ namespace Battlehub.RTSL
             return result;
         }
 
+        public List<T> Assign<V, T>(List<V> list, Func<V, T> convert)
+        {
+            if (list == null)
+            {
+                return null;
+            }
+
+            List<T> result = new List<T>(list.Count);
+            for (int i = 0; i < list.Count; ++i)
+            {
+                result.Add(convert(list[i]));
+            }
+            return result;
+        }
+
+        public HashSet<T> Assign<V, T>(HashSet<V> hs, Func<V, T> convert)
+        {
+            if (hs == null)
+            {
+                return null;
+            }
+
+            HashSet<T> result = new HashSet<T>();
+            foreach(V obj in hs)
+            {
+                result.Add(convert(obj));
+            }
+            return result;
+        }
+
+        protected Dictionary<TOUT, VOUT> Assign<TIN, TOUT, VIN, VOUT>(Dictionary<TIN, VIN> dict, Func<TIN, TOUT> convertKey, Func<VIN, VOUT> convertValue)
+        {
+            if(dict == null)
+            {
+                return null;
+            }
+
+            Dictionary<TOUT, VOUT> result = new Dictionary<TOUT, VOUT>();
+            foreach(KeyValuePair<TIN, VIN> kvp in dict)
+            {
+                TOUT key = convertKey(kvp.Key);
+                VOUT value = convertValue(kvp.Value);
+
+                if(key != null)
+                {
+                    result.Add(key, value);
+                }
+            }
+            return result;
+        }
 
         protected long ToID(UnityObject uo)
         {
@@ -352,9 +541,74 @@ namespace Battlehub.RTSL
             return m_assetDB.ToID(uo);
         }
 
-        protected long[] ToID<T>(List<T> uo) where T : UnityObject
+        protected long[] ToID<T>(List<T> list) where T : UnityObject
         {
-            return m_assetDB.ToID(uo);
+            return m_assetDB.ToID(list);
+        }
+
+        protected long[] ToID<T>(HashSet<T> hs) where T : UnityObject
+        {
+            return m_assetDB.ToID(hs);
+        }
+
+        protected Dictionary<long, long> ToID<T, V>(Dictionary<T, V> uo) where T : UnityObject where V : UnityObject
+        {
+            if(uo == null)
+            {
+                return null;
+            }
+
+            Dictionary<long, long> result = new Dictionary<long, long>();
+            foreach(KeyValuePair<T, V> kvp in uo)
+            {
+                long key = ToID(kvp.Key);
+                long value = ToID(kvp.Value);
+                if(!result.ContainsKey(key))
+                {
+                    result.Add(key, value);
+                }
+            }
+            return result;
+        }
+
+        protected Dictionary<long, VOUT> ToID<T, VOUT, VIN>(Dictionary<T, VIN> uo, Func<VIN, VOUT> convert) where T : UnityObject
+        {
+            if (uo == null)
+            {
+                return null;
+            }
+
+            Dictionary<long, VOUT> result = new Dictionary<long, VOUT>();
+            foreach (KeyValuePair<T, VIN> kvp in uo)
+            {
+                long key = ToID(kvp.Key);
+                VOUT value = convert(kvp.Value);
+                if (!result.ContainsKey(key))
+                {
+                    result.Add(key, value);
+                }
+            }
+            return result;
+        }
+
+        protected Dictionary<TOUT, long> ToID<TOUT, TIN, V>(Dictionary<TIN, V> uo, Func<TIN, TOUT> convert) where V : UnityObject
+        {
+            if (uo == null)
+            {
+                return null;
+            }
+
+            Dictionary<TOUT, long> result = new Dictionary<TOUT, long>();
+            foreach (KeyValuePair<TIN, V> kvp in uo)
+            {
+                TOUT key = convert(kvp.Key);
+                long value = ToID(kvp.Value);
+                if (key != null)
+                {
+                    result.Add(key, value);
+                }
+            }
+            return result;
         }
 
         protected T FromID<T>(long id, T fallback = null) where T : UnityObject
@@ -417,6 +671,105 @@ namespace Battlehub.RTSL
             return objs;
         }
 
+        protected HashSet<T> FromID<T>(long[] id, HashSet<T> fallback = null) where T : UnityObject
+        {
+            if (id == null)
+            {
+                return null;
+            }
+
+            HashSet<T> objs = new HashSet<T>();
+
+            int count = 0;
+            if(fallback != null)
+            {
+                foreach(T f in fallback)
+                {
+                    if (count >= id.Length)
+                    {
+                        break;
+                    }
+
+                    T obj = FromID(id[count], f);
+                    if(obj != null)
+                    {
+                        objs.Add(obj);
+                    }
+                    
+                    count++;
+                }
+            }
+
+            for (int i = count; i < id.Length; ++i)
+            {
+                T obj = FromID<T>(id[i]);
+                if(obj != null)
+                {
+                    objs.Add(obj);
+                }
+            }            
+            return objs;
+        }
+
+        protected Dictionary<T, V> FromID<T, V>(Dictionary<long, long> id, Dictionary<T, V> fallback = null) where T : UnityObject where V : UnityObject
+        {
+            if (id == null)
+            {
+                return null;
+            }
+
+            Dictionary<T, V> objs = new Dictionary<T, V>();
+            foreach (KeyValuePair<long, long> kvp in id)
+            {
+                T key = FromID<T>(kvp.Key);
+                V value = FromID<V>(kvp.Value);
+                if (key != null)
+                {
+                    objs.Add(key, value);
+                }
+            }
+            return objs;
+        }
+
+        protected Dictionary<T, VOUT> FromID<T, VOUT, VIN>(Dictionary<long, VIN> id, Func<VIN, VOUT> convert, Dictionary<T, VOUT> fallback = null) where T : UnityObject
+        {
+            if (id == null)
+            {
+                return null;
+            }
+
+            Dictionary<T, VOUT> objs = new Dictionary<T, VOUT>();
+            foreach (KeyValuePair<long, VIN> kvp in id)
+            {
+                T key = FromID<T>(kvp.Key);
+                if (key != null)
+                {
+                    objs.Add(key, convert(kvp.Value));
+                }
+            }
+            return objs;
+        }
+
+        protected Dictionary<TOUT, V> FromID<TOUT, TIN, V>(Dictionary<TIN, long> id, Func<TIN, TOUT> convert, Dictionary<TOUT, V> fallback = null) where V : UnityObject
+        {
+            if (id == null)
+            {
+                return null;
+            }
+
+            Dictionary<TOUT, V> objs = new Dictionary<TOUT, V>();
+            foreach (KeyValuePair<TIN, long> kvp in id)
+            {
+                TOUT key = convert(kvp.Key);
+                V value = FromID<V>(kvp.Value);
+                if (key != null)
+                {
+                    objs.Add(key, value);
+                }
+            }
+            return objs;
+        }
+
         protected T GetPrivate<T>(object obj, string fieldName)
         {
             FieldInfo fieldInfo = obj.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
@@ -426,6 +779,21 @@ namespace Battlehub.RTSL
             }
             object val = fieldInfo.GetValue(obj);
             if(val is T)
+            {
+                return (T)val;
+            }
+            return default(T);
+        }
+
+        protected T GetPrivate<V, T>(object obj, string fieldName)
+        {
+            FieldInfo fieldInfo = typeof(V).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            if (fieldInfo == null)
+            {
+                return default(T);
+            }
+            object val = fieldInfo.GetValue(obj);
+            if (val is T)
             {
                 return (T)val;
             }
@@ -446,6 +814,95 @@ namespace Battlehub.RTSL
             }
 
             fieldInfo.SetValue(obj, value);
+        }
+
+        protected void SetPrivate<V,T>(V obj, string fieldName, T value)
+        {
+            FieldInfo fieldInfo = typeof(V).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            if (fieldInfo == null)
+            {
+                return;
+            }
+
+            if (!fieldInfo.FieldType.IsAssignableFrom(typeof(T)))
+            {
+                return;
+            }
+
+            fieldInfo.SetValue(obj, value);
+        }
+
+        private static readonly Dictionary<object, object> m_refrencesCache = new Dictionary<object, object>();
+        protected T ResolveReference<T, V>(V v, Func<T> fallback)
+        {
+            if(v == null)
+            {
+                return default(T);
+            }
+
+            object result;
+            if(!m_refrencesCache.TryGetValue(v, out result))
+            {
+                result = fallback();
+                m_refrencesCache.Add(v, result);
+            }
+            return (T)result;
+        }
+
+        protected T[] ResolveReference<T, V>(V[] v, Func<int, T> fallback)
+        {
+            if(v == null)
+            {
+                return null;
+            }
+
+            T[] result = new T[v.Length];
+            for (int i = 0; i < v.Length; ++i)
+            {
+                if(v[i] == null)
+                {
+                    continue;
+                }
+                object res;
+                if (!m_refrencesCache.TryGetValue(v[i], out res))
+                {
+                    res = fallback(i);
+                    m_refrencesCache.Add(v[i], res);
+                }
+                result[i] = (T)res;
+            }
+            return result;
+        }
+
+        protected List<T> ResolveReference<T, V>(List<V> v, Func<int, T> fallback)
+        {
+            if (v == null)
+            {
+                return null;
+            }
+
+            List<T> result = new List<T>(v.Count);
+            for (int i = 0; i < v.Count; ++i)
+            {
+                if (v[i] == null)
+                {
+                    continue;
+                }
+                object res;
+                if (!m_refrencesCache.TryGetValue(v[i], out res))
+                {
+                    res = fallback(i);
+                    m_refrencesCache.Add(v[i], res);
+                }
+                result.Add((T)res);
+            }
+            return result;
+        }
+
+
+        protected void ClearReferencesCache()
+        {
+            m_refrencesCache.Clear();
         }
 
     }

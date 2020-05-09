@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿#if UNITY_EDITOR
+using UnityEditor;
 using UnityEngine;
 
 namespace Battlehub.RTEditor
@@ -18,7 +19,7 @@ namespace Battlehub.RTEditor
                 EditorUtility.SetDirty(rteAppearance);
             }
         }
-
     }
 }
+#endif
 

@@ -30,6 +30,25 @@ namespace Battlehub.RTEditor
             Texture2D texture = new Texture2D(4, 4);
             if(texture.LoadImage(bytes, false))
             {
+                if (texture.format == TextureFormat.RGBA32 || texture.format == TextureFormat.ARGB32)
+                {
+                    bool opaque = true;
+                    Color32[] pixels = texture.GetPixels32();
+                    for (int i = 0; i < pixels.Length; ++i)
+                    {
+                        if (pixels[i].a != 255)
+                        {
+                            opaque = false;
+                            break;
+                        }
+                    }
+
+                    if (opaque)
+                    {
+                        texture.LoadImage(texture.EncodeToJPG(), false);
+                    }
+                }
+
                 IProject project = IOC.Resolve<IProject>();
                 IResourcePreviewUtility previewUtility = IOC.Resolve<IResourcePreviewUtility>();
                 byte[] preview = previewUtility.CreatePreviewData(texture); 

@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityObject = UnityEngine.Object;
 using Battlehub.RTSL.Battlehub.SL2;
+using Battlehub.Utils;
 
 namespace Battlehub.RTSL
 {
@@ -23,7 +24,10 @@ namespace Battlehub.RTSL
         public event ProjectEventHandler NewSceneCreated;
         public event ProjectEventHandler<ProjectInfo> CreateProjectCompleted;
         public event ProjectEventHandler<ProjectInfo> OpenProjectCompleted;
+        public event ProjectEventHandler<string> CopyProjectCompleted;
         public event ProjectEventHandler<string> DeleteProjectCompleted;
+        public event ProjectEventHandler<string> ExportProjectCompleted;
+        public event ProjectEventHandler<string> ImportProjectCompleted;
         public event ProjectEventHandler<ProjectInfo[]> ListProjectsCompleted;
         public event ProjectEventHandler CloseProjectCompleted;
 
@@ -39,7 +43,7 @@ namespace Battlehub.RTSL
         public event ProjectEventHandler<ProjectItem[]> DeleteCompleted;
         public event ProjectEventHandler<ProjectItem[], ProjectItem[]> MoveCompleted;
         public event ProjectEventHandler<ProjectItem> RenameCompleted;
-        public event ProjectEventHandler<ProjectItem> CreateCompleted;
+        public event ProjectEventHandler<ProjectItem[]> CreateCompleted;
         
         private IStorage m_storage;
         private IAssetDB m_assetDB;
@@ -50,7 +54,6 @@ namespace Battlehub.RTSL
         private AssetLibrariesListAsset m_staticAssetLibraries = null;
         private Dictionary<int, string> m_ordinalToStaticAssetLibrary;
      
-
         [SerializeField]
         private string m_sceneDepsLibrary = null;
 
@@ -75,6 +78,11 @@ namespace Battlehub.RTSL
         {
             get { return m_loadedScene; }
             set { m_loadedScene = value; }
+        }
+
+        public AssetBundle[] LoadedAssetBundles
+        {
+            get { return m_ordinalToAssetBundle.Values.ToArray(); }
         }
 
         /// <summary>
@@ -186,29 +194,37 @@ namespace Battlehub.RTSL
             m_actionsQueue.Clear();
         }
 
-        private void UnloadUnregisterDestroy()
+        private void UnloadUnregister()
         {
-            UnityObject[] dynamicResources = m_assetDB.GetDynamicResources();
             m_assetDB.UnloadLibraries();
             m_assetDB.UnregisterSceneObjects();
             m_assetDB.UnregisterDynamicResources();
+            m_idToAssetItem = new Dictionary<long, AssetItem>();
+            m_ordinalToAssetBundleInfo.Clear();
+            m_ordinalToAssetBundle.Clear();
+        }
+
+        private void UnloadUnregisterDestroy()
+        {
+            UnityObject[] dynamicResources = m_assetDB.GetDynamicResources();
+            AssetBundle[] loadedAssetBundles = LoadedAssetBundles;
+
+            UnloadUnregister();
+
             foreach (UnityObject dynamicResource in dynamicResources)
             {
-                if(dynamicResource is Transform)
+                if (dynamicResource is Transform)
                 {
                     continue;
                 }
                 Destroy(dynamicResource);
             }
 
-            m_idToAssetItem = new Dictionary<long, AssetItem>();
-
-            m_ordinalToAssetBundleInfo.Clear();
-            foreach (AssetBundle assetBundle in m_ordinalToAssetBundle.Values)
+            foreach (AssetBundle assetBundle in loadedAssetBundles)
             {
                 assetBundle.Unload(true);
             }
-            m_ordinalToAssetBundle.Clear();
+
         }
 
 
@@ -265,6 +281,18 @@ namespace Battlehub.RTSL
             {
                 return null;
             }
+
+            if(obj is RuntimeTextAsset)
+            {
+                RuntimeTextAsset textAsset = (RuntimeTextAsset)obj;
+                return textAsset.Ext;
+            }
+            else if(obj is RuntimeBinaryAsset)
+            {
+                RuntimeBinaryAsset binaryAsset = (RuntimeBinaryAsset)obj;
+                return binaryAsset.Ext;
+            }
+
             return GetExt(obj.GetType());
         }
 
@@ -306,6 +334,14 @@ namespace Battlehub.RTSL
             {
                 return ".rtterlayer";
             }
+            if(type == typeof(RuntimeTextAsset))
+            {
+                return ".txt";
+            }
+            if(type == typeof(RuntimeBinaryAsset))
+            {
+                return ".bin";
+            }
             return ".rt" + type.Name.ToLower().Substring(0, 3);
         }
 
@@ -314,7 +350,7 @@ namespace Battlehub.RTSL
             return PathHelper.GetUniqueName(name, names.ToList());
         }
 
-        public string GetUniqueName(string name, Type type, ProjectItem folder)
+        public string GetUniqueName(string name, Type type, ProjectItem folder, bool noSpace = false)
         {
             if(folder.Children == null)
             {
@@ -322,15 +358,25 @@ namespace Battlehub.RTSL
             }
 
             string ext = GetExt(type);
-
             List<string> existingNames = folder.Children.Where(c => !c.IsFolder).Select(c => c.NameExt).ToList();
-            return PathHelper.GetUniqueName(name, ext, existingNames);
+            return PathHelper.GetUniqueName(name, ext, existingNames, noSpace);
         }
 
-        public string GetUniquePath(string path, Type type, ProjectItem folder)
+        public string GetUniqueName(string name, string ext, ProjectItem folder, bool noSpace = false)
+        {
+            if (folder == null || folder.Children == null)
+            {
+                return name;
+            }
+
+            List<string> existingNames = folder.Children.Where(c => !c.IsFolder).Select(c => c.NameExt).ToList();
+            return PathHelper.GetUniqueName(name, ext, existingNames, noSpace);
+        }
+
+        public string GetUniquePath(string path, Type type, ProjectItem folder, bool noSpace = false)
         {
             string name = Path.GetFileName(path);
-            name = GetUniqueName(name, type, folder);
+            name = GetUniqueName(name, type, folder, noSpace);
 
             path = Path.GetDirectoryName(path).Replace(@"\", "/");
             
@@ -339,22 +385,12 @@ namespace Battlehub.RTSL
 
         public void CreateNewScene()
         {
-            if(NewSceneCreating != null)
+            if (NewSceneCreating != null)
             {
                 NewSceneCreating(new Error(Error.OK));
             }
 
-            GameObject[] rootGameObjects = SceneManager.GetActiveScene().GetRootGameObjects();
-            for (int i = 0; i < rootGameObjects.Length; ++i)
-            {
-                GameObject rootGO = rootGameObjects[i];
-                if (rootGO.GetComponent<RTSLIgnore>())
-                {
-                    continue;
-                }
-
-                Destroy(rootGO);
-            }
+            ClearScene();
 
             m_loadedScene = null;
             if (NewSceneCreated != null)
@@ -363,45 +399,19 @@ namespace Battlehub.RTSL
             }
         }
 
-        /// <summary>
-        /// Create Project
-        /// </summary>
-        /// <param name="project"></param>
-        /// <param name="callback"></param>
-        /// <returns></returns>
-        public ProjectAsyncOperation<ProjectInfo> CreateProject(string project, ProjectEventHandler<ProjectInfo> callback = null)
+        public void ClearScene()
         {
-            ProjectAsyncOperation<ProjectInfo> ao = new ProjectAsyncOperation<ProjectInfo>();
-            if (IsBusy)
+            GameObject[] rootGameObjects = SceneManager.GetActiveScene().GetRootGameObjects();
+            for (int i = 0; i < rootGameObjects.Length; ++i)
             {
-                m_actionsQueue.Enqueue(() => _CreateProject(project, callback, ao));
-            }
-            else
-            {
-                IsBusy = true;
-                _CreateProject(project, callback, ao);
-            }
-            return ao;
-        }
-
-        private void _CreateProject(string project, ProjectEventHandler<ProjectInfo> callback, ProjectAsyncOperation<ProjectInfo> ao)
-        {
-            m_storage.CreateProject(project, (error, projectInfo) =>
-            {
-                if (callback != null)
+                GameObject rootGO = rootGameObjects[i];
+                if (rootGO.GetComponent<RTSLIgnore>() || (rootGO.hideFlags & HideFlags.DontSave) != 0)
                 {
-                    callback(error, projectInfo);
+                    continue;
                 }
-                if (CreateProjectCompleted != null)
-                {
-                    CreateProjectCompleted(error, projectInfo);
-                }
-                ao.Error = error;
-                ao.Result = projectInfo;
-                ao.IsCompleted = true;
 
-                IsBusy = false;
-            });
+                Destroy(rootGO);
+            }
         }
 
 
@@ -448,72 +458,44 @@ namespace Battlehub.RTSL
         }
 
         /// <summary>
-        /// Delete Project
+        /// Create Project
         /// </summary>
         /// <param name="project"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public ProjectAsyncOperation<string> DeleteProject(string project, ProjectEventHandler<string> callback = null)
+        public ProjectAsyncOperation<ProjectInfo> CreateProject(string project, ProjectEventHandler<ProjectInfo> callback = null)
         {
-            ProjectAsyncOperation<string> pao = new ProjectAsyncOperation<string>();
+            ProjectAsyncOperation<ProjectInfo> ao = new ProjectAsyncOperation<ProjectInfo>();
             if (IsBusy)
             {
-                m_actionsQueue.Enqueue(() => _DeleteProject(project, callback, pao));
+                m_actionsQueue.Enqueue(() => _CreateProject(project, callback, ao));
             }
             else
             {
                 IsBusy = true;
-                _DeleteProject(project, callback, pao);
+                _CreateProject(project, callback, ao);
             }
-            
-            return pao;
+            return ao;
         }
 
-        private void _DeleteProject(string project, ProjectEventHandler<string> callback, ProjectAsyncOperation<string> ao)
+        private void _CreateProject(string project, ProjectEventHandler<ProjectInfo> callback, ProjectAsyncOperation<ProjectInfo> ao)
         {
-            if (m_projectInfo != null && project == m_projectInfo.Name)
-            {
-                CloseProject();        
-            }
-            m_storage.DeleteProject(project, error =>
+            m_storage.CreateProject(project, (error, projectInfo) =>
             {
                 if (callback != null)
                 {
-                    callback(error, project);
+                    callback(error, projectInfo);
                 }
-                
-                ao.Error = error;
-                ao.Result = project;
-                ao.IsCompleted = true;
-
-                if (DeleteProjectCompleted != null)
+                if (CreateProjectCompleted != null)
                 {
-                    DeleteProjectCompleted(error, project);
+                    CreateProjectCompleted(error, projectInfo);
                 }
+                ao.Error = error;
+                ao.Result = projectInfo;
+                ao.IsCompleted = true;
 
                 IsBusy = false;
             });
-        }
-
-        /// <summary>
-        /// Close Project
-        /// </summary>
-        public void CloseProject()
-        {
-            if(m_projectInfo != null)
-            {
-                UnloadUnregisterDestroy();
-            }
-            m_projectInfo = null;
-            m_root = null;
-            m_projectPath = null;
-
-            CreateNewScene();
-
-            if (CloseProjectCompleted != null)
-            {
-                CloseProjectCompleted(new Error(Error.OK));
-            }
         }
 
         /// <summary>
@@ -524,35 +506,60 @@ namespace Battlehub.RTSL
         /// <returns></returns>
         public ProjectAsyncOperation<ProjectInfo> OpenProject(string project, ProjectEventHandler<ProjectInfo> callback)
         {
+            return OpenProject(project, OpenProjectFlags.Default, callback);
+        }
+
+        public ProjectAsyncOperation<ProjectInfo> OpenProject(string project, OpenProjectFlags flags, ProjectEventHandler<ProjectInfo> callback)
+        {
             ProjectAsyncOperation<ProjectInfo> ao = new ProjectAsyncOperation<ProjectInfo>();
             if (IsBusy)
             {
-                m_actionsQueue.Enqueue(() => _OpenProject(project, callback, ao));
+                m_actionsQueue.Enqueue(() => _OpenProject(project, flags, callback, ao));
             }
             else
             {
-                
+
                 IsBusy = true;
-                _OpenProject(project, callback, ao);
+                _OpenProject(project, flags, callback, ao);
             }
             return ao;
         }
 
-        private void _OpenProject(string project, ProjectEventHandler<ProjectInfo> callback, ProjectAsyncOperation<ProjectInfo> ao)
+
+        private void _OpenProject(string project, OpenProjectFlags flags, ProjectEventHandler<ProjectInfo> callback, ProjectAsyncOperation<ProjectInfo> ao)
         {
-            if(m_projectPath == project)
+            if (m_projectPath == project)
             {
                 Debug.Assert(m_projectInfo != null);
                 RaiseOpenProjectCompleted(callback, ao, new Error(Error.OK), m_projectInfo);
                 return;
             }
 
+            if((flags & OpenProjectFlags.DestroyObjects) != 0)
+            {
+                UnloadUnregisterDestroy();
+            }
+            else
+            {
+                UnloadUnregister();
+            }
+            
             if (m_projectInfo != null)
             {
-                CreateNewScene();
+                if((flags & OpenProjectFlags.CreateNewScene) != 0)
+                {
+                    CreateNewScene();
+                }
+                else 
+                {
+                    if((flags & OpenProjectFlags.ClearScene) != 0)
+                    {
+                        ClearScene();
+                    }
+                    m_loadedScene = null;
+                }
             }
 
-            //UnloadUnregisterDestroy();
             m_projectInfo = null;
             m_root = null;
 
@@ -654,7 +661,7 @@ namespace Battlehub.RTSL
             {
                 callback(error, m_projectInfo);
             }
-            
+
             ao.Result = m_projectInfo;
             ao.Error = error;
             ao.IsCompleted = true;
@@ -665,6 +672,196 @@ namespace Battlehub.RTSL
             }
 
             IsBusy = false;
+        }
+
+        public ProjectAsyncOperation<string> CopyProject(string project, string targetProject, ProjectEventHandler<string> callback = null)
+        {
+            ProjectAsyncOperation<string> pao = new ProjectAsyncOperation<string>();
+            if (IsBusy)
+            {
+                m_actionsQueue.Enqueue(() => _CopyProject(project, targetProject, callback, pao));
+            }
+            else
+            {
+                IsBusy = true;
+                _CopyProject(project, targetProject, callback, pao);
+            }
+
+            return pao;
+        }
+
+        private void _CopyProject(string project, string targetProject, ProjectEventHandler<string> callback, ProjectAsyncOperation<string> ao)
+        {
+            m_storage.CopyProject(project, targetProject, error =>
+            {
+                if (callback != null)
+                {
+                    callback(error, targetProject);
+                }
+
+                ao.Error = error;
+                ao.Result = project;
+                ao.IsCompleted = true;
+
+                if (CopyProjectCompleted != null)
+                {
+                    CopyProjectCompleted(error, targetProject);
+                }
+
+                IsBusy = false;
+            });
+        }
+
+        /// <summary>
+        /// Delete Project
+        /// </summary>
+        /// <param name="project"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public ProjectAsyncOperation<string> DeleteProject(string project, ProjectEventHandler<string> callback = null)
+        {
+            ProjectAsyncOperation<string> pao = new ProjectAsyncOperation<string>();
+            if (IsBusy)
+            {
+                m_actionsQueue.Enqueue(() => _DeleteProject(project, callback, pao));
+            }
+            else
+            {
+                IsBusy = true;
+                _DeleteProject(project, callback, pao);
+            }
+            
+            return pao;
+        }
+
+        private void _DeleteProject(string project, ProjectEventHandler<string> callback, ProjectAsyncOperation<string> ao)
+        {
+            if (m_projectInfo != null && project == m_projectInfo.Name)
+            {
+                CloseProject();        
+            }
+            m_storage.DeleteProject(project, error =>
+            {
+                if (callback != null)
+                {
+                    callback(error, project);
+                }
+                
+                ao.Error = error;
+                ao.Result = project;
+                ao.IsCompleted = true;
+
+                if (DeleteProjectCompleted != null)
+                {
+                    DeleteProjectCompleted(error, project);
+                }
+
+                IsBusy = false;
+            });
+        }
+
+        public ProjectAsyncOperation<string> ExportProject(string project, string targetPath, ProjectEventHandler<string> callback = null)
+        {
+            ProjectAsyncOperation<string> pao = new ProjectAsyncOperation<string>();
+            if (IsBusy)
+            {
+                m_actionsQueue.Enqueue(() => _ExportProject(project, targetPath, callback, pao));
+            }
+            else
+            {
+                IsBusy = true;
+                _ExportProject(project, targetPath, callback, pao);
+            }
+
+            return pao;
+        }
+
+        private void _ExportProject(string project, string targetPath, ProjectEventHandler<string> callback, ProjectAsyncOperation<string> ao)
+        {
+            m_storage.ExportProject(project, targetPath, error =>
+            {
+                if (callback != null)
+                {
+                    callback(error, project);
+                }
+
+                ao.Error = error;
+                ao.Result = project;
+                ao.IsCompleted = true;
+
+                if(!error.HasError)
+                {
+                    if (ExportProjectCompleted != null)
+                    {
+                        ExportProjectCompleted(error, project);
+                    }
+                }
+                
+                IsBusy = false;
+            });
+        }
+
+        public ProjectAsyncOperation<string> ImportProject(string project, string sourcePath, ProjectEventHandler<string> callback = null)
+        {
+            ProjectAsyncOperation<string> pao = new ProjectAsyncOperation<string>();
+            if (IsBusy)
+            {
+                m_actionsQueue.Enqueue(() => _ImportProject(project, sourcePath, callback, pao));
+            }
+            else
+            {
+                IsBusy = true;
+                _ImportProject(project, sourcePath, callback, pao);
+            }
+
+            return pao;
+        }
+
+        private void _ImportProject(string project, string sourcePath, ProjectEventHandler<string> callback, ProjectAsyncOperation<string> ao)
+        {
+            m_storage.ImportProject(project, sourcePath, error =>
+            {
+                if (callback != null)
+                {
+                    callback(error, project);
+                }
+
+                ao.Error = error;
+                ao.Result = project;
+                ao.IsCompleted = true;
+
+                if(!error.HasError)
+                {
+                    if (ImportProjectCompleted != null)
+                    {
+                        ImportProjectCompleted(error, project);
+                    }
+                }
+                
+                IsBusy = false;
+            });
+        }
+
+        /// <summary>
+        /// Close Project
+        /// </summary>
+        public void CloseProject()
+        {
+            if(m_projectInfo != null)
+            {
+                UnloadUnregisterDestroy();
+            }
+            m_projectInfo = null;
+            m_root = null;
+            m_projectPath = null;
+
+            ClearScene();
+            m_loadedScene = null;
+
+            if (CloseProjectCompleted != null)
+            {
+                CloseProjectCompleted(new Error(Error.OK));
+            }
         }
 
         /// <summary>
@@ -844,10 +1041,19 @@ namespace Battlehub.RTSL
                     }
                     else
                     {
-                        Type type = m_typeMap.ToUnityType(persistentType);
+                        Type type;
+                        if(persistentType != typeof(PersistentRuntimeSerializableObject))
+                        {
+                            type = m_typeMap.ToUnityType(persistentType);
+                        }
+                        else
+                        {
+                            type = m_typeMap.ToType(descriptor.RuntimeTypeGuid);
+                        }
+                        
                         if (type == null)
                         {
-                            Debug.LogWarningFormat("Unable to get unity type from persistent type {1}", type.FullName);
+                            Debug.LogWarningFormat("Unable to get unity type from persistent type {1}", persistentType.FullName);
                             checkPassed = false;
                         }
                         else
@@ -980,61 +1186,93 @@ namespace Battlehub.RTSL
                 return;
             }
 
+            LoadLibraryWithSceneDependencies(() =>
+            {
+                object[] dependencies = FindDeepDependencies(obj, exceptMappedObject);
+                RaiseGetDependenciesCompleted(callback, ao, dependencies);
+            });
+        }
+
+        private void RaiseGetDependenciesCompleted(ProjectEventHandler<object[]> callback, ProjectAsyncOperation<object[]> ao, object[] dependencies)
+        {
+            Error error = new Error(Error.OK);
+            if (callback != null)
+            {
+                callback(error, dependencies);
+            }
+
+            ao.Error = error;
+            ao.Result = dependencies;
+            ao.IsCompleted = true;
+
+            IsBusy = false;
+        }
+
+        public object[] FindDeepDependencies(object obj)
+        {
+            return FindDeepDependencies(obj, false);
+        }
+
+        private object[] FindDeepDependencies(object obj, bool exceptMappedObject)
+        {
+            Type objType = obj.GetType();
+            Type persistentType = m_typeMap.ToPersistentType(objType);
+            if (persistentType == null)
+            {
+                return null;
+            }
+
             if (persistentType == typeof(PersistentGameObject))
             {
                 persistentType = typeof(PersistentRuntimePrefab);
             }
 
-            LoadLibraryWithSceneDependencies(() =>
+            PersistentObject persistentObject = (PersistentObject)Activator.CreateInstance(persistentType);
+            GetDepsFromContext ctx = new GetDepsFromContext();
+            persistentObject.GetDepsFrom(obj, ctx);
+
+            object[] deps = ctx.Dependencies.ToArray();
+            ctx.Dependencies.Clear();
+
+            for (int i = 0; i < deps.Length; ++i)
             {
-                PersistentObject persistentObject = (PersistentObject)Activator.CreateInstance(persistentType);
-                GetDepsFromContext ctx = new GetDepsFromContext();
-                persistentObject.GetDepsFrom(obj, ctx);
+                object dep = deps[i];
 
-                object[] deps = ctx.Dependencies.ToArray();
-                ctx.Dependencies.Clear();
-
-                for(int i = 0; i < deps.Length; ++i)
+                if (dep is GameObject)
                 {
-                    object dep = deps[i];
-
-                    if (dep is GameObject)
+                    continue;
+                }
+                else if (dep is Component)
+                {
+                    continue;
+                }
+                else if (dep is UnityObject)
+                {
+                    if (exceptMappedObject && m_assetDB.IsMapped((UnityObject)dep))
                     {
                         continue;
                     }
-                    else if(dep is Component)
-                    {
-                        continue;
-                    }
-                    else if(dep is UnityObject)
-                    {
-                        if (exceptMappedObject && m_assetDB.IsMapped((UnityObject)dep))
-                        {
-                            continue;
-                        }
-                        ctx.Dependencies.Add(dep);
-                    }
+                    ctx.Dependencies.Add(dep);
                 }
-                
-                Queue<UnityObject> depsQueue = new Queue<UnityObject>(deps.OfType<UnityObject>());
+            }
 
-                GetDeepDependencies(depsQueue, exceptMappedObject, ctx);
+            Queue<UnityObject> depsQueue = new Queue<UnityObject>(deps.OfType<UnityObject>());
+            FindDeepDependencies(depsQueue, exceptMappedObject, ctx);
 
-                object[] dependencies;
-                if (exceptMappedObject)
-                {
-                    dependencies = ctx.Dependencies.Where(d => d is UnityObject && !m_assetDB.IsMapped((UnityObject)d)).ToArray();
-                }
-                else
-                {
-                    dependencies = ctx.Dependencies.ToArray();
-                }
+            object[] dependencies;
+            if (exceptMappedObject)
+            {
+                dependencies = ctx.Dependencies.Where(d => d is UnityObject && !m_assetDB.IsMapped((UnityObject)d)).ToArray();
+            }
+            else
+            {
+                dependencies = ctx.Dependencies.ToArray();
+            }
 
-                RaiseGetDependenciesCompleted(callback, ao, dependencies);
-            });
+            return dependencies;
         }
 
-        private void GetDeepDependencies(Queue<UnityObject> depsQueue, bool exceptMappedObject, GetDepsFromContext ctx)
+        private void FindDeepDependencies(Queue<UnityObject> depsQueue, bool exceptMappedObject, GetDepsFromContext ctx)
         {
             GetDepsFromContext getDepsCtx = new GetDepsFromContext();
             while (depsQueue.Count > 0)
@@ -1086,21 +1324,7 @@ namespace Battlehub.RTSL
             }
         }
 
-        private void RaiseGetDependenciesCompleted(ProjectEventHandler<object[]> callback, ProjectAsyncOperation<object[]> ao, object[] dependencies)
-        {
-            Error error = new Error(Error.OK);
-            if (callback != null)
-            {
-                callback(error, dependencies);
-            }
-
-            ao.Error = error;
-            ao.Result = dependencies;
-            ao.IsCompleted = true;
-
-            IsBusy = false;
-        }
-
+   
         public AssetItem[] GetDependantAssetItems(AssetItem[] assetItems)
         {
             HashSet<AssetItem> resultHs = new HashSet<AssetItem>();
@@ -1158,7 +1382,7 @@ namespace Battlehub.RTSL
         /// <returns></returns>
         public ProjectAsyncOperation<AssetItem[]> Save(AssetItem[] assetItems, object[] obj, ProjectEventHandler<AssetItem[]> callback = null)
         {
-            return Save(assetItems, null, null, obj, null, callback);
+            return Save(assetItems, null, null, obj, null, true, callback);
         }
 
         /// <summary>
@@ -1172,26 +1396,31 @@ namespace Battlehub.RTSL
         /// <returns></returns>
         public ProjectAsyncOperation<AssetItem[]> Save(ProjectItem[] parents, byte[][] previewData, object[] obj, string[] nameOverrides, ProjectEventHandler<AssetItem[]> callback = null)
         {
-            return Save(null, parents, previewData, obj, nameOverrides, callback);
+            return Save(null, parents, previewData, obj, nameOverrides, true, callback);
         }
 
-        private ProjectAsyncOperation<AssetItem[]> Save(AssetItem[] existingAssetItems, ProjectItem[] parents, byte[][] previewData, object[] objects, string[] nameOverrides, ProjectEventHandler<AssetItem[]> callback)
+        public ProjectAsyncOperation<AssetItem[]> Save(ProjectItem[] parents, byte[][] previewData, object[] obj, string[] nameOverrides, bool isUserAction, ProjectEventHandler<AssetItem[]> callback = null)
+        {
+            return Save(null, parents, previewData, obj, nameOverrides, isUserAction, callback);
+        }
+
+        private ProjectAsyncOperation<AssetItem[]> Save(AssetItem[] existingAssetItems, ProjectItem[] parents, byte[][] previewData, object[] objects, string[] nameOverrides, bool isUserAction, ProjectEventHandler<AssetItem[]> callback)
         {
             ProjectAsyncOperation<AssetItem[]> ao = new ProjectAsyncOperation<AssetItem[]>();
             if (IsBusy)
             {
-                m_actionsQueue.Enqueue(() => { _Save(existingAssetItems, parents, previewData, objects, nameOverrides, callback, ao); });
+                m_actionsQueue.Enqueue(() => { _Save(existingAssetItems, parents, previewData, objects, nameOverrides, isUserAction, callback, ao); });
             }
             else
             {
                 IsBusy = true;
-                _Save(existingAssetItems, parents, previewData, objects, nameOverrides, callback, ao);
+                _Save(existingAssetItems, parents, previewData, objects, nameOverrides, isUserAction, callback, ao);
             }
 
             return ao;
         }
 
-        private void _Save(AssetItem[] existingAssetItems, ProjectItem[] parents, byte[][] previewData, object[] objects, string[] nameOverrides, ProjectEventHandler<AssetItem[]> callback, ProjectAsyncOperation<AssetItem[]> ao)
+        private void _Save(AssetItem[] existingAssetItems, ProjectItem[] parents, byte[][] previewData, object[] objects, string[] nameOverrides, bool isUserAction, ProjectEventHandler<AssetItem[]> callback, ProjectAsyncOperation<AssetItem[]> ao)
         {
             if (BeginSave != null)
             {
@@ -1204,7 +1433,7 @@ namespace Battlehub.RTSL
                     if (SaveCompleted != null)
                     {
                         bool isNew = existingAssetItems == null;
-                        SaveCompleted(ao.Error, ao.Result, isNew);
+                        SaveCompleted(ao.Error, ao.Result, isNew && isUserAction);
                     }
                     IsBusy = false;
                 }
@@ -1310,7 +1539,6 @@ namespace Battlehub.RTSL
                 }
             }
             
-
             int assetIdBackup = m_projectInfo.AssetIdentifier;
             int[] rootIds = new int[objects.Length];
             int[] rootOrdinals = new int[objects.Length];
@@ -1467,6 +1695,7 @@ namespace Battlehub.RTSL
                     }
 
                     List<ProjectItem> potentialChildren = parentToPotentialChildren[parents[objIndex]];
+                    persistentObject.name = PathHelper.RemoveInvalidFileNameCharacters(persistentObject.name);
                     persistentObject.name = PathHelper.GetUniqueName(persistentObject.name, GetExt(obj), potentialChildren.Select(c => c.NameExt).ToList());
                     assetItem = new AssetItem();
                     if (obj is Scene)
@@ -1479,6 +1708,7 @@ namespace Battlehub.RTSL
                     }
                     assetItem.Parent = parents[objIndex];
                     assetItem.Name = persistentObject.name;
+                    
                     assetItem.Ext = GetExt(obj);
                     assetItem.TypeGuid = m_typeMap.ToGuid(obj.GetType());
                     potentialChildren.Add(assetItem);
@@ -2594,6 +2824,13 @@ namespace Battlehub.RTSL
                 UnityObject obj = bundle.LoadAsset<UnityObject>(assetName);
                 if (obj is GameObject)
                 {
+
+                    //TODO: Generate identifiers for subassets such as Avatars and meshes
+                    //UnityObject[] subAssets = bundle.LoadAssetWithSubAssets<UnityObject>(assetName);
+                    //for(int s = 0; s < subAssets.Length; ++s)
+                    //{       
+                    //}
+
                     GenerateIdentifiersForPrefab(assetName, (GameObject)obj, info, pathToBundleItem);
                 }
             }
@@ -3378,6 +3615,75 @@ namespace Battlehub.RTSL
             }
         }
 
+        public ProjectAsyncOperation CreatePrefab(string folderPath, GameObject prefab, bool includeDeps, Func<UnityObject, byte[]> createPreview = null)
+        {
+            ProjectAsyncOperation ao = new ProjectAsyncOperation();
+
+            folderPath = string.Format("{0}/{1}", Root.Name, folderPath);
+            ProjectItem folder = Root.Get(folderPath, true) as ProjectItem;
+            if (folder is AssetItem)
+            {
+                throw new ArgumentException("folderPath");
+            }
+
+            if (includeDeps)
+            {
+                GetDependencies(prefab, true, (error, deps) =>
+                {
+                    object[] objects;
+                    if (!deps.Contains(prefab))
+                    {
+                        objects = new object[deps.Length + 1];
+                        objects[deps.Length] = prefab;
+                        for (int i = 0; i < deps.Length; ++i)
+                        {
+                            objects[i] = deps[i];
+                        }
+                    }
+                    else
+                    {
+                        objects = deps;
+                    }
+
+                    IUnityObjectFactory uoFactory = IOC.Resolve<IUnityObjectFactory>();
+                    objects = objects.Where(obj => uoFactory.CanCreateInstance(obj.GetType())).ToArray();
+
+                    byte[][] previewData = new byte[objects.Length][];
+                    if (createPreview != null)
+                    {
+                        for (int i = 0; i < objects.Length; ++i)
+                        {
+                            if (objects[i] is UnityObject)
+                            {
+                                previewData[i] = createPreview((UnityObject)objects[i]);
+                            }
+                        }
+                    }
+
+                    Save(new[] { folder }, previewData, objects, null, (saveErr, assetItems) =>
+                    {
+                        ao.Error = saveErr;
+                        ao.IsCompleted = true;
+                    });
+                });
+            }
+            else
+            {
+                byte[][] previewData = new byte[1][];
+                if (createPreview != null)
+                {
+                    previewData[0] = createPreview(prefab);
+                }
+
+                Save(new[] { folder }, previewData, new[] { prefab }, null, (saveErr, assetItems) =>
+                {
+                    ao.Error = saveErr;
+                    ao.IsCompleted = true;
+                });
+            }
+
+            return ao;
+        }
         /// <summary>
         /// Create folder
         /// </summary>
@@ -3396,38 +3702,76 @@ namespace Battlehub.RTSL
             }
 
             ProjectAsyncOperation<ProjectItem> ao = new ProjectAsyncOperation<ProjectItem>();
+            StartCoroutine(CoCreate(projectItem, ao, callback));
+            return ao;
+        }
+
+        private IEnumerator CoCreate(ProjectItem projectItem, ProjectAsyncOperation<ProjectItem> ao, ProjectEventHandler<ProjectItem> callback = null)
+        {
+            ProjectAsyncOperation<ProjectItem[]> createAo = new ProjectAsyncOperation<ProjectItem[]>();
             if (IsBusy)
             {
-                m_actionsQueue.Enqueue(() => _Create(projectItem, callback, ao));
+                m_actionsQueue.Enqueue(() => _Create(new[] { projectItem }, (err, projectItems) => { callback?.Invoke(err, projectItems.FirstOrDefault()); }, createAo));
             }
             else
             {
                 IsBusy = true;
-                _Create(projectItem, callback, ao);
+                _Create(new[] { projectItem }, (err, projectItems) => { callback?.Invoke(err, projectItems.FirstOrDefault()); }, createAo);
+            };
+
+            yield return createAo;
+            ao.Error = createAo.Error;
+            if(createAo.Result != null)
+            {
+                ao.Result = createAo.Result.FirstOrDefault();
             }
-            return ao;
+            ao.IsCompleted = true;
         }
 
-        private void _Create(ProjectItem projectItem, ProjectEventHandler<ProjectItem> callback, ProjectAsyncOperation<ProjectItem> ao)
+        private void _Create(ProjectItem[] projectItems, ProjectEventHandler<ProjectItem[]> callback, ProjectAsyncOperation<ProjectItem[]> ao)
         {
-            m_storage.Create(m_projectPath, new[] { projectItem.Parent.ToString() }, new[] { projectItem.NameExt }, error =>
+            m_storage.Create(m_projectPath, projectItems.Select(projectItem => projectItem.Parent.ToString()).ToArray(),  projectItems.Select(projectItem => projectItem.NameExt).ToArray(), error =>
             {
                 if (callback != null)
                 {
-                    callback(error, projectItem);
+                    callback(error, projectItems);
                 }
 
-                ao.Result = projectItem;
+                ao.Result = projectItems;
                 ao.Error = error;
                 ao.IsCompleted = true;
 
                 if (CreateCompleted != null)
                 {
-                    CreateCompleted(error, projectItem);
+                    CreateCompleted(error, projectItems);
                 }
 
                 IsBusy = false;
             });
+        }
+
+        public ProjectAsyncOperation<ProjectItem[]> CreateFolders(ProjectItem[] projectItems, ProjectEventHandler<ProjectItem[]> callback = null)
+        {
+            if (m_root == null)
+            {
+                throw new InvalidOperationException("Project is not opened. Use OpenProject method");
+            }
+            if (projectItems.Any(projectItem => !projectItem.IsFolder))
+            {
+                throw new InvalidOperationException("is not a folder");
+            }
+
+            ProjectAsyncOperation<ProjectItem[]> ao = new ProjectAsyncOperation<ProjectItem[]>();
+            if (IsBusy)
+            {
+                m_actionsQueue.Enqueue(() => _Create(projectItems, callback, ao));
+            }
+            else
+            {
+                IsBusy = true;
+                _Create(projectItems, callback, ao);
+            }
+            return ao;
         }
 
         /// <summary>
@@ -3542,6 +3886,41 @@ namespace Battlehub.RTSL
                 {
                     MoveCompleted(error, projectItems, oldParents);
                 }
+
+                IsBusy = false;
+            });
+        }
+
+        public ProjectAsyncOperation Delete(string projectPath, string[] projectItemsPath, ProjectEventHandler callback)
+        {
+            if (m_root == null)
+            {
+                throw new InvalidOperationException("Project is not opened. Use OpenProject method");
+            }
+            ProjectAsyncOperation<ProjectItem[]> ao = new ProjectAsyncOperation<ProjectItem[]>();
+            if (IsBusy)
+            {
+                m_actionsQueue.Enqueue(() => _Delete(projectPath, projectItemsPath, callback, ao));
+            }
+            else
+            {
+                IsBusy = true;
+                _Delete(projectPath, projectItemsPath, callback, ao);
+            } 
+            return ao;
+        }
+
+        private void _Delete(string projectPath, string[] projectItemsPath, ProjectEventHandler callback, ProjectAsyncOperation ao)
+        {
+            m_storage.Delete(projectPath, projectItemsPath, error =>
+            {
+                if (callback != null)
+                {
+                    callback(error);
+                }
+
+                ao.Error = error;                
+                ao.IsCompleted = true;
 
                 IsBusy = false;
             });
@@ -3693,7 +4072,7 @@ namespace Battlehub.RTSL
             return m_ordinalToStaticAssetLibrary;
         }
 
-        public ProjectAsyncOperation<T[]> GetValues<T>(string searchPattern, ProjectEventHandler<T[]> callback = null) where T : new()
+        public ProjectAsyncOperation<T[]> GetValues<T>(string searchPattern, ProjectEventHandler<T[]> callback = null)
         {
             if (m_root == null)
             {
@@ -3714,7 +4093,7 @@ namespace Battlehub.RTSL
             return ao;
         }
 
-        private void _GetValues<T>(string searchPattern, ProjectEventHandler<T[]> callback, ProjectAsyncOperation<T[]> ao) where T : new()
+        private void _GetValues<T>(string searchPattern, ProjectEventHandler<T[]> callback, ProjectAsyncOperation<T[]> ao)
         {
             Type objType = typeof(T);
             Type persistentType = m_typeMap.ToPersistentType(objType);
@@ -3747,7 +4126,7 @@ namespace Battlehub.RTSL
                 {
                     for (int i = 0; i < result.Length; ++i)
                     {
-                        result[i] = new T();
+                        result[i] = (T)persistentObjects[i].Instantiate(typeof(T));
                         persistentObjects[i].WriteTo(result[i]);
                     }
                 }
@@ -3770,7 +4149,7 @@ namespace Battlehub.RTSL
         }
 
 
-        public ProjectAsyncOperation<T> GetValue<T>(string key, ProjectEventHandler<T> callback = null) where T : new()
+        public ProjectAsyncOperation<T> GetValue<T>(string key, ProjectEventHandler<T> callback = null) 
         {
             if (m_root == null)
             {
@@ -3791,7 +4170,7 @@ namespace Battlehub.RTSL
             return ao;
         }
 
-        private void _GetValue<T>(string key, ProjectEventHandler<T> callback, ProjectAsyncOperation<T> ao) where T : new()
+        private void _GetValue<T>(string key, ProjectEventHandler<T> callback, ProjectAsyncOperation<T> ao) 
         {
             Type objType = typeof(T);
             Type persistentType = m_typeMap.ToPersistentType(objType);
@@ -3817,7 +4196,7 @@ namespace Battlehub.RTSL
                 }
                 else
                 {
-                    result = new T();
+                    result = (T)persistentObject.Instantiate(typeof(T));
                 }
                  
                 persistentObject.WriteTo(result);

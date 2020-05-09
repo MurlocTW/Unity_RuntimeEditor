@@ -22,6 +22,8 @@ namespace Battlehub.RTSL.Battlehub.SL2
 
         protected override void ReadFromImpl(object obj)
         {
+            ClearReferencesCache();
+
             Scene scene = (Scene)obj;
             GameObject[] rootGameObjects;
             if (scene.IsValid())
@@ -32,7 +34,7 @@ namespace Battlehub.RTSL.Battlehub.SL2
             {
                 rootGameObjects = new GameObject[0];
             }
-             
+
             List<PersistentObject> data = new List<PersistentObject>();
             List<long> identifiers = new List<long>();    
             List<PersistentDescriptor> descriptors = new List<PersistentDescriptor>(rootGameObjects.Length);
@@ -73,20 +75,17 @@ namespace Battlehub.RTSL.Battlehub.SL2
                     try
                     {
                         PersistentObject persistentObject = (PersistentObject)Activator.CreateInstance(persistentType);
-                        if (!(uo is GameObject) && !(uo is Component))
+                        if (!(uo is GameObject) && !(uo is Component) && (uo.hideFlags & HideFlags.DontSave) == 0)
                         {
                             if (!m_assetDB.IsMapped(uo))
                             {
-                                if(uo is Texture2D)
+                                if (uo is Texture2D)
                                 {
                                     Texture2D texture = (Texture2D)uo;
-                                    if(texture.isReadable)  //
-                                    {
-                                        persistentObject.ReadFrom(uo);
-                                        assets.Add(persistentObject);
-                                        assetIdentifiers.Add(uo.GetInstanceID());
-                                        persistentObject.GetDepsFrom(uo, getDepsCtx);
-                                    }
+                                    persistentObject.ReadFrom(uo);
+                                    assets.Add(persistentObject);
+                                    assetIdentifiers.Add(uo.GetInstanceID());
+                                    persistentObject.GetDepsFrom(uo, getDepsCtx);
                                 }
                                 else
                                 {
@@ -140,6 +139,8 @@ namespace Battlehub.RTSL.Battlehub.SL2
 
             Assets = assets.ToArray();
             AssetIdentifiers = assetIdentifiers.ToArray();
+
+            ClearReferencesCache();
         }
 
         private void DestroyGameObjects(Scene scene)
@@ -148,7 +149,7 @@ namespace Battlehub.RTSL.Battlehub.SL2
             for (int i = 0; i < rootGameObjects.Length; ++i)
             {
                 GameObject rootGO = rootGameObjects[i];
-                if (rootGO.GetComponent<RTSLIgnore>())
+                if (rootGO.GetComponent<RTSLIgnore>() || (rootGO.hideFlags & HideFlags.DontSave) != 0)
                 {
                     continue;
                 }
@@ -159,6 +160,8 @@ namespace Battlehub.RTSL.Battlehub.SL2
 
         protected override object WriteToImpl(object obj)
         {
+            ClearReferencesCache();
+
             Scene scene = (Scene)obj;
             if (Descriptors == null && Data == null)
             {
@@ -201,9 +204,18 @@ namespace Battlehub.RTSL.Battlehub.SL2
                 assetInstances = new UnityObject[AssetIdentifiers.Length];
                 for (int i = 0; i < AssetIdentifiers.Length; ++i)
                 {
+                    Type uoType;
                     PersistentObject asset = Assets[i];
-
-                    Type uoType = m_typeMap.ToUnityType(asset.GetType());
+                    if(asset is PersistentRuntimeSerializableObject)
+                    {
+                        PersistentRuntimeSerializableObject runtimeSerializableObject = (PersistentRuntimeSerializableObject)asset;
+                        uoType = runtimeSerializableObject.ObjectType;
+                    }
+                    else
+                    {
+                        uoType = m_typeMap.ToUnityType(asset.GetType());
+                    }
+                    
                     if (uoType != null)
                     {
                         if(factory.CanCreateInstance(uoType, asset))
@@ -245,6 +257,8 @@ namespace Battlehub.RTSL.Battlehub.SL2
             RestoreDataAndResolveDependencies();
             m_assetDB.UnregisterSceneObjects();
 
+            ClearReferencesCache();
+
             return scene;
         }
 
@@ -262,6 +276,25 @@ namespace Battlehub.RTSL.Battlehub.SL2
             {
                 base.GetDepsFromImpl(gameObjects[i], context);
             }
+        }
+
+        protected override void GetDependenciesFrom(GameObject go, List<object> prefabParts, GetDepsFromContext context)
+        {
+            if ((go.hideFlags & HideFlags.DontSave) != 0)
+            {
+                //Do not save persistent ignore objects
+                return;
+            }
+            base.GetDependenciesFrom(go, prefabParts, context);
+        }
+
+        protected override PersistentDescriptor CreateDescriptorAndData(GameObject go, List<PersistentObject> persistentData, List<long> persistentIdentifiers, GetDepsFromContext getDepsFromCtx, PersistentDescriptor parentDescriptor = null)
+        {
+            if ((go.hideFlags & HideFlags.DontSave) != 0)
+            {
+                return null;
+            }
+            return base.CreateDescriptorAndData(go, persistentData, persistentIdentifiers, getDepsFromCtx, parentDescriptor);
         }
     }
 }

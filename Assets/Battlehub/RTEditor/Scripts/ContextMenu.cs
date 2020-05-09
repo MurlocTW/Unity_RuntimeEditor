@@ -32,12 +32,14 @@ namespace Battlehub.RTEditor
             Vector3 position;
             Vector2 pos = Input.mousePosition;
 
-            if (!RectTransformUtility.RectangleContainsScreenPoint(m_contextMenuArea, pos, canvas.worldCamera))
+            Camera cam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+
+            if (!RectTransformUtility.RectangleContainsScreenPoint(m_contextMenuArea, pos, cam))
             {
                 return;
             }
 
-            if (RectTransformUtility.ScreenPointToWorldPointInRectangle(m_contextMenuArea, pos, canvas.worldCamera, out position))
+            if (RectTransformUtility.ScreenPointToWorldPointInRectangle(m_contextMenuArea, pos, cam, out position))
             {
                 m_menu.transform.position = position;
                 m_menu.Items = items;

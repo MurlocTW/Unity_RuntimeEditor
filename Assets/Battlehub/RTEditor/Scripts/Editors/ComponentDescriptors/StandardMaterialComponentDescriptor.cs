@@ -5,53 +5,22 @@ using UnityEngine.Rendering;
 
 using Battlehub.Utils;
 using Battlehub.RTSL;
+using Battlehub.RTCommon;
 
 namespace Battlehub.RTEditor
 {
     public class StandardMaterialValueConverter 
     {
-        private enum WorkflowMode
+        public StandardMaterialUtils.BlendMode Mode
         {
-            Specular,
-            Metallic,
-            Dielectric
-        }
-
-        public enum SmoothnessMapChannel
-        {
-            SpecularMetallicAlpha,
-            AlbedoAlpha,
-        }
-
-
-        public enum BlendMode
-        {
-            Opaque,
-            Cutout,
-            Fade,       // Old school alpha-blending mode, fresnel does not affect amount of transparency
-            Transparent // Physically plausible transparency mode, implemented as alpha pre-multiply
-        }
-
-        public enum UVSec
-        {
-            UV0 = 0,
-            UV1 = 1
-        }
-
-
-        private WorkflowMode m_workflow = WorkflowMode.Metallic;
-
-
-        public BlendMode Mode
-        {
-            get { return (BlendMode)Material.GetFloat("_Mode"); }
+            get { return (StandardMaterialUtils.BlendMode)Material.GetFloat("_Mode"); }
             set
             {
                 if (Mode != value)
                 {
                     Material.SetFloat("_Mode", (float)value);
-                    SetupMaterialWithBlendMode(Material, Mode);
-                    SetMaterialKeywords(Material, m_workflow);
+                    StandardMaterialUtils.SetupMaterialWithBlendMode(Material,Mode);
+                    StandardMaterialUtils.SetMaterialKeywords(Material, StandardMaterialUtils.m_workflow);
                 }
             }
         }
@@ -62,8 +31,8 @@ namespace Battlehub.RTEditor
             set
             {
                 Material.SetFloat("_Cutoff", value);
-                SetMaterialKeywords(Material, m_workflow);
-                SetupMaterialWithBlendMode(Material, Mode);
+                StandardMaterialUtils.SetMaterialKeywords(Material, StandardMaterialUtils.m_workflow);
+                StandardMaterialUtils.SetupMaterialWithBlendMode(Material, Mode);
             }
         }
 
@@ -73,12 +42,10 @@ namespace Battlehub.RTEditor
             set
             {
                 Material.SetTexture("_MetallicGlossMap", value);
-                SetMaterialKeywords(Material, m_workflow);
-                SetupMaterialWithBlendMode(Material, Mode);
+                StandardMaterialUtils.SetMaterialKeywords(Material, StandardMaterialUtils.m_workflow);
+                StandardMaterialUtils.SetupMaterialWithBlendMode(Material, Mode);
             }
         }
-
-
 
         public Texture BumpMap
         {
@@ -86,8 +53,8 @@ namespace Battlehub.RTEditor
             set
             {
                 Material.SetTexture("_BumpMap", value);
-                SetMaterialKeywords(Material, m_workflow);
-                SetupMaterialWithBlendMode(Material, Mode);
+                StandardMaterialUtils.SetMaterialKeywords(Material, StandardMaterialUtils.m_workflow);
+                StandardMaterialUtils.SetupMaterialWithBlendMode(Material, Mode);
             }
         }
 
@@ -97,8 +64,8 @@ namespace Battlehub.RTEditor
             set
             {
                 Material.SetTexture("_ParallaxMap", value);
-                SetMaterialKeywords(Material, m_workflow);
-                SetupMaterialWithBlendMode(Material, Mode);
+                StandardMaterialUtils.SetMaterialKeywords(Material, StandardMaterialUtils.m_workflow);
+                StandardMaterialUtils.SetupMaterialWithBlendMode(Material, Mode);
             }
         }
 
@@ -108,8 +75,8 @@ namespace Battlehub.RTEditor
             set
             {
                 Material.SetTexture("_OcclusionMap", value);
-                SetMaterialKeywords(Material, m_workflow);
-                SetupMaterialWithBlendMode(Material, Mode);
+                StandardMaterialUtils.SetMaterialKeywords(Material, StandardMaterialUtils.m_workflow);
+                StandardMaterialUtils.SetupMaterialWithBlendMode(Material, Mode);
             }
         }
 
@@ -119,8 +86,8 @@ namespace Battlehub.RTEditor
             set
             {
                 Material.SetTexture("_EmissionMap", value);
-                SetMaterialKeywords(Material, m_workflow);
-                SetupMaterialWithBlendMode(Material, Mode);
+                StandardMaterialUtils.SetMaterialKeywords(Material, StandardMaterialUtils.m_workflow);
+                StandardMaterialUtils.SetupMaterialWithBlendMode(Material, Mode);
             }
         }
 
@@ -130,8 +97,8 @@ namespace Battlehub.RTEditor
             set
             {
                 Material.SetColor("_EmissionColor", value);
-                SetMaterialKeywords(Material, m_workflow);
-                SetupMaterialWithBlendMode(Material, Mode);
+                StandardMaterialUtils.SetMaterialKeywords(Material, StandardMaterialUtils.m_workflow);
+                StandardMaterialUtils.SetupMaterialWithBlendMode(Material, Mode);
             }
         }
 
@@ -141,7 +108,7 @@ namespace Battlehub.RTEditor
             set
             {
                 Material.SetTexture("_DetailMask", value);
-                SetMaterialKeywords(Material, m_workflow);
+                StandardMaterialUtils.SetMaterialKeywords(Material, StandardMaterialUtils.m_workflow);
             }
         }
 
@@ -151,7 +118,7 @@ namespace Battlehub.RTEditor
             set
             {
                 Material.SetTexture("_DetailAlbedoMap", value);
-                SetMaterialKeywords(Material, m_workflow);
+                StandardMaterialUtils.SetMaterialKeywords(Material, StandardMaterialUtils.m_workflow);
             }
         }
 
@@ -161,121 +128,33 @@ namespace Battlehub.RTEditor
             set
             {
                 Material.SetTexture("_DetailNormalMap", value);
-                SetMaterialKeywords(Material, m_workflow);
+                StandardMaterialUtils.SetMaterialKeywords(Material, StandardMaterialUtils.m_workflow);
             }
         }
 
-        public UVSec UVSecondary
+        public StandardMaterialUtils.UVSec UVSecondary
         {
-            get { return (UVSec)Material.GetFloat("_UVSec"); }
+            get { return (StandardMaterialUtils.UVSec)Material.GetFloat("_UVSec"); }
             set
             {
                 Material.SetFloat("_UVSec", (float)value);
-                SetMaterialKeywords(Material, m_workflow);
+                StandardMaterialUtils.SetMaterialKeywords(Material, StandardMaterialUtils.m_workflow);
             }
         }
 
-        private static bool ShouldEmissionBeEnabled(Material mat, Color color)
+        public Vector2 Tiling
         {
-            var realtimeEmission = (mat.globalIlluminationFlags & MaterialGlobalIlluminationFlags.RealtimeEmissive) > 0;
-            return color.maxColorComponent > 0.1f / 255.0f || realtimeEmission;
+            get { return Material.mainTextureScale; }
+            set { Material.mainTextureScale = value; }
         }
 
-        public static SmoothnessMapChannel GetSmoothnessMapChannel(Material material)
+        public Vector2 Offset
         {
-            int ch = (int)material.GetFloat("_SmoothnessTextureChannel");
-            if (ch == (int)SmoothnessMapChannel.AlbedoAlpha)
-                return SmoothnessMapChannel.AlbedoAlpha;
-            else
-                return SmoothnessMapChannel.SpecularMetallicAlpha;
+            get { return Material.mainTextureOffset; }
+            set { Material.mainTextureOffset = value; }
         }
 
-
-        private static void SetMaterialKeywords(Material material, WorkflowMode workflowMode)
-        {
-            SetKeyword(material, "_NORMALMAP", material.GetTexture("_BumpMap") || material.GetTexture("_DetailNormalMap"));
-            if (workflowMode == WorkflowMode.Specular)
-                SetKeyword(material, "_SPECGLOSSMAP", material.GetTexture("_SpecGlossMap"));
-            else if (workflowMode == WorkflowMode.Metallic)
-                SetKeyword(material, "_METALLICGLOSSMAP", material.GetTexture("_MetallicGlossMap"));
-            SetKeyword(material, "_PARALLAXMAP", material.GetTexture("_ParallaxMap"));
-            SetKeyword(material, "_DETAIL_MULX2", material.GetTexture("_DetailAlbedoMap") || material.GetTexture("_DetailNormalMap"));
-
-            bool shouldEmissionBeEnabled = ShouldEmissionBeEnabled(material, material.GetColor("_EmissionColor"));
-            SetKeyword(material, "_EMISSION", shouldEmissionBeEnabled);
-
-            if (material.HasProperty("_SmoothnessTextureChannel"))
-            {
-                SetKeyword(material, "_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A", GetSmoothnessMapChannel(material) == SmoothnessMapChannel.AlbedoAlpha);
-            }
-
-            // Setup lightmap emissive flags
-            MaterialGlobalIlluminationFlags flags = material.globalIlluminationFlags;
-            if ((flags & (MaterialGlobalIlluminationFlags.BakedEmissive | MaterialGlobalIlluminationFlags.RealtimeEmissive)) != 0)
-            {
-                flags &= ~MaterialGlobalIlluminationFlags.EmissiveIsBlack;
-                if (!shouldEmissionBeEnabled)
-                    flags |= MaterialGlobalIlluminationFlags.EmissiveIsBlack;
-
-                material.globalIlluminationFlags = flags;
-            }
-        }
-
-        static void SetKeyword(Material m, string keyword, bool state)
-        {
-            if (state)
-                m.EnableKeyword(keyword);
-            else
-                m.DisableKeyword(keyword);
-        }
-
-        public static void SetupMaterialWithBlendMode(Material material, BlendMode blendMode)
-        {
-            switch (blendMode)
-            {
-                case BlendMode.Opaque:
-                    material.SetOverrideTag("RenderType", "");
-                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
-                    material.SetInt("_ZWrite", 1);
-                    material.DisableKeyword("_ALPHATEST_ON");
-                    material.DisableKeyword("_ALPHABLEND_ON");
-                    material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                    material.renderQueue = -1;
-                    break;
-                case BlendMode.Cutout:
-                    material.SetOverrideTag("RenderType", "TransparentCutout");
-                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
-                    material.SetInt("_ZWrite", 1);
-                    material.EnableKeyword("_ALPHATEST_ON");
-                    material.DisableKeyword("_ALPHABLEND_ON");
-                    material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                    material.renderQueue = (int)RenderQueue.AlphaTest;
-                    break;
-                case BlendMode.Fade:
-                    material.SetOverrideTag("RenderType", "Transparent");
-                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                    material.SetInt("_ZWrite", 0);
-                    material.DisableKeyword("_ALPHATEST_ON");
-                    material.EnableKeyword("_ALPHABLEND_ON");
-                    material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                    material.renderQueue = (int)RenderQueue.Transparent;
-                    break;
-                case BlendMode.Transparent:
-                    material.SetOverrideTag("RenderType", "Transparent");
-                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                    material.SetInt("_ZWrite", 0);
-                    material.DisableKeyword("_ALPHATEST_ON");
-                    material.DisableKeyword("_ALPHABLEND_ON");
-                    material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
-                    material.renderQueue = (int)RenderQueue.Transparent;
-                    break;
-            }
-        }
-
+      
         public Material Material
         {
             get;
@@ -348,6 +227,8 @@ namespace Battlehub.RTEditor
 
         public MaterialPropertyDescriptor[] GetProperties(MaterialEditor editor, object converterObject)
         {
+            ILocalization lc = IOC.Resolve<ILocalization>();
+
             PropertyEditorCallback valueChangedCallback = () => editor.BuildEditor();
             StandardMaterialValueConverter converter = (StandardMaterialValueConverter)converterObject;
 
@@ -370,58 +251,63 @@ namespace Battlehub.RTEditor
 
             BlendMode mode = GetBlendMode(editor.Material);
             List<MaterialPropertyDescriptor> properties = new List<MaterialPropertyDescriptor>();
-            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, "Rendering Mode", RTShaderPropertyType.Float, modeInfo, new RuntimeShaderInfo.RangeLimits(), TextureDimension.None, valueChangedCallback, EraseAccessorTarget));
-            properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _MainTex), "Albedo", RTShaderPropertyType.TexEnv, texInfo, new RuntimeShaderInfo.RangeLimits(), TextureDimension.Tex2D, null, EraseAccessorTarget));
-            properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _Color), "Albedo Color", RTShaderPropertyType.Color, colorInfo, new RuntimeShaderInfo.RangeLimits(), TextureDimension.None, null, EraseAccessorTarget));
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, lc.GetString("ID_RTEditor_CD_StandardMaterial_RenderingMode", "Rendering Mode"), RTShaderPropertyType.Float, modeInfo, new RuntimeShaderInfo.RangeLimits(), TextureDimension.None, valueChangedCallback, EraseAccessorTarget));
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _MainTex), lc.GetString("ID_RTEditor_CD_StandardMaterial_Albedo", "Albedo"), RTShaderPropertyType.TexEnv, texInfo, new RuntimeShaderInfo.RangeLimits(), TextureDimension.Tex2D, null, EraseAccessorTarget));
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _Color), lc.GetString("ID_RTEditor_CD_StandardMaterial_AlbedoColor", "Albedo Color"), RTShaderPropertyType.Color, colorInfo, new RuntimeShaderInfo.RangeLimits(), TextureDimension.None, null, EraseAccessorTarget));
             if (mode == BlendMode.Cutout)
             {
-                properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, "Alpha Cutoff", RTShaderPropertyType.Range, cutoffInfo, new RuntimeShaderInfo.RangeLimits(0.5f, 0.0f, 1.0f), TextureDimension.None, null, EraseAccessorTarget));
+                properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, lc.GetString("ID_RTEditor_CD_StandardMaterial_AlphaCutoff", "Alpha Cutoff"), RTShaderPropertyType.Range, cutoffInfo, new RuntimeShaderInfo.RangeLimits(0.5f, 0.0f, 1.0f), TextureDimension.None, null, EraseAccessorTarget));
             }
 
-            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, "Metallic", RTShaderPropertyType.TexEnv, metallicMapInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, valueChangedCallback, EraseAccessorTarget));
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, lc.GetString("ID_RTEditor_CD_StandardMaterial_Metallic", "Metallic"), RTShaderPropertyType.TexEnv, metallicMapInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, valueChangedCallback, EraseAccessorTarget));
             bool hasGlossMap = IsMetallicGlossMapSet(editor.Material);
             if (!hasGlossMap)
             {
-                properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _Metallic), "Metallic", RTShaderPropertyType.Range, floatInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 1.0f), TextureDimension.None, null, EraseAccessorTarget));
-                if (StandardMaterialValueConverter.GetSmoothnessMapChannel(editor.Material) == StandardMaterialValueConverter.SmoothnessMapChannel.SpecularMetallicAlpha)
+                properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _Metallic), lc.GetString("ID_RTEditor_CD_StandardMaterial_Metallic", "Metallic"), RTShaderPropertyType.Range, floatInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 1.0f), TextureDimension.None, null, EraseAccessorTarget));
+                if (StandardMaterialUtils.GetSmoothnessMapChannel(editor.Material) == StandardMaterialUtils.SmoothnessMapChannel.SpecularMetallicAlpha)
                 {
-                    properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _Glossiness), "Smoothness", RTShaderPropertyType.Range, floatInfo, new RuntimeShaderInfo.RangeLimits(0.5f, 0.0f, 1.0f), TextureDimension.None, null, EraseAccessorTarget));
+                    properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _Glossiness), lc.GetString("ID_RTEditor_CD_StandardMaterial_Smoothness", "Smoothness"), RTShaderPropertyType.Range, floatInfo, new RuntimeShaderInfo.RangeLimits(0.5f, 0.0f, 1.0f), TextureDimension.None, null, EraseAccessorTarget));
                 }
                 else
                 {
-                    properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _GlossMapScale), "Smoothness", RTShaderPropertyType.Range, floatInfo, new RuntimeShaderInfo.RangeLimits(1.0f, 0.0f, 1.0f), TextureDimension.None, null, EraseAccessorTarget));
+                    properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _GlossMapScale), lc.GetString("ID_RTEditor_CD_StandardMaterial_Smoothness", "Smoothness"), RTShaderPropertyType.Range, floatInfo, new RuntimeShaderInfo.RangeLimits(1.0f, 0.0f, 1.0f), TextureDimension.None, null, EraseAccessorTarget));
                 }
             }
             else
             {
-                properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _GlossMapScale), "Smoothness", RTShaderPropertyType.Range, floatInfo, new RuntimeShaderInfo.RangeLimits(1.0f, 0.0f, 1.0f), TextureDimension.None, null, EraseAccessorTarget));
+                properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _GlossMapScale), lc.GetString("ID_RTEditor_CD_StandardMaterial_Smoothness", "Smoothness"), RTShaderPropertyType.Range, floatInfo, new RuntimeShaderInfo.RangeLimits(1.0f, 0.0f, 1.0f), TextureDimension.None, null, EraseAccessorTarget));
             }
 
 
-            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, "Normal Map", RTShaderPropertyType.TexEnv, bumpMapInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, valueChangedCallback, EraseAccessorTarget));
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, lc.GetString("ID_RTEditor_CD_StandardMaterial_NormalMap", "Normal Map"), RTShaderPropertyType.TexEnv, bumpMapInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, valueChangedCallback, EraseAccessorTarget));
             if (converter.BumpMap != null)
             {
-                properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _BumpScale), "Normal Map Scale", RTShaderPropertyType.Float, floatInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.None, null, EraseAccessorTarget));
+                properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _BumpScale), lc.GetString("ID_RTEditor_CD_StandardMaterial_NormalMapScale", "Normal Map Scale"), RTShaderPropertyType.Float, floatInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.None, null, EraseAccessorTarget));
             }
 
-            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, "Height Map", RTShaderPropertyType.TexEnv, parallaxMapInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, valueChangedCallback, EraseAccessorTarget));
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, lc.GetString("ID_RTEditor_CD_StandardMaterial_HeightMap", "Height Map"), RTShaderPropertyType.TexEnv, parallaxMapInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, valueChangedCallback, EraseAccessorTarget));
             if (converter.ParallaxMap != null)
             {
-                properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _Parallax), "Height Map Scale", RTShaderPropertyType.Range, floatInfo, new RuntimeShaderInfo.RangeLimits(0.02f, 0.005f, 0.08f), TextureDimension.None, null, EraseAccessorTarget));
+                properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _Parallax), lc.GetString("ID_RTEditor_CD_StandardMaterial_HeightMapScale", "Height Map Scale"), RTShaderPropertyType.Range, floatInfo, new RuntimeShaderInfo.RangeLimits(0.02f, 0.005f, 0.08f), TextureDimension.None, null, EraseAccessorTarget));
             }
 
-            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, "Occlusion Map", RTShaderPropertyType.TexEnv, occlusionMapInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, valueChangedCallback, EraseAccessorTarget));
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, lc.GetString("Occlusion Map", "ID_RTEditor_CD_StandardMaterial_OcclusionMap"), RTShaderPropertyType.TexEnv, occlusionMapInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, valueChangedCallback, EraseAccessorTarget));
             if (converter.OcclusionMap != null)
             {
-                properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _OcclusionStrength), "Occlusion Strength", RTShaderPropertyType.Range, floatInfo, new RuntimeShaderInfo.RangeLimits(1.0f, 0, 1.0f), TextureDimension.None, null, EraseAccessorTarget));
+                properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _OcclusionStrength), lc.GetString("ID_RTEditor_CD_StandardMaterial_OcclusionStrength", "Occlusion Strength"), RTShaderPropertyType.Range, floatInfo, new RuntimeShaderInfo.RangeLimits(1.0f, 0, 1.0f), TextureDimension.None, null, EraseAccessorTarget));
             }
 
-            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, "Emission Map", RTShaderPropertyType.TexEnv, emissionMapInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, null, EraseAccessorTarget));
-            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, "Emission Color", RTShaderPropertyType.Color, emissionColorInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.None, null, EraseAccessorTarget));
-            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, "Detail Mask", RTShaderPropertyType.TexEnv, detailMaskInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, null, EraseAccessorTarget));
-            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, "Detail Albedo Map", RTShaderPropertyType.TexEnv, detailAlbedoMap, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, null, EraseAccessorTarget));
-            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, "Detail Normal Map", RTShaderPropertyType.TexEnv, detailNormalMap, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, null, EraseAccessorTarget));
-            properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _DetailNormalMapScale), "Detail Scale", RTShaderPropertyType.Float, floatInfo, new RuntimeShaderInfo.RangeLimits(0, 0, 0), TextureDimension.None, null, EraseAccessorTarget));
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, lc.GetString("ID_RTEditor_CD_StandardMaterial_EmissionMap", "Emission Map"), RTShaderPropertyType.TexEnv, emissionMapInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, null, EraseAccessorTarget));
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, lc.GetString("ID_RTEditor_CD_StandardMaterial_EmissionMap", "Emission Color"), RTShaderPropertyType.Color, emissionColorInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.None, null, EraseAccessorTarget));
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, lc.GetString("ID_RTEditor_CD_StandardMaterial_DetailMask", "Detail Mask"), RTShaderPropertyType.TexEnv, detailMaskInfo, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, null, EraseAccessorTarget));
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, lc.GetString("ID_RTEditor_CD_StandardMaterial_DetailAlbedoMap", "Detail Albedo Map"), RTShaderPropertyType.TexEnv, detailAlbedoMap, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, null, EraseAccessorTarget));
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, lc.GetString("ID_RTEditor_CD_StandardMaterial_DetailNormalMap", "Detail Normal Map"), RTShaderPropertyType.TexEnv, detailNormalMap, new RuntimeShaderInfo.RangeLimits(0.0f, 0.0f, 0.0f), TextureDimension.Tex2D, null, EraseAccessorTarget));
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, new MaterialPropertyAccessor(editor.Material, _DetailNormalMapScale), lc.GetString("ID_RTEditor_CD_StandardMaterial_DetailScale", "Detail Scale"), RTShaderPropertyType.Float, floatInfo, new RuntimeShaderInfo.RangeLimits(0, 0, 0), TextureDimension.None, null, EraseAccessorTarget));
+
+            PropertyInfo tilingInfo = Strong.PropertyInfo((StandardMaterialValueConverter x) => x.Tiling, "Tiling");
+            PropertyInfo offsetInfo = Strong.PropertyInfo((StandardMaterialValueConverter x) => x.Offset, "Offset");
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, lc.GetString("ID_RTEditor_CD_StandardMaterial_Tiling", "Tiling"), RTShaderPropertyType.Vector, tilingInfo, new RuntimeShaderInfo.RangeLimits(), TextureDimension.None, null, EraseAccessorTarget));
+            properties.Add(new MaterialPropertyDescriptor(editor.Material, converter, lc.GetString("ID_RTEditor_CD_StandardMaterial_Offset", "Offset"), RTShaderPropertyType.Vector, offsetInfo, new RuntimeShaderInfo.RangeLimits(), TextureDimension.None, null, EraseAccessorTarget));
 
             return properties.ToArray();
         }

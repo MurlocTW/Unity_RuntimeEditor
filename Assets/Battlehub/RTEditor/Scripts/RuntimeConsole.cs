@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using Battlehub.Utils;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 namespace Battlehub.RTEditor
@@ -39,12 +41,13 @@ namespace Battlehub.RTEditor
     }
 
     public delegate void RuntimeConsoleEventHandler<T>(IRuntimeConsole console, T arg);
-
+    public delegate void RuntimeConsoleEventHandler(IRuntimeConsole console);
     public interface IRuntimeConsole
     {
         event RuntimeConsoleEventHandler<ConsoleLogCancelArgs> BeforeMessageAdded;
         event RuntimeConsoleEventHandler<ConsoleLogEntry> MessageAdded;
         event RuntimeConsoleEventHandler<ConsoleLogEntry[]> MessagesRemoved;
+        event RuntimeConsoleEventHandler Cleared;
 
         bool Store
         {
@@ -84,9 +87,13 @@ namespace Battlehub.RTEditor
 
     public class RuntimeConsole : MonoBehaviour, IRuntimeConsole
     {
+        private static object m_syncRoot = new object();
+        private int m_mainThreadId;
+
         public event RuntimeConsoleEventHandler<ConsoleLogCancelArgs> BeforeMessageAdded;
         public event RuntimeConsoleEventHandler<ConsoleLogEntry> MessageAdded;
         public event RuntimeConsoleEventHandler<ConsoleLogEntry[]> MessagesRemoved;
+        public event RuntimeConsoleEventHandler Cleared;
 
         [SerializeField]
         private bool m_store = false;
@@ -137,16 +144,20 @@ namespace Battlehub.RTEditor
             {
                 m_clearThreshold = m_maxItems + 50;
             }
+
+            m_mainThreadId = Thread.CurrentThread.ManagedThreadId;
         }
 
         protected virtual void OnEnable()
         {
             Application.logMessageReceived += OnLogMessageReceived;
+            Application.logMessageReceivedThreaded += OnLogMessageReceivedThreaded;
         }
 
         protected virtual void OnDisable()
         {
             Application.logMessageReceived -= OnLogMessageReceived;
+            Application.logMessageReceivedThreaded -= OnLogMessageReceivedThreaded;
         }
 
         protected virtual void UpdateCounters(LogType type, int delta)
@@ -170,6 +181,20 @@ namespace Battlehub.RTEditor
         protected virtual bool AcceptMessage(string condition, string stackTrace, LogType type)
         {
             return true;
+        }
+
+        private void OnLogMessageReceivedThreaded(string condition, string stackTrace, LogType type)
+        {
+            lock(m_syncRoot)
+            {
+                if(m_mainThreadId != Thread.CurrentThread.ManagedThreadId)
+                {
+                    if (Dispatcher.Current != null)
+                    {
+                        Dispatcher.BeginInvoke(() => OnLogMessageReceived(condition, stackTrace, type));
+                    }
+                }
+            }
         }
 
         protected virtual void OnLogMessageReceived(string condition, string stackTrace, LogType type)
@@ -233,6 +258,11 @@ namespace Battlehub.RTEditor
             if(MessagesRemoved != null)
             {
                 MessagesRemoved(this, logEntries);
+            }
+
+            if(Cleared != null)
+            {
+                Cleared(this);
             }
         }
     }

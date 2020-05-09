@@ -6,7 +6,7 @@ using Battlehub.UIControls;
 using Battlehub.RTCommon;
 using Battlehub.UIControls.Dialogs;
 using Battlehub.RTSL.Interface;
-using UnityEngine.SceneManagement;
+
 using TMPro;
 
 namespace Battlehub.RTEditor
@@ -24,19 +24,21 @@ namespace Battlehub.RTEditor
         private VirtualizingTreeView m_treeView = null;
         private IProject m_project;
         private IWindowManager m_windowManager;
+        private ILocalization m_localization;
 
         protected override void AwakeOverride()
         {
             WindowType = RuntimeWindowType.SaveScene;
             base.AwakeOverride();
+            m_localization = IOC.Resolve<ILocalization>();
         }
         private void Start()
         {
             m_parentDialog = GetComponentInParent<Dialog>();
             m_parentDialog.Ok += OnOk;
-            m_parentDialog.OkText = "Save";
+            m_parentDialog.OkText = m_localization.GetString("ID_RTEditor_SaveSceneDialog_Save", "Save");
             m_parentDialog.IsOkVisible = true;
-            m_parentDialog.CancelText = "Cancel";
+            m_parentDialog.CancelText = m_localization.GetString("ID_RTEditor_SaveSceneDialog_Cancel", "Cancel");
             m_parentDialog.IsCancelVisible = true;
 
             m_treeView = GetComponentInChildren<VirtualizingTreeView>();
@@ -65,8 +67,9 @@ namespace Battlehub.RTEditor
             Input.ActivateInputField();
         }
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
+            base.OnEnable();
             StartCoroutine(CoActivateInputField());
         }
 
@@ -108,7 +111,9 @@ namespace Battlehub.RTEditor
 
             if(Editor.IsPlaying)
             {
-                m_windowManager.MessageBox("Unable to save scene", "Unable to save scene in play mode");
+                m_windowManager.MessageBox(
+                    m_localization.GetString("ID_RTEditor_SaveSceneDialog_UnableToSaveScene", "Unable to save scene") ,
+                    m_localization.GetString("ID_RTEditor_SaveSceneDialog_UnableToSaveScenePlayMode", "Unable to save scene in play mode"));
                 return;
             }
 
@@ -121,14 +126,18 @@ namespace Battlehub.RTEditor
 
             if (Input.text != null && Input.text.Length > 0 && (!char.IsLetter(Input.text[0]) || Input.text[0] == '-'))
             {
-                m_windowManager.MessageBox("Scene name is invalid", "Scene name should start with letter");
+                m_windowManager.MessageBox(
+                    m_localization.GetString("ID_RTEditor_SaveSceneDialog_SceneNameIsInvalid", "Scene name is invalid"), 
+                    m_localization.GetString("ID_RTEditor_SaveSceneDialog_SceneNameShouldStartWith", "Scene name should start with letter"));
                 args.Cancel = true;
                 return;
             }
 
             if (!ProjectItem.IsValidName(Input.text))
             {
-                m_windowManager.MessageBox("Scene name is invalid", "Scene name contains invalid characters");
+                m_windowManager.MessageBox(
+                    m_localization.GetString("ID_RTEditor_SaveSceneDialog_SceneNameIsInvalid", "Scene name is invalid"),
+                    m_localization.GetString("ID_RTEditor_SaveSceneDialog_SceneNameInvalidCharacters", "Scene name contains invalid characters"));
                 args.Cancel = true;
                 return;
             }
@@ -156,25 +165,25 @@ namespace Battlehub.RTEditor
 
         private void Overwrite(AssetItem selectedItem)
         {
-            m_windowManager.Confirmation("Scene with same name already exits", "Do you want to override it?", (sender, yes) =>
+            m_windowManager.Confirmation(
+                m_localization.GetString("ID_RTEditor_SaveSceneDialog_SceneWithSameNameExists", "Scene with same name already exits"),
+                m_localization.GetString("ID_RTEditor_SaveSceneDialog_DoYouWantToOverwriteIt", "Do you want to overwrite it?"),
+                (sender, yes) =>
             {
-                //yes.Cancel = true;
-                //m_parentDialog.gameObject.SetActive(false);
                 m_parentDialog.Close(null);
                 IRuntimeEditor editor = IOC.Resolve<IRuntimeEditor>();
                 editor.OverwriteScene(selectedItem, error =>
                 {
-                    sender.Close(null);
+                    //sender.Close(null);
                     if (error.HasError)
                     {
-                        m_windowManager.MessageBox("Unable to save scene", error.ErrorText);
+                        m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_SaveSceneDialog_UnableToSaveScene", "Unable to save scene"), error.ErrorText);
                     }
-                    //m_parentDialog.Close(null);
                 });
             },
             (sender, no) => Input.ActivateInputField(),
-            "Yes",
-            "No");
+                m_localization.GetString("ID_RTEditor_SaveSceneDialog_Yes", "Yes"),
+                m_localization.GetString("ID_RTEditor_SaveSceneDialog_No", "No"));
         }
 
         private void OnItemDataBinding(object sender, VirtualizingTreeViewItemDataBindingArgs e)
@@ -250,7 +259,7 @@ namespace Battlehub.RTEditor
                 {
                     if (error.HasError)
                     {
-                        m_windowManager.MessageBox("Unable to save scene", error.ErrorText);
+                        m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_SaveSceneDialog_UnableToSaveScene", "Unable to save scene"), error.ErrorText);
                     }
                 });
             }

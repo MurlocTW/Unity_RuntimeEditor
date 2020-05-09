@@ -16,7 +16,7 @@ namespace Battlehub.RTEditor
 
             if (DeleteAction())
             {
-                View.DeleteSelectedAssets();
+                View.DeleteSelectedItems();
             }
         }
     }

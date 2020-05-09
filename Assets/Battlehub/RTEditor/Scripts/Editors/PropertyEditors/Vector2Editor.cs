@@ -1,9 +1,10 @@
-﻿using TMPro;
+﻿using Battlehub.RTCommon;
+using TMPro;
 using UnityEngine;
 
 namespace Battlehub.RTEditor
 {
-    public class Vector2Editor : PropertyEditor<Vector2>
+    public class Vector2Editor : ConvertablePropertyEditor<Vector2>
     {
         [SerializeField]
         private TMP_InputField m_xInput = null;
@@ -11,10 +12,11 @@ namespace Battlehub.RTEditor
         private TMP_InputField m_yInput = null;
         [SerializeField]
         protected DragField[] m_dragFields = null;
-
+        
         protected override void AwakeOverride()
         {
             base.AwakeOverride();
+
             m_xInput.onValueChanged.AddListener(OnXValueChanged);
             m_yInput.onValueChanged.AddListener(OnYValueChanged);
             m_xInput.onEndEdit.AddListener(OnEndEdit);
@@ -56,8 +58,8 @@ namespace Battlehub.RTEditor
 
         protected override void SetInputField(Vector2 value)
         {
-            m_xInput.text = value.x.ToString();
-            m_yInput.text = value.y.ToString();
+            m_xInput.text = FromMeters(value.x).ToString();
+            m_yInput.text = FromMeters(value.y).ToString();
         }
 
         private void OnXValueChanged(string value)
@@ -66,7 +68,7 @@ namespace Battlehub.RTEditor
             if (float.TryParse(value, out val))
             {
                 Vector2 vector = GetValue();
-                vector.x = val;
+                vector.x = ToMeters(val);
                 SetValue(vector);
             }
         }
@@ -77,7 +79,7 @@ namespace Battlehub.RTEditor
             if (float.TryParse(value, out val))
             {
                 Vector2 vector = GetValue();
-                vector.y = val;
+                vector.y = ToMeters(val);
                 SetValue(vector);
             }
         }
@@ -85,8 +87,8 @@ namespace Battlehub.RTEditor
         private void OnEndEdit(string value)
         {
             Vector2 vector = GetValue();
-            m_xInput.text = vector.x.ToString();
-            m_yInput.text = vector.y.ToString();
+            m_xInput.text = FromMeters(vector.x).ToString();
+            m_yInput.text = FromMeters(vector.y).ToString();
 
             EndEdit();
         }
@@ -94,6 +96,6 @@ namespace Battlehub.RTEditor
         protected void OnEndDrag()
         {
             EndEdit();
-        }
+        } 
     }
 }

@@ -31,7 +31,11 @@ namespace Battlehub.RTCommon
         public bool IsPointerOver
         {
             get { return m_isPointerOver; }
-            set { m_isPointerOver = value; }
+            set
+            {
+                m_isPointerOver = value;
+              //  Debug.Log("IsPointerOver " + m_isPointerOver + " " + ((RuntimeWindow)this).WindowType);
+            }
         }
 
         private IRTE m_editor;
@@ -40,7 +44,7 @@ namespace Battlehub.RTCommon
             get { return m_editor; }
         }
 
-        private void Awake()
+        protected virtual void Awake()
         {
             m_editor = IOC.Resolve<IRTE>();
             if (m_editor == null)
@@ -65,7 +69,7 @@ namespace Battlehub.RTCommon
             AwakeOverride();
         }
 
-        private void OnDestroy()
+        protected virtual void OnDestroy()
         {
             m_dragDropTargets = null;
             OnDestroyOverride();
@@ -82,7 +86,7 @@ namespace Battlehub.RTCommon
 
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
         {
-            m_isPointerOver = true;
+            IsPointerOver = true;
             OnPointerEnterOverride(eventData);
             if (m_editor.DragDrop.InProgress && m_editor.DragDrop.Source != (object)this)
             {
@@ -96,7 +100,7 @@ namespace Battlehub.RTCommon
 
         void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
         {
-            m_isPointerOver = false;
+            IsPointerOver = false;
             OnPointerExitOverride(eventData);
             m_editor.DragDrop.BeginDrag -= OnBeginDrag;
             m_editor.DragDrop.Drop -= OnDrop;

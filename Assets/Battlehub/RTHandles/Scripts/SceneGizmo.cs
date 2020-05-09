@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using Battlehub.Utils;
 using Battlehub.RTCommon;
 using TMPro;
+using System.Collections;
 
 namespace Battlehub.RTHandles
 {
@@ -15,12 +16,11 @@ namespace Battlehub.RTHandles
         public Button BtnProjection;
         public Transform Pivot;
         public Vector2 Size = new Vector2(96, 96);
-        public Vector2 Offset = new Vector2(0, 0);
+        public Vector2 PivotPoint = new Vector2(1, 0);
+        public Vector2 Anchor = new Vector2(1, 0);
+
         public Vector3 Up = Vector3.up;
         public RuntimeHandlesComponent Appearance;
-        public RectTransform m_output;
-        private CanvasScaler m_canvasScaler;
-        private Canvas m_canvas;
         
         public UnityEvent OrientationChanging;
         public UnityEvent OrientationChanged;
@@ -30,8 +30,9 @@ namespace Battlehub.RTHandles
         private Rect m_cameraPixelRect;
         private float m_aspect;
         private Camera m_camera;
-        private RenderTextureCamera m_renderTextureCamera;
+        private CommandBuffer m_commandBuffer;
 
+        private MaterialPropertyBlock[] m_propertyBlocks;
         private float m_xAlpha = 1.0f;
         private float m_yAlpha = 1.0f;
         private float m_zAlpha = 1.0f;
@@ -59,16 +60,17 @@ namespace Battlehub.RTHandles
         
         private float m_screenHeight;
         private float m_screenWidth;
-
-        private bool IsOrthographic
+        private bool m_projectionChanged;
+        public bool IsOrthographic
         {
             get { return m_camera.orthographic; }
             set
             {
+                m_projectionChanged = true;
                 m_camera.orthographic = value;
                 Window.Camera.orthographic = value;
-
-                if(BtnProjection != null)
+              
+                if (BtnProjection != null)
                 {
                     Text txt = BtnProjection.GetComponentInChildren<Text>();
                     if (txt != null)
@@ -108,10 +110,51 @@ namespace Battlehub.RTHandles
             }
         }
 
+        [SerializeField]
+        private Color m_textColor = Color.white;
+
+        public Color TextColor
+        {
+            get { return m_textColor; }
+            set
+            {
+                m_textColor = value;
+                SetTextColor();
+            }
+        }
+
+        private void SetTextColor()
+        {
+            if (BtnProjection != null)
+            {
+                Text txt = BtnProjection.GetComponentInChildren<Text>();
+                if (txt != null)
+                {
+                    txt.color = m_textColor;
+                }
+
+                TextMeshProUGUI txtPro = BtnProjection.GetComponentInChildren<TextMeshProUGUI>();
+                if(txtPro != null)
+                {
+                    txtPro.color = m_textColor;
+                }
+            }
+
+            DoSceneGizmo();
+        }
+
+        private Material m_material;
+        private GameObject m_output;
+        private RenderTexture m_renderTexture;
+        private IRTEGraphics m_graphics;
+        private IRTECamera m_rteCamera;
+        private IRenderPipelineCameraUtility m_cameraUtility;
+        private bool m_disableCamera;
+        
         protected override void AwakeOverride()
         {
             base.AwakeOverride();
-        
+
             RuntimeHandlesComponent.InitializeIfRequired(ref Appearance);
 
             if (Pivot == null)
@@ -136,37 +179,36 @@ namespace Battlehub.RTHandles
             m_colliders = new[] { m_colliderProj, m_colliderUp, m_colliderDown, m_colliderRight, m_colliderLeft, m_colliderForward, m_colliderBackward };
             DisableColliders();
 
+            m_commandBuffer = new CommandBuffer();
+            m_commandBuffer.name = "SceneGizmoCommandBuffer";
+            m_propertyBlocks = new[] { new MaterialPropertyBlock(), new MaterialPropertyBlock(), new MaterialPropertyBlock() };
+    
+
             m_camera = GetComponent<Camera>();
-            m_renderTextureCamera = GetComponent<RenderTextureCamera>();
-            if(m_renderTextureCamera == null)
-            {
-                m_camera.clearFlags = CameraClearFlags.Depth;
-                m_camera.renderingPath = RenderingPath.Forward;
-                m_camera.allowMSAA = false;
-                m_camera.allowHDR = false;  
-                
-                if(BtnProjection != null)
-                {
-                    m_canvas = BtnProjection.GetComponentInParent<Canvas>();
-                }
-            }
-            else
-            {
-                m_camera.clearFlags = CameraClearFlags.SolidColor;
-                m_camera.backgroundColor = new Color(0, 0, 0, 0);
-                if (m_output != null)
-                {
-                    Vector2 size = Size;
-                    m_output.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
-                    m_output.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y);
+            m_camera.AddCommandBuffer(CameraEvent.BeforeImageEffects, m_commandBuffer);
 
-                    m_canvasScaler = m_output.GetComponentInParent<CanvasScaler>();
-                    m_canvas = m_output.GetComponentInParent<Canvas>();
-                }
+            m_cameraUtility = IOC.Resolve<IRenderPipelineCameraUtility>();
+            if (m_cameraUtility != null)
+            {
+                m_cameraUtility.PostProcessingEnabled += OnPostProcessingEnabled;
             }
 
+            m_material = new Material(Shader.Find("Battlehub/RTHandles/RawImage"));
+            
+            m_output = new GameObject("SceneGizmoOutput");
+            m_output.gameObject.SetActive(false);
+            m_output.transform.SetParent(Window.Camera.transform, false);
+            m_output.transform.localPosition = Vector3.forward * m_camera.nearClipPlane;
+            m_output.AddComponent<MeshFilter>().sharedMesh = Appearance.CreateRawImageMesh();
+            m_output.AddComponent<MeshRenderer>().sharedMaterial = m_material;
+
+            m_graphics = IOC.Resolve<IRTEGraphics>();
+
+            m_camera.clearFlags = CameraClearFlags.SolidColor;
+            m_camera.backgroundColor = new Color(0, 0, 0, 0);
             m_camera.cullingMask = 0;
             m_camera.orthographic = Window.Camera.orthographic;
+            m_camera.rect = new Rect(0, 0, 1, 1);
 
             m_screenHeight = Screen.height;
             m_screenWidth = Screen.width;
@@ -186,20 +228,30 @@ namespace Battlehub.RTHandles
             if (BtnProjection != null)
             {
                 BtnProjection.onClick.AddListener(OnBtnModeClick);
+                SetTextColor();
             }
 
-            if(!GetComponent<SceneGizmoInput>())
+            if (!GetComponent<SceneGizmoInput>())
             {
                 gameObject.AddComponent<SceneGizmoInput>();
             }
-            #if UNITY_2019_1_OR_NEWER
-            RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
-            #endif
+        }
+
+        private void OnPostProcessingEnabled(Camera camera, bool enabled)
+        {
+            if(camera == Window.Camera)
+            {
+                UpdateLayout();
+                DoSceneGizmo();
+            }
         }
 
         protected virtual void Start()
         {
-            IsOrthographic = Window.Camera.orthographic;   
+            if(IsOrthographic != Window.Camera.orthographic)
+            {
+                IsOrthographic = Window.Camera.orthographic;
+            }
         }
 
         protected override void OnDestroyOverride()
@@ -217,19 +269,49 @@ namespace Battlehub.RTHandles
                     Editor.Tools.ActiveTool = null;
                 }
             }
-            #if UNITY_2019_1_OR_NEWER
-            RenderPipelineManager.endCameraRendering -= OnEndCameraRendering;
-            #endif
+
+            if(m_camera != null)
+            {
+                m_camera.RemoveCommandBuffer(CameraEvent.BeforeImageEffects, m_commandBuffer);
+            }
+
+            if(m_material != null)
+            {
+                Destroy(m_material);
+            }
+
+            if(m_renderTexture != null)
+            {
+                Destroy(m_renderTexture);
+            }
+
+            if(m_output != null)
+            {
+                Destroy(m_output);
+            }
+
+            if (m_cameraUtility != null)
+            {
+                m_cameraUtility.PostProcessingEnabled -= OnPostProcessingEnabled;
+            }
         }
 
         protected virtual void OnEnable()
         {
-            if(m_output != null)
+            Camera camera = Window.Camera;
+            IRTEGraphicsLayer graphicsLayer = Window.IOCContainer.Resolve<IRTEGraphicsLayer>();
+            if (graphicsLayer != null)
             {
-                m_output.gameObject.SetActive(true);
+                camera = graphicsLayer.Camera.Camera;
             }
 
-            if(BtnProjection != null)
+            m_rteCamera = m_graphics.CreateCamera(camera);
+            m_rteCamera.RenderersCache.Add(m_output.GetComponent<Renderer>());
+            m_rteCamera.Event = CameraEvent.AfterImageEffects;
+
+            DoSceneGizmo();
+
+            if (BtnProjection != null)
             {
                 BtnProjection.gameObject.SetActive(true);
             }
@@ -237,11 +319,12 @@ namespace Battlehub.RTHandles
 
         protected virtual void OnDisable()
         {
-            if (m_output != null)
+            if(m_rteCamera != null)
             {
-                m_output.gameObject.SetActive(false);
+                m_rteCamera.Destroy();
+                m_rteCamera = null;
             }
-
+            
             if (BtnProjection != null)
             {
                 BtnProjection.gameObject.SetActive(false);
@@ -251,43 +334,6 @@ namespace Battlehub.RTHandles
         private void OnBtnModeClick()
         {
             IsOrthographic = !Window.Camera.orthographic;
-        }
-
-#if UNITY_2019_1_OR_NEWER
-        private void OnEndCameraRendering(ScriptableRenderContext context, Camera camera)
-        {
-            if(m_camera == camera)
-            {
-                Appearance.DoSceneGizmo(camera, GetGizmoPosition(), Quaternion.identity, m_selectedAxis, Size.y * Appearance.SceneGizmoScale / 96, m_xAlpha, m_yAlpha, m_zAlpha);
-            }
-        }
-#endif
-
-        private void OnPostRender()
-        {
-            Appearance.DoSceneGizmo(Camera.current, GetGizmoPosition(), Quaternion.identity, m_selectedAxis, Size.y * Appearance.SceneGizmoScale / 96, m_xAlpha, m_yAlpha, m_zAlpha);
-        }
-
-        private void OnGUI()
-        {
-            if(BtnProjection != null)
-            {
-                return;
-            }
-            if (Window.Camera.orthographic)
-            {
-                if (GUI.Button(m_buttonRect, "Ortho", m_buttonStyle))
-                {
-                    IsOrthographic = false;
-                }
-            }
-            else
-            {
-                if (GUI.Button(m_buttonRect, "Persp", m_buttonStyle))
-                {
-                    IsOrthographic = true;
-                }
-            }
         }
 
         protected override void OnWindowDeactivated()
@@ -301,14 +347,36 @@ namespace Battlehub.RTHandles
 
         private void Update()
         {
-            Sync();
-
+            bool changed = Sync();
             float delta = Time.deltaTime / m_animationDuration;
             bool updateAlpha = UpdateAlpha(ref m_xAlpha, Vector3.right, delta);
             updateAlpha |= UpdateAlpha(ref m_yAlpha, Vector3.up, delta);
             updateAlpha |= UpdateAlpha(ref m_zAlpha, Vector3.forward, delta);
 
+            if (changed || updateAlpha || m_mouseOver || m_projectionChanged)
+            {
+                if (updateAlpha)
+                {
+                    DisableColliders();
+                    EnableColliders();
+                }
 
+                m_projectionChanged = false;
+                DoSceneGizmo();
+            }
+            else
+            {
+                if(!m_disableCamera)
+                {
+                    m_disableCamera = true;
+                }
+                else
+                {
+                    m_camera.enabled = false;
+                    m_disableCamera = false;
+                }
+            }
+            
             if (Editor.Tools.IsViewing)
             {
                 m_selectedAxis = Vector3.zero;
@@ -321,37 +389,14 @@ namespace Battlehub.RTHandles
                 return;
             }
 
-            Vector2 guiMousePositon = Window.Pointer.ScreenPoint;
-            guiMousePositon.y = Screen.height - guiMousePositon.y;
-            bool isMouseOverButton = BtnProjection != null ?
-                RectTransformUtility.RectangleContainsScreenPoint((RectTransform)BtnProjection.transform, m_editor.Input.GetPointerXY(0), m_canvas.worldCamera)  : 
-                m_buttonRect.Contains(guiMousePositon, true);
-            if(isMouseOverButton)
-            {
-                Editor.Tools.ActiveTool = this;
-            }
-            else
-            {
-                if(Editor.Tools.ActiveTool == this)
-                {
-                    Editor.Tools.ActiveTool = null;
-                }
-            }
-
-            bool pointerOverSceneGizmo;
-            if(m_renderTextureCamera == null)
-            {
-                pointerOverSceneGizmo = m_camera.pixelRect.Contains(Window.Pointer.ScreenPoint);
-            }
-            else
-            {
-                pointerOverSceneGizmo = RectTransformUtility.RectangleContainsScreenPoint(m_renderTextureCamera.RectTransform, m_editor.Input.GetPointerXY(0), m_canvas.worldCamera);
-            }
+            bool isMouseOverButton = false;
+            bool pointerOverSceneGizmo = m_camera.pixelRect.Contains(ScreenPointToViewPoint(Window.Pointer.ScreenPoint));
 
             if (pointerOverSceneGizmo && Editor.ActiveWindow == Window && Window.IsPointerOver)
             {
                 if (!m_mouseOver || updateAlpha)
                 {
+                    InitColliders();
                     EnableColliders();
                 }
 
@@ -389,7 +434,6 @@ namespace Battlehub.RTHandles
                     m_selectedAxis = Vector3.left;
                 }
 
-
                 if (m_selectedAxis != Vector3.zero || isMouseOverButton)
                 {
                     Editor.Tools.ActiveTool = this;
@@ -420,6 +464,13 @@ namespace Battlehub.RTHandles
             }
         }
 
+        public void DoSceneGizmo()
+        {
+            m_camera.enabled = true;
+            m_commandBuffer.Clear();
+            Appearance.DoSceneGizmo(m_commandBuffer, m_propertyBlocks, m_camera, GetGizmoPosition(), Quaternion.identity, m_selectedAxis, Appearance.SceneGizmoScale, m_textColor, m_xAlpha, m_yAlpha, m_zAlpha);
+        }
+
         public void Click()
         {
             if (m_selectedAxis != Vector3.zero)
@@ -427,93 +478,84 @@ namespace Battlehub.RTHandles
                 if (m_selectedAxis == Vector3.one)
                 {
                     IsOrthographic = !IsOrthographic;
+                    DoSceneGizmo();
                 }
                 else
                 {
-                    if (m_rotateAnimation == null || !m_rotateAnimation.InProgress)
-                    {
-                        if (OrientationChanging != null)
-                        {
-                            OrientationChanging.Invoke();
-                        }
-                    }
-
-                    if (m_rotateAnimation != null)
-                    {
-                        m_rotateAnimation.Abort();
-                    }
-
-                    Vector3 pivot = Pivot.transform.position;
-                    Vector3 radiusVector = Vector3.back * (Window.Camera.transform.position - pivot).magnitude;
-                    Quaternion targetRotation = Quaternion.LookRotation(-m_selectedAxis, Up);
-                    m_rotateAnimation = new QuaternionAnimationInfo(Window.Camera.transform.rotation, targetRotation, 0.4f, QuaternionAnimationInfo.EaseOutCubic,
-                        (target, value, t, completed) =>
-                        {
-                            Window.Camera.transform.position = pivot + value * radiusVector;
-                            Window.Camera.transform.rotation = value;
-
-                            if (completed)
-                            {
-                                DisableColliders();
-                                EnableColliders();
-
-
-                                if (OrientationChanged != null)
-                                {
-                                    OrientationChanged.Invoke();
-                                }
-                            }
-
-                        });
-
-                    Run.Instance.Animation(m_rotateAnimation);
+                    ChangeOrientation(-m_selectedAxis);
                 }
             }
         }
 
-        private void Sync()
+        public void ChangeOrientation(Vector3 axis)
         {
-            if (m_position != transform.position || m_rotation != transform.rotation)
+            if (m_rotateAnimation == null || !m_rotateAnimation.InProgress)
             {
-                InitColliders();
-                m_position = transform.position;
-                m_rotation = transform.rotation;
+                if (OrientationChanging != null)
+                {
+                    OrientationChanging.Invoke();
+                }
             }
 
+            if (m_rotateAnimation != null)
+            {
+                m_rotateAnimation.Abort();
+            }
+
+            Vector3 pivot = Pivot.transform.position;
+            Vector3 radiusVector = Vector3.back * (Window.Camera.transform.position - pivot).magnitude;
+            Quaternion targetRotation = Quaternion.LookRotation(axis, Up);
+            m_rotateAnimation = new QuaternionAnimationInfo(Window.Camera.transform.rotation, targetRotation, 0.4f, QuaternionAnimationInfo.EaseOutCubic,
+                (target, value, t, completed) =>
+                {
+                    Window.Camera.transform.position = pivot + value * radiusVector;
+                    Window.Camera.transform.rotation = value;
+
+                    if (completed)
+                    {
+                        DisableColliders();
+                        EnableColliders();
+
+                        if (OrientationChanged != null)
+                        {
+                            OrientationChanged.Invoke();
+                        }
+                    }
+                });
+
+            Run.Instance.Animation(m_rotateAnimation);
+        }
+
+        private bool Sync()
+        {
+            bool changed = false;
+         
             if (m_screenHeight != Screen.height || m_screenWidth != Screen.width || m_cameraPixelRect != Window.Camera.pixelRect || m_scale != Appearance.SceneGizmoScale)
             {
-                m_screenHeight = Screen.height;
-                m_screenWidth = Screen.width;
-                m_cameraPixelRect = Window.Camera.pixelRect;
-                m_scale = Appearance.SceneGizmoScale;
                 UpdateLayout();
+                changed = true;
             }
 
             if (m_aspect != m_camera.aspect)
             {
-                if(m_renderTextureCamera == null)
-                {
-                    Vector2 size = Size * Appearance.SceneGizmoScale;
-                    Vector2 offset = Offset * Appearance.SceneGizmoScale;
-                    m_camera.pixelRect = new Rect(Window.Camera.pixelRect.min.x + Window.Camera.pixelWidth - size.x + offset.x, Window.Camera.pixelRect.min.y + Window.Camera.pixelHeight - size.y + offset.y, size.x, size.y);
-                }
-                else
-                {
-                    if(m_output != null)
-                    {
-                        m_output.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Size.x);
-                        m_output.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Size.y);
-                    }
-                }
-
                 m_aspect = m_camera.aspect;
+                changed = true;
             }
 
             if(m_camera.depth != Window.Camera.depth + 1)
             {
                 m_camera.depth = Window.Camera.depth + 1;
+                changed = true;
             }
-            m_camera.transform.rotation = Window.Camera.transform.rotation;
+
+            Quaternion rotation = Window.Camera.transform.rotation;
+            if(rotation != m_camera.transform.rotation)
+            {
+                m_camera.transform.rotation = rotation;
+                changed = true;
+            }
+
+            return changed;
         }
 
         private void EnableColliders()
@@ -536,7 +578,6 @@ namespace Battlehub.RTHandles
             }
         }
 
-
         private void DisableColliders()
         {
             for (int i = 0; i < m_colliders.Length; ++i)
@@ -547,25 +588,21 @@ namespace Battlehub.RTHandles
 
         private Vector2 ScreenPointToViewPoint(Vector2 screenPoint)
         {
-            if (m_renderTextureCamera == null)
-            {
-                return screenPoint;
-            }
+            Vector2 size = Size * Appearance.SceneGizmoScale;
 
-            Vector2 viewPoint;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(m_renderTextureCamera.RectTransform, screenPoint, m_renderTextureCamera.Canvas.worldCamera, out viewPoint);
+            Rect pixelRect = Window.Camera.pixelRect;
+            float offsetX = pixelRect.width * Anchor.x - size.x * PivotPoint.x;
+            float offsetY = pixelRect.height - (pixelRect.height * Anchor.y + (size.y - size.y * PivotPoint.y));
 
-            if (m_canvasScaler != null)
-            {
-                viewPoint *= m_canvasScaler.scaleFactor;
-            }
+            screenPoint.x -= offsetX + pixelRect.x;
+            screenPoint.y -= offsetY + pixelRect.y;
 
-            return viewPoint;
+            return screenPoint;     
         }
 
         private Collider HitTest()
         {
-            Ray ray = m_camera.ScreenPointToRay(ScreenPointToViewPoint(m_window.Editor.Input.GetPointerXY(0)));
+            Ray ray = m_camera.ScreenPointToRay(ScreenPointToViewPoint(Window.Pointer.ScreenPoint));
 
             float minDistance = float.MaxValue;
             Collider result = null;
@@ -590,17 +627,17 @@ namespace Battlehub.RTHandles
         {
             return transform.TransformPoint(Vector3.forward * 5);
         }
-
+        
         private void InitColliders()
         {
             m_gizmoPosition = GetGizmoPosition();
-            float sScale = RuntimeHandlesComponent.GetScreenScale(m_gizmoPosition, m_camera) * Size.y * Appearance.SceneGizmoScale / 96;
+            float sScale = RuntimeHandlesComponent.GetScreenScale(m_gizmoPosition, m_camera) * Appearance.SceneGizmoScale;
 
             m_collidersGO.transform.rotation = Quaternion.identity;
             m_collidersGO.transform.position = GetGizmoPosition();
 
             const float size = 0.15f;
-            m_colliderProj.size = new Vector3(size, size, size) * sScale;
+            m_colliderProj.size = new Vector3(size * 1.5f, size * 1.5f, size * 1.5f) * sScale;
 
             m_colliderUp.size = new Vector3(size, size * 2, size) * sScale;
             m_colliderUp.center = new Vector3(0.0f, size + size / 2, 0.0f) * sScale;
@@ -655,6 +692,11 @@ namespace Battlehub.RTHandles
 
         public void UpdateLayout()
         {
+            m_screenHeight = Screen.height;
+            m_screenWidth = Screen.width;
+            m_cameraPixelRect = Window.Camera.pixelRect;
+            m_scale = Appearance.SceneGizmoScale;
+
             if (m_camera == null)
             {
                 return;
@@ -665,21 +707,6 @@ namespace Battlehub.RTHandles
             if (Window.Camera != null)
             {
                 bool initColliders = false;
-
-                if(m_renderTextureCamera == null)
-                {
-                    Vector2 size = Size * Appearance.SceneGizmoScale;
-                    Vector2 offset = Offset * Appearance.SceneGizmoScale;
-                    m_camera.pixelRect = new Rect(Window.Camera.pixelRect.min.x + Window.Camera.pixelWidth - size.x + offset.x, Window.Camera.pixelRect.min.y + Window.Camera.pixelHeight - size.y + offset.y, size.x, size.y);
-                }
-                else
-                {
-                    if (m_output != null)
-                    {
-                        m_output.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Size.x);
-                        m_output.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Size.y);
-                    }
-                }
 
                 if (m_camera.pixelRect.height == 0 || m_camera.pixelRect.width == 0)
                 {
@@ -697,24 +724,46 @@ namespace Battlehub.RTHandles
                 m_camera.depth = Window.Camera.depth + 1;
                 m_aspect = m_camera.aspect;
 
-                if(m_renderTextureCamera == null)
-                {
-                    Vector2 size = Size * Appearance.SceneGizmoScale;
-                    Vector2 offset = Offset * Appearance.SceneGizmoScale;
-                    m_buttonRect = new Rect(Window.Camera.pixelRect.min.x + Window.Camera.pixelWidth - size.x / 2 - 17 + offset.x, (Screen.height - Window.Camera.pixelRect.yMax) + size.y - offset.y - 3, 35, 14);
-                }
-                
-                m_buttonStyle = new GUIStyle();
-                m_buttonStyle.alignment = TextAnchor.MiddleCenter;
-                m_buttonStyle.normal.textColor = new Color(0.8f, 0.8f, 0.8f, 0.8f);
-                m_buttonStyle.fontSize = 12;
-
                 if (initColliders)
                 {
                     InitColliders();
                 }
             }
-        }  
+
+            Vector2 pivotPoint = PivotPoint;
+            Vector2 anchor = Anchor;
+            if (RenderPipelineInfo.Type == RPType.Standard || m_cameraUtility != null && m_cameraUtility.IsPostProcessingEnabled(Window.Camera))
+            {
+                pivotPoint.y = 1 - pivotPoint.y;
+                anchor.y = 1 - anchor.y;
+            }
+
+            if (m_renderTexture != null)
+            {
+                Destroy(m_renderTexture);
+            }
+
+            Vector2 size = Size * Appearance.SceneGizmoScale;
+
+            RenderTexture oldTexture = m_renderTexture;
+
+            m_renderTexture = new RenderTexture((int)size.x, (int)size.y, 24, RenderTextureFormat.ARGB32);
+            m_renderTexture.filterMode = FilterMode.Point;
+            m_renderTexture.antiAliasing = Mathf.Max(1, RenderPipelineInfo.MSAASampleCount);
+
+            m_material.SetTexture("_MainTex", m_renderTexture);
+            m_material.SetFloat("_Width", size.x);
+            m_material.SetFloat("_Height", size.y);
+            m_material.SetVector("_PivotAndAnchor", new Vector4(pivotPoint.x, pivotPoint.y, anchor.x, anchor.y));
+
+            m_camera.targetTexture = m_renderTexture;
+
+            if (oldTexture != null)
+            {
+                oldTexture.Release();
+                Destroy(oldTexture);
+            }
+        }
     }
 }
 

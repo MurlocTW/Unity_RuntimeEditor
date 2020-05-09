@@ -18,7 +18,7 @@ MonoBehaviour:
     m_ID: 0
     m_Name: Root
     m_Depth: -1
-    Identity: 24
+    Identity: 32
     FolderIdentity: 4
     Folders:
     - m_ID: 0
@@ -148,6 +148,52 @@ MonoBehaviour:
         m_Name: Arial
         m_Depth: 0
         Object: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 24
+        m_Name: Default-Terrain-Standard
+        m_Depth: 0
+        Object: {fileID: 10652, guid: 0000000000000000f000000000000000, type: 0}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 25
+        m_Name: Default-Particle
+        m_Depth: 0
+        Object: {fileID: 10300, guid: 0000000000000000f000000000000000, type: 0}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 26
+        m_Name: RTT_DefaultTree
+        m_Depth: 0
+        Object: {fileID: -927199367670048503, guid: c1769567dab81d74d9bb2e949698966d,
+          type: 3}
+        IsEnabled: 0
+        PrefabParts:
+        - ParentPersistentID: -1
+          PersistentID: 27
+          Object: {fileID: -4216859302048453862, guid: c1769567dab81d74d9bb2e949698966d,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 28
+          Object: {fileID: -5178661895559278292, guid: c1769567dab81d74d9bb2e949698966d,
+            type: 3}
+          Depth: 0
+        - ParentPersistentID: -1
+          PersistentID: 29
+          Object: {fileID: -1504981713932161579, guid: c1769567dab81d74d9bb2e949698966d,
+            type: 3}
+          Depth: 0
+      - m_ID: 30
+        m_Name: RTT_DefaultTreeBark
+        m_Depth: 0
+        Object: {fileID: 2100000, guid: a038f26e781313145996ad92e0c11483, type: 2}
+        IsEnabled: 0
+        PrefabParts: []
+      - m_ID: 31
+        m_Name: RTT_DefaultTreeBranches
+        m_Depth: 0
+        Object: {fileID: 2100000, guid: d29fe1609197f37439e275f957f3f430, type: 2}
         IsEnabled: 0
         PrefabParts: []
       IsEnabled: 1

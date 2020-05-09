@@ -10,8 +10,8 @@ namespace Battlehub.RTSL
     {
         private static bool AllowAutoShow
         {
-            get { return EditorPrefs.GetBool("RTSLConfigAllowAutoOpen", true); }
-            set { EditorPrefs.SetBool("RTSLConfigAllowAutoOpen", value); }
+            get { return EditorPrefs.GetBool("RTSL_ConfigAllowAutoOpen", true); }
+            set { EditorPrefs.SetBool("RTSL_ConfigAllowAutoOpen", value); }
         }
 
         [MenuItem("Tools/Runtime SaveLoad/Config")]
@@ -26,13 +26,12 @@ namespace Battlehub.RTSL
             ConfigWindow window = CreateInstance<ConfigWindow>();
             window.titleContent = new GUIContent("RT Save & Load Config");
             window.Show();
-            window.position = new Rect(20, 40, 380, 100);
+            window.position = new Rect(20, 40, 380, 105);
         }
 
         static ConfigWindow()
         {
             EditorApplication.update += OnFirstUpdate;
-    
         }
 
         private static void OnFirstUpdate()
@@ -67,8 +66,11 @@ namespace Battlehub.RTSL
 
             EditorGUILayout.Separator();
 
-        
             m_path = EditorGUILayout.TextField("Data Path:", m_path);
+            if(m_path.EndsWith("/") || m_path.EndsWith("\\"))
+            {
+                m_path = m_path.TrimEnd(new[] { '/', '\\' });
+            }
 
             EditorGUILayout.Separator();
 

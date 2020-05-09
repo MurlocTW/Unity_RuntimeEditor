@@ -1,9 +1,10 @@
-﻿using TMPro;
+﻿using Battlehub.RTCommon;
+using TMPro;
 using UnityEngine;
 
 namespace Battlehub.RTEditor
 {
-    public class FloatEditor : PropertyEditor<float>
+    public class FloatEditor : ConvertablePropertyEditor<float>
     {
         [SerializeField]
         protected TMP_InputField m_input;
@@ -38,7 +39,7 @@ namespace Battlehub.RTEditor
 
         protected override void SetInputField(float value)
         {
-            m_input.text = value.ToString();
+            m_input.text = FromMeters(value).ToString();
         }
 
         protected virtual void OnValueChanged(string value)
@@ -46,13 +47,13 @@ namespace Battlehub.RTEditor
             float val;
             if(float.TryParse(value, out val))
             {
-                SetValue(val);
+                SetValue(ToMeters(val));
             }
         }
 
         protected virtual void OnEndEdit(string value)
         {
-            m_input.text = GetValue().ToString();
+            m_input.text = FromMeters(GetValue()).ToString();
             EndEdit();
         }
 

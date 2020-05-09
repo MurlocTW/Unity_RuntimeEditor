@@ -1,4 +1,5 @@
-﻿using Battlehub.Utils;
+﻿using Battlehub.RTCommon;
+using Battlehub.Utils;
 using System;
 using System.Reflection;
 using UnityEngine;
@@ -64,14 +65,16 @@ namespace Battlehub.RTEditor
         {
             base.InitOverride(target, accessor, memberInfo, eraseTargetCallback, label);
 
+            ILocalization localization = IOC.Resolve<ILocalization>();
+
             BoundsAccessor boundsAccessor = new BoundsAccessor(this);
-            m_center.Init(boundsAccessor, boundsAccessor, Strong.PropertyInfo((BoundsAccessor x) => x.Center, "Center"), null, "Center", OnValueChanging, null, OnEndEdit, false);
-            m_extents.Init(boundsAccessor, boundsAccessor, Strong.PropertyInfo((BoundsAccessor x) => x.Extents, "Extents"), null, "Extents", OnValueChanging, null, OnEndEdit, false);
+            m_center.Init(boundsAccessor, boundsAccessor, Strong.PropertyInfo((BoundsAccessor x) => x.Center, "Center"), null, localization.GetString("ID_RTEditor_PE_BoundsEditor_Center", "Center"), OnValueChanging, null, OnEndEdit, false);
+            m_extents.Init(boundsAccessor, boundsAccessor, Strong.PropertyInfo((BoundsAccessor x) => x.Extents, "Extents"), null, localization.GetString("ID_RTEditor_PE_BoundsEditor_Extents", "Extents"), OnValueChanging, null, OnEndEdit, false);
         }
 
-        protected override void ReloadOverride()
+        protected override void ReloadOverride(bool force)
         {
-            base.ReloadOverride();
+            base.ReloadOverride(force);
             m_center.Reload();
             m_extents.Reload();
         }

@@ -21,6 +21,7 @@
 			#include "UnityCG.cginc"
 			#pragma vertex vert  
 			#pragma fragment frag 
+			#pragma multi_compile_instancing
 
 			// User-specified uniforms            
 			uniform sampler2D _MainTex;

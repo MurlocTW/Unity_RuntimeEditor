@@ -2,7 +2,8 @@
 {
 	Properties
 	{
-		_Color("Color", Color) = (1, 1, 1, 1) // color
+		_Color("Color", Color) = (1, 1, 1, 1)
+		[Enum(Off,0,On,1)]_ZWrite("ZWrite", Float) = 1.0
 	}
 	SubShader
 	{
@@ -11,7 +12,7 @@
 	
 		Pass
 		{
-			//ZTest Always
+			ZWrite[_ZWrite]
 			Blend SrcAlpha OneMinusSrcAlpha
 			CGPROGRAM
 			#pragma vertex vert

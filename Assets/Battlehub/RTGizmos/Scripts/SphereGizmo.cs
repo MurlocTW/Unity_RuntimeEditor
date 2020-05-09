@@ -37,6 +37,12 @@ namespace Battlehub.RTGizmos
             }
         }
 
+        protected override void AwakeOverride()
+        {
+            base.AwakeOverride();
+            RefreshOnCameraChanged = true;
+        }
+
         protected override bool OnDrag(int index, Vector3 offset)
         {
             Radius += offset.magnitude * Math.Sign(Vector3.Dot(offset, HandlesNormals[index]));
@@ -48,29 +54,30 @@ namespace Battlehub.RTGizmos
             return true;
         }
 
-        protected override void DrawOverride(Camera camera)
+        protected override void OnCommandBufferRefresh(IRTECamera camera)
         {
-            base.DrawOverride(camera);
-
-            if(Target == null)
+            base.OnCommandBufferRefresh(camera);
+            if (Target == null)
             {
                 return;
             }
 
             Vector3 scale = Target.lossyScale * Radius;
-
             scale = Vector3.one * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z));
+            
+            GizmoUtility.DrawCubeHandles(camera.CommandBuffer, Target.TransformPoint(Center), Target.rotation, scale, HandleProperties);
+            GizmoUtility.DrawWireSphere(camera.CommandBuffer, camera.Camera, Target.TransformPoint(Center), Target.rotation, scale, LineProperties);
 
-            RuntimeGizmos.DrawCubeHandles(Target.TransformPoint(Center) , Target.rotation, scale , HandlesColor);
-            RuntimeGizmos.DrawWireSphereGL(camera, Target.TransformPoint(Center), Target.rotation, scale, LineColor);
-
-            if (IsDragging)
+            if(IsDragging)
             {
                 scale = Target.lossyScale;
                 scale = Vector3.one * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z));
-                RuntimeGizmos.DrawSelection(HandlesTransform.MultiplyPoint(Center + HandlesPositions[DragIndex]), Target.rotation, scale, SelectionColor);
+
+                GizmoUtility.DrawSelection(camera.CommandBuffer, HandlesTransform.MultiplyPoint(Center + HandlesPositions[DragIndex]), Target.rotation, scale, SelectionProperties);
             }
         }
+
+     
     }
 
 }

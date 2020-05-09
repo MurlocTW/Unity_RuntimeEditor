@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 233234377}
   - component: {fileID: 233234372}
   - component: {fileID: 233234371}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: MenuContext
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -59,7 +59,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 233234369}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -68,8 +68,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
@@ -79,6 +77,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &233234374
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -88,7 +87,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 233234369}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1297475563, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -102,6 +101,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!114 &233234373
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -111,7 +112,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 233234369}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1741964061, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_HorizontalFit: 0
@@ -147,13 +148,9 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 1
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Save Scene
     Text: Save Scene
     Icon: {fileID: 21300000, guid: 2bf42b484d381ed4b821684e5cc7b604, type: 3}
@@ -172,13 +169,9 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Save Scene As...
     Text: Save Scene As...
     Icon: {fileID: 21300000, guid: e5a00995c2633e046bcc7a83ad24c42e, type: 3}
@@ -197,13 +190,9 @@ MonoBehaviour:
             m_StringArgument: SaveScene
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Import Assets
     Text: Import Assets
     Icon: {fileID: 21300000, guid: ce113772eb0f6574ca2b9651349b34d0, type: 3}
@@ -222,13 +211,9 @@ MonoBehaviour:
             m_StringArgument: SelectAssetLibrary
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Manage Projects
     Text: Manage Projects
     Icon: {fileID: 21300000, guid: 1d809aa58d8449f44be584087c1a618a, type: 3}
@@ -247,13 +232,9 @@ MonoBehaviour:
             m_StringArgument: OpenProject
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Close
     Text: Close
     Icon: {fileID: 0}
@@ -272,16 +253,13 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_menuItemPrefab: {fileID: 114996007241749652, guid: 608560c9df008cd48a82482fca449e8e,
     type: 3}
   m_anchor: {fileID: 0}
+  m_anchorOffset: {x: 0, y: 0}
   m_panel: {fileID: 233234370}
   m_canvasGroup: {fileID: 233234371}
   FadeInSpeed: 8
@@ -294,7 +272,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 233234369}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -900027084, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_EffectColor: {r: 0.5294118, g: 0.5294118, b: 0.5294118, a: 0.5}
@@ -367,7 +345,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 974272048}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -376,8 +354,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
@@ -387,6 +363,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &974272050
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -396,7 +373,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 974272048}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 1
@@ -419,7 +396,7 @@ GameObject:
   - component: {fileID: 1638548491}
   - component: {fileID: 1638548490}
   - component: {fileID: 1638548489}
-  m_Layer: 5
+  m_Layer: 16
   m_Name: Border
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -462,7 +439,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1638548487}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -471,8 +448,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
@@ -482,6 +457,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &1638548489
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -491,7 +467,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1638548487}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 1
@@ -511,7 +487,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 220063214759377217}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: Docked
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -546,7 +522,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 219879072331672591}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: PreviewPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -582,7 +558,7 @@ GameObject:
   m_Component:
   - component: {fileID: 219964685660577215}
   - component: {fileID: 109887364326273493}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: Preview
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -618,7 +594,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6046741991707775}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 1
@@ -643,7 +619,7 @@ GameObject:
   - component: {fileID: 217687811992305575}
   - component: {fileID: 111239355110341277}
   - component: {fileID: 5849259613871964752}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: DockPanels
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -703,7 +679,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6090313584520543}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 1
@@ -731,7 +707,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6090313584520543}
   m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -740,8 +716,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
@@ -751,6 +725,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &5849259613871964752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -777,7 +752,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 220052302703447445}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: Free
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -815,7 +790,7 @@ GameObject:
   - component: {fileID: 218019252589416169}
   - component: {fileID: 109408800845223817}
   - component: {fileID: 109327037697355681}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: Mask
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -862,7 +837,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6610170326320467}
   m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -871,8 +846,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
@@ -882,6 +855,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &109327037697355681
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -891,7 +865,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6610170326320467}
   m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: -1200242548, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 31a19414c41e5ae4aae2af33fee712f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_ShowMaskGraphic: 0
@@ -911,7 +885,7 @@ GameObject:
   - component: {fileID: 109295648347768002}
   - component: {fileID: 109272289787078166}
   - component: {fileID: 230625903091272210}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: MenuGameObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -954,7 +928,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628002230241596}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -963,8 +937,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
@@ -974,6 +946,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &109304239238284038
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -983,7 +956,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628002230241596}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1297475563, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -997,6 +970,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!114 &111238521426227458
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1006,7 +981,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628002230241596}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1741964061, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_HorizontalFit: 0
@@ -1042,8 +1017,6 @@ MonoBehaviour:
             m_StringArgument: CreateEmpty
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -1058,8 +1031,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Create Empty Child
     Text: 
     Icon: {fileID: 0}
@@ -1078,8 +1049,6 @@ MonoBehaviour:
             m_StringArgument: CreateEmptyChild
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -1094,8 +1063,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: 3D Object/Cube
     Text: 
     Icon: {fileID: 0}
@@ -1114,8 +1081,6 @@ MonoBehaviour:
             m_StringArgument: Cube
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -1130,8 +1095,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: 3D Object/Sphere
     Text: 
     Icon: {fileID: 0}
@@ -1150,8 +1113,6 @@ MonoBehaviour:
             m_StringArgument: Sphere
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -1166,8 +1127,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: 3D Object/Capsule
     Text: 
     Icon: {fileID: 0}
@@ -1186,8 +1145,6 @@ MonoBehaviour:
             m_StringArgument: Capsule
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -1202,8 +1159,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: 3D Object/Cylinder
     Text: 
     Icon: {fileID: 0}
@@ -1222,8 +1177,6 @@ MonoBehaviour:
             m_StringArgument: Cylinder
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -1238,8 +1191,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: 3D Object/Plane
     Text: 
     Icon: {fileID: 0}
@@ -1258,8 +1209,6 @@ MonoBehaviour:
             m_StringArgument: Plane
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -1274,8 +1223,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: 3D Object/Quad
     Text: 
     Icon: {fileID: 0}
@@ -1294,8 +1241,6 @@ MonoBehaviour:
             m_StringArgument: Quad
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -1310,8 +1255,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Light/Directional
     Text: 
     Icon: {fileID: 0}
@@ -1330,8 +1273,6 @@ MonoBehaviour:
             m_StringArgument: DirectionalLight
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -1346,8 +1287,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Light/Point
     Text: 
     Icon: {fileID: 0}
@@ -1366,8 +1305,6 @@ MonoBehaviour:
             m_StringArgument: PointLight
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -1382,8 +1319,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Light/Spot
     Text: 
     Icon: {fileID: 0}
@@ -1402,8 +1337,6 @@ MonoBehaviour:
             m_StringArgument: SpotLight
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -1418,8 +1351,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Camera
     Text: 
     Icon: {fileID: 0}
@@ -1438,8 +1369,6 @@ MonoBehaviour:
             m_StringArgument: Camera
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -1454,11 +1383,10 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_menuItemPrefab: {fileID: 114996007241749652, guid: 608560c9df008cd48a82482fca449e8e,
     type: 3}
   m_anchor: {fileID: 5849259614052136183}
+  m_anchorOffset: {x: 0, y: 0}
   m_panel: {fileID: 220647733058011166}
   m_canvasGroup: {fileID: 230625903091272210}
   FadeInSpeed: 8
@@ -1471,7 +1399,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628002230241596}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -900027084, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_EffectColor: {r: 0.5294118, g: 0.5294118, b: 0.5294118, a: 0.5}
@@ -1505,7 +1433,7 @@ GameObject:
   - component: {fileID: 109295648440357140}
   - component: {fileID: 109272289962767296}
   - component: {fileID: 230625903234326468}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: MenuWindow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1548,7 +1476,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628002339904746}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -1557,8 +1485,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
@@ -1568,6 +1494,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &109304239430653648
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1577,7 +1504,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628002339904746}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1297475563, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -1591,6 +1518,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!114 &111238521267184852
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1600,7 +1529,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628002339904746}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1741964061, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_HorizontalFit: 0
@@ -1636,13 +1565,9 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: General/Scene
     Text: 
     Icon: {fileID: 21300000, guid: adee4d2c74aa3ed489dc78650267d5c9, type: 3}
@@ -1661,13 +1586,9 @@ MonoBehaviour:
             m_StringArgument: Scene
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: General/Game
     Text: 
     Icon: {fileID: 21300000, guid: 0f5af8f5573802443896110107c644a1, type: 3}
@@ -1686,13 +1607,9 @@ MonoBehaviour:
             m_StringArgument: Game
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: General/Inspector
     Text: 
     Icon: {fileID: 21300000, guid: f7581d993ea6f4942b835e5f922cdef6, type: 3}
@@ -1711,13 +1628,9 @@ MonoBehaviour:
             m_StringArgument: Inspector
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: General/Hierarchy
     Text: 
     Icon: {fileID: 21300000, guid: 598ffc666bd444c4dac6b492130f5578, type: 3}
@@ -1736,13 +1649,9 @@ MonoBehaviour:
             m_StringArgument: Hierarchy
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: General/Project
     Text: 
     Icon: {fileID: 21300000, guid: 747b49ea2fbd21c4a94d5bab52037e80, type: 3}
@@ -1761,13 +1670,9 @@ MonoBehaviour:
             m_StringArgument: Project
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: General/Console
     Text: 
     Icon: {fileID: 21300000, guid: b7b061b91660ed7428cff11f4afc7180, type: 3}
@@ -1786,16 +1691,34 @@ MonoBehaviour:
             m_StringArgument: Console
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - Path: General/Animation
+    Text: 
+    Icon: {fileID: 21300000, guid: db09905cb4d2c194d82eb81bfe79940e, type: 3}
+    Command: 
+    Action:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 5849259614496068626}
+          m_MethodName: CreateOrActivateWindow
+          m_Mode: 5
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: Animation
+            m_BoolArgument: 0
+          m_CallState: 2
+    Validate:
+      m_PersistentCalls:
+        m_Calls: []
   m_menuItemPrefab: {fileID: 114996007241749652, guid: 608560c9df008cd48a82482fca449e8e,
     type: 3}
   m_anchor: {fileID: 5849259614183290822}
+  m_anchorOffset: {x: 0, y: 0}
   m_panel: {fileID: 220647733216695752}
   m_canvasGroup: {fileID: 230625903234326468}
   FadeInSpeed: 8
@@ -1808,7 +1731,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628002339904746}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -900027084, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_EffectColor: {r: 0.5294118, g: 0.5294118, b: 0.5294118, a: 0.5}
@@ -1842,7 +1765,7 @@ GameObject:
   - component: {fileID: 109295647878126067}
   - component: {fileID: 109272290525133607}
   - component: {fileID: 230625902621628195}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: MenuFile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1885,7 +1808,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628002834633741}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -1894,8 +1817,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
@@ -1905,6 +1826,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &109304238902369847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1914,7 +1836,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628002834633741}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1297475563, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -1928,6 +1850,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!114 &111238521896135731
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1937,7 +1861,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628002834633741}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1741964061, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_HorizontalFit: 0
@@ -1973,13 +1897,9 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 1
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Save Scene
     Text: Save Scene
     Icon: {fileID: 21300000, guid: 2bf42b484d381ed4b821684e5cc7b604, type: 3}
@@ -1998,13 +1918,9 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Save Scene As...
     Text: Save Scene As...
     Icon: {fileID: 21300000, guid: e5a00995c2633e046bcc7a83ad24c42e, type: 3}
@@ -2023,13 +1939,9 @@ MonoBehaviour:
             m_StringArgument: SaveScene
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Import Assets
     Text: Import Assets
     Icon: {fileID: 21300000, guid: ce113772eb0f6574ca2b9651349b34d0, type: 3}
@@ -2048,13 +1960,9 @@ MonoBehaviour:
             m_StringArgument: SelectAssetLibrary
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Manage Projects
     Text: Manage Projects
     Icon: {fileID: 21300000, guid: 1d809aa58d8449f44be584087c1a618a, type: 3}
@@ -2073,13 +1981,9 @@ MonoBehaviour:
             m_StringArgument: OpenProject
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Close
     Text: Close
     Icon: {fileID: 0}
@@ -2098,16 +2002,13 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_menuItemPrefab: {fileID: 114996007241749652, guid: 608560c9df008cd48a82482fca449e8e,
     type: 3}
   m_anchor: {fileID: 5849259614214296018}
+  m_anchorOffset: {x: 0, y: 0}
   m_panel: {fileID: 220647732588404015}
   m_canvasGroup: {fileID: 230625902621628195}
   FadeInSpeed: 8
@@ -2120,7 +2021,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628002834633741}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -900027084, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_EffectColor: {r: 0.5294118, g: 0.5294118, b: 0.5294118, a: 0.5}
@@ -2154,7 +2055,7 @@ GameObject:
   - component: {fileID: 109295649560100452}
   - component: {fileID: 109272290990546096}
   - component: {fileID: 230625902139535540}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: MenuEdit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2197,7 +2098,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628003434247066}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -2206,8 +2107,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
@@ -2217,6 +2116,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &109304238311192992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2226,7 +2126,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628003434247066}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1297475563, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -2240,6 +2140,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!114 &111238522353388452
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2249,7 +2151,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628003434247066}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1741964061, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_HorizontalFit: 0
@@ -2285,8 +2187,6 @@ MonoBehaviour:
             m_StringArgument: Undo
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -2301,8 +2201,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Redo
     Text: 
     Icon: {fileID: 0}
@@ -2321,8 +2219,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -2337,8 +2233,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Duplicate
     Text: 
     Icon: {fileID: 0}
@@ -2357,8 +2251,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -2373,8 +2265,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Delete
     Text: 
     Icon: {fileID: 0}
@@ -2393,8 +2283,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -2409,8 +2297,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Play
     Text: 
     Icon: {fileID: 0}
@@ -2429,8 +2315,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -2445,8 +2329,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Stop
     Text: 
     Icon: {fileID: 0}
@@ -2465,8 +2347,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls:
@@ -2481,11 +2361,42 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - Path: SceneSettings
+    Text: Scene Settings
+    Icon: {fileID: 21300000, guid: 89a4e12e4493f6341928b4e2f80ec665, type: 3}
+    Command: scenesettings
+    Action:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 5849259614496068626}
+          m_MethodName: CmdEdit
+          m_Mode: 0
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    Validate:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 5849259614496068626}
+          m_MethodName: CmdEditValidate
+          m_Mode: 0
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
   m_menuItemPrefab: {fileID: 114996007241749652, guid: 608560c9df008cd48a82482fca449e8e,
     type: 3}
   m_anchor: {fileID: 5849259613376326648}
+  m_anchorOffset: {x: 0, y: 0}
   m_panel: {fileID: 220647734270409400}
   m_canvasGroup: {fileID: 230625902139535540}
   FadeInSpeed: 8
@@ -2498,7 +2409,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628003434247066}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -900027084, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_EffectColor: {r: 0.5294118, g: 0.5294118, b: 0.5294118, a: 0.5}
@@ -2532,7 +2443,7 @@ GameObject:
   - component: {fileID: 109295649570291086}
   - component: {fileID: 109272290716245850}
   - component: {fileID: 230625901696545630}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: MenuComponent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2575,7 +2486,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628003494965360}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -2584,8 +2495,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
@@ -2595,6 +2504,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &109304238552398410
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2604,7 +2514,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628003494965360}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1297475563, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -2618,6 +2528,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!114 &111238522812303438
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2627,7 +2539,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628003494965360}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1741964061, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_HorizontalFit: 0
@@ -2652,16 +2564,13 @@ MonoBehaviour:
     Action:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_menuItemPrefab: {fileID: 114996007241749652, guid: 608560c9df008cd48a82482fca449e8e,
     type: 3}
   m_anchor: {fileID: 0}
+  m_anchorOffset: {x: 0, y: 0}
   m_panel: {fileID: 220647733806578002}
   m_canvasGroup: {fileID: 230625901696545630}
   FadeInSpeed: 8
@@ -2674,7 +2583,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628003494965360}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -900027084, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_EffectColor: {r: 0.5294118, g: 0.5294118, b: 0.5294118, a: 0.5}
@@ -2708,7 +2617,7 @@ GameObject:
   - component: {fileID: 109295648765555467}
   - component: {fileID: 109272291520811487}
   - component: {fileID: 230625901428817371}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: MenuHelp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2751,7 +2660,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628003763748597}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -2760,8 +2669,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
@@ -2771,6 +2678,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &109304237746779343
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2780,7 +2688,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628003763748597}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1297475563, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -2794,6 +2702,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!114 &111238523081344715
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2803,7 +2713,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628003763748597}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1741964061, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_HorizontalFit: 0
@@ -2839,16 +2749,13 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Validate:
       m_PersistentCalls:
         m_Calls: []
-      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_menuItemPrefab: {fileID: 114996007241749652, guid: 608560c9df008cd48a82482fca449e8e,
     type: 3}
   m_anchor: {fileID: 5849259614669755914}
+  m_anchorOffset: {x: 0, y: 0}
   m_panel: {fileID: 220647733537699799}
   m_canvasGroup: {fileID: 230625901428817371}
   FadeInSpeed: 8
@@ -2861,7 +2768,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6628003763748597}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -900027084, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_EffectColor: {r: 0.5294118, g: 0.5294118, b: 0.5294118, a: 0.5}
@@ -2933,7 +2840,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1291167456044012070}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -2942,8 +2849,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 21300000, guid: 0337b5547dcbc3d4ea4b803d55e5d744, type: 3}
   m_Type: 2
   m_PreserveAspect: 0
@@ -2953,6 +2858,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &1777419699227269927
 GameObject:
   m_ObjectHideFlags: 0
@@ -2963,7 +2869,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1777419699227269926}
   - component: {fileID: 1777419699227269923}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: LayoutRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2999,7 +2905,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1777419699227269927}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1297475563, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -3013,6 +2919,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!1 &1777419699321551719
 GameObject:
   m_ObjectHideFlags: 0
@@ -3067,7 +2975,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1777419699321551719}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -3076,8 +2984,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
     m_FontSize: 13
@@ -3146,7 +3052,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1777419699752084970}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -3155,8 +3061,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
     m_FontSize: 13
@@ -3225,7 +3129,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1777419699843731378}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -3234,8 +3138,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
     m_FontSize: 13
@@ -3304,7 +3206,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1777419700718513194}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -3313,8 +3215,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
     m_FontSize: 13
@@ -3329,6 +3229,57 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: Window
+--- !u!1 &2326582733549377775
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7550254516627362540}
+  - component: {fileID: 7732553800278920290}
+  m_Layer: 0
+  m_Name: SceneSettingsComponent
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7550254516627362540
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2326582733549377775}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 5849259612975468223}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7732553800278920290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2326582733549377775}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4211b7b52c3f2ec4db19f3e5aa9e9a39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_isGridVisibleDefault: 1
+  m_isGridEnabledDefault: 0
+  m_gridZTest: 1
+  m_gridSizeDefault: 0.5
+  m_uiAutoScaleDefault: 1
+  m_uiScaleDefault: 1
+  m_zoomSpeedDefault: 5
+  m_constantZoomSpeedDefault: 0
 --- !u!1 &5358519200071905049
 GameObject:
   m_ObjectHideFlags: 0
@@ -3340,7 +3291,7 @@ GameObject:
   - component: {fileID: 3661969667337733040}
   - component: {fileID: 2479318248405338867}
   - component: {fileID: 7521297420743326562}
-  m_Layer: 5
+  m_Layer: 16
   m_Name: Modal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3383,7 +3334,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5358519200071905049}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -3392,8 +3343,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
@@ -3403,6 +3352,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &5849259612615065805
 GameObject:
   m_ObjectHideFlags: 0
@@ -3415,7 +3365,7 @@ GameObject:
   - component: {fileID: 5849259612615065794}
   - component: {fileID: 5849259612615065795}
   - component: {fileID: 9174941219733222014}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: UIForeground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3475,7 +3425,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259612615065805}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1301386320, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreReversedGraphics: 1
@@ -3492,7 +3442,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259612615065805}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1980459831, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_UiScaleMode: 0
@@ -3556,7 +3506,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259612640306653}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -405508275, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -3570,6 +3520,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!222 &5849259612640306640
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3587,7 +3539,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259612640306653}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -3596,8 +3548,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 21300000, guid: 8712244784185514e89bdd9af55077d2, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
@@ -3607,6 +3557,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &194363483
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3774,7 +3725,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5849259612951747679}
   - component: {fileID: 5849259612951747678}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: MenuPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3816,7 +3767,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259612951747672}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 1
@@ -3857,6 +3808,7 @@ Transform:
   - {fileID: 5849259612728396453}
   - {fileID: 5849259614313223312}
   - {fileID: 5849259612858904848}
+  - {fileID: 7550254516627362540}
   m_Father: {fileID: 5849259614496068638}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3872,7 +3824,7 @@ GameObject:
   - component: {fileID: 5849259613100401301}
   - component: {fileID: 5849259613100401302}
   - component: {fileID: 3214422776334115877}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: Footer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3916,7 +3868,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259613100401296}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -3925,8 +3877,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 21300000, guid: 8712244784185514e89bdd9af55077d2, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
@@ -3936,6 +3886,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &3214422776334115877
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3945,7 +3896,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259613100401296}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 1
@@ -4014,7 +3965,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259613376326649}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -4023,8 +3974,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
@@ -4034,6 +3983,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &5849259613376326655
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4043,7 +3993,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259613376326649}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
@@ -4071,6 +4021,7 @@ MonoBehaviour:
   m_pointerOverColor: {r: 0, g: 0.5921569, b: 1, a: 0.49803922}
   m_focusedColor: {r: 0, g: 0.5921569, b: 1, a: 1}
   m_normalColor: {r: 1, g: 1, b: 1, a: 0}
+  m_text: {fileID: 0}
 --- !u!114 &3585920918779202565
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4080,7 +4031,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259613376326649}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -405508275, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -4094,6 +4045,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!1 &5849259613572350663
 GameObject:
   m_ObjectHideFlags: 0
@@ -4104,7 +4057,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5849259613572350662}
   - component: {fileID: 5849259613572350660}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: UICameraForeground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4137,9 +4090,10 @@ Camera:
   m_ClearFlags: 3
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
   m_SensorSize: {x: 36, y: 24}
   m_LensShift: {x: 0, y: 0}
-  m_GateFitMode: 2
   m_FocalLength: 50
   m_NormalizedViewPortRect:
     serializedVersion: 2
@@ -4155,7 +4109,7 @@ Camera:
   m_Depth: 75
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 524288
+    m_Bits: 589824
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -4221,7 +4175,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259613723729081}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -4230,8 +4184,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
     m_FontSize: 13
@@ -4304,7 +4256,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614052136176}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -4313,8 +4265,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
@@ -4324,6 +4274,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &5849259614052136182
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4333,7 +4284,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614052136176}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
@@ -4361,6 +4312,7 @@ MonoBehaviour:
   m_pointerOverColor: {r: 0, g: 0.5921569, b: 1, a: 0.49803922}
   m_focusedColor: {r: 0, g: 0.5921569, b: 1, a: 1}
   m_normalColor: {r: 1, g: 1, b: 1, a: 0}
+  m_text: {fileID: 0}
 --- !u!114 &8077136230047967497
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4370,7 +4322,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614052136176}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -405508275, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -4384,6 +4336,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!1 &5849259614124329401
 GameObject:
   m_ObjectHideFlags: 0
@@ -4440,7 +4394,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614124329401}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -4449,8 +4403,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 2
   m_PreserveAspect: 0
@@ -4460,6 +4412,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &5849259614183290823
 GameObject:
   m_ObjectHideFlags: 0
@@ -4518,7 +4471,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614183290823}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -4527,8 +4480,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
@@ -4538,6 +4489,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &5849259614183290821
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4547,7 +4499,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614183290823}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
@@ -4575,6 +4527,7 @@ MonoBehaviour:
   m_pointerOverColor: {r: 0, g: 0.5921569, b: 1, a: 0.49803922}
   m_focusedColor: {r: 0, g: 0.5921569, b: 1, a: 1}
   m_normalColor: {r: 1, g: 1, b: 1, a: 0}
+  m_text: {fileID: 0}
 --- !u!114 &8699228782476089258
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4584,7 +4537,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614183290823}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -405508275, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -4598,6 +4551,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!1 &5849259614191065369
 GameObject:
   m_ObjectHideFlags: 0
@@ -4610,7 +4565,7 @@ GameObject:
   - component: {fileID: 5849259614191065373}
   - component: {fileID: 5849259614191065374}
   - component: {fileID: 5849259614191065375}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: BusyIndicator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4653,7 +4608,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614191065369}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -4662,8 +4617,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 21300000, guid: 6d1d87d2e6b98894e9c7af70e62c6895, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
@@ -4673,6 +4626,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &5849259614191065375
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4745,7 +4699,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614214296019}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -4754,8 +4708,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
@@ -4765,6 +4717,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &5849259614214296017
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4774,7 +4727,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614214296019}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
@@ -4802,6 +4755,7 @@ MonoBehaviour:
   m_pointerOverColor: {r: 0, g: 0.5921569, b: 1, a: 0.49803922}
   m_focusedColor: {r: 0, g: 0.5921569, b: 1, a: 1}
   m_normalColor: {r: 1, g: 1, b: 1, a: 0}
+  m_text: {fileID: 0}
 --- !u!114 &6173097361273975014
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4811,7 +4765,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614214296019}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -405508275, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -4825,6 +4779,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!1 &5849259614313223314
 GameObject:
   m_ObjectHideFlags: 0
@@ -4872,6 +4828,7 @@ MonoBehaviour:
   MoveKey: 119
   RotateKey: 101
   ScaleKey: 114
+  RectToolKey: 116
   PivotRotationKey: 120
   PivotModeKey: 122
 --- !u!1 &5849259614334939582
@@ -4885,7 +4842,7 @@ GameObject:
   - component: {fileID: 5849259614334939581}
   - component: {fileID: 5849259614334939571}
   - component: {fileID: 5849259614334939580}
-  m_Layer: 19
+  m_Layer: 16
   m_Name: BusyIndicatorRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4929,7 +4886,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614334939582}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -4938,8 +4895,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
@@ -4949,6 +4904,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &5849259614492109114
 GameObject:
   m_ObjectHideFlags: 0
@@ -4992,9 +4948,10 @@ Camera:
   m_ClearFlags: 1
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
   m_SensorSize: {x: 36, y: 24}
   m_LensShift: {x: 0, y: 0}
-  m_GateFitMode: 2
   m_FocalLength: 50
   m_NormalizedViewPortRect:
     serializedVersion: 2
@@ -5041,10 +4998,9 @@ GameObject:
   - component: {fileID: 3214422774527365804}
   - component: {fileID: 848462208471534376}
   - component: {fileID: 9058800277652670137}
-  - component: {fileID: 5849259614496068627}
   - component: {fileID: 5849259614496068636}
-  - component: {fileID: 5849259614496068637}
   - component: {fileID: 5849259614496068625}
+  - component: {fileID: 1536991848831767602}
   m_Layer: 0
   m_Name: RuntimeEditor_NoRenderTextures
   m_TagString: Untagged
@@ -5090,20 +5046,24 @@ MonoBehaviour:
     ResourcePreviewLayer: 20
     RuntimeGraphicsLayer: 21
     MaxGraphicsLayers: 4
+    AllScenesLayer: 17
+    ExtraLayer2: 19
+    ExtraLayer: 18
   m_useBuiltinUndo: 1
   m_enableVRIfAvailable: 1
   m_isOpened: 1
   IsOpenedEvent:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
   IsClosedEvent:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
   m_progressIndicator: {fileID: 5849259614334939582}
+  m_extraSettings:
+    OpenDefaultProject: 1
+    DefaultProjectName: 
+    CreateCamera: 1
+    CreateLight: 1
 --- !u!114 &257632392269822385
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5120,6 +5080,97 @@ MonoBehaviour:
   m_uiBackgroundScaler: {fileID: 2391296701540230532}
   m_uiForegroundScaler: {fileID: 9174941219733222014}
   m_uiScaler: {fileID: 9174941219733222014}
+  m_colors:
+    Primary: {r: 0.21960784, g: 0.21960784, b: 0.21960784, a: 1}
+    Secondary: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
+    Border: {r: 0.1254902, g: 0.1254902, b: 0.1254902, a: 1}
+    Border2: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+    Border3: {r: 0.32156864, g: 0.29803923, b: 0.29803923, a: 1}
+    Border4: {r: 135, g: 135, b: 135, a: 255}
+    Accent: {r: 0, g: 0.5921569, b: 1, a: 0.7529412}
+    Text: {r: 1, g: 1, b: 1, a: 1}
+    Text2: {r: 1, g: 1, b: 1, a: 0.49803922}
+    ModalOverlay: {r: 0, g: 0, b: 0, a: 0.2509804}
+    MainMenuBar: {r: 0.43529412, g: 0.43529412, b: 0.43529412, a: 1}
+    Footer: {r: 0.43529412, g: 0.43529412, b: 0.43529412, a: 1}
+    MainMenuButton:
+      Normal: {r: 1, g: 1, b: 1, a: 0}
+      Highlight: {r: 0, g: 0.5921569, b: 1, a: 0.49803922}
+      Pressed: {r: 0, g: 0.5921569, b: 1, a: 1}
+      Disabled: {r: 0, g: 0, b: 0, a: 0}
+      Selected: {r: 0, g: 0.5921569, b: 1, a: 1}
+    ToolsToggle: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.49803922}
+    MenuItem:
+      SelectionColor: {r: 0, g: 0.5921569, b: 1, a: 1}
+      TextColor: {r: 1, g: 1, b: 1, a: 1}
+      DisabledSelectionColor: {r: 0.58431375, g: 0.5764706, b: 0.5764706, a: 0.49803922}
+      DisabledTextColor: {r: 0.44313726, g: 0.44313726, b: 0.44313726, a: 1}
+    Hierarchy:
+      NormalItem: {r: 1, g: 1, b: 1, a: 1}
+      DisabledItem: {r: 0.5764706, g: 0.57254905, b: 0.57254905, a: 1}
+    ProjectFolder: {r: 0.28235295, g: 0.28235295, b: 0.28235295, a: 1}
+    ConsoleButton:
+      Normal: {r: 0.21960784, g: 0.21960784, b: 0.21960784, a: 1}
+      Highlight: {r: 0.21960784, g: 0.21960784, b: 0.21960784, a: 1}
+      Pressed: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
+      Disabled: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.49803922}
+      Selected: {r: 0, g: 0.5921569, b: 1, a: 1}
+    ScrollBar:
+      Normal: {r: 0.21960784, g: 0.21960784, b: 0.21960784, a: 1}
+      Highlight: {r: 0.21960784, g: 0.21960784, b: 0.21960784, a: 1}
+      Pressed: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
+      Disabled: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.49803922}
+      Selected: {r: 0, g: 0.5921569, b: 1, a: 1}
+    ScrollBarBackground: {r: 0.69803923, g: 0.69803923, b: 0.69803923, a: 1}
+    Toggle:
+      Normal: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
+      Highlight: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
+      Pressed: {r: 0.1254902, g: 0.1254902, b: 0.1254902, a: 1}
+      Disabled: {r: 0.21960784, g: 0.21960784, b: 0.21960784, a: 0.49803922}
+      Selected: {r: 0, g: 0.5921569, b: 1, a: 1}
+    ToggleButton:
+      Normal: {r: 0.26666668, g: 0.26666668, b: 0.26666668, a: 1}
+      Highlight: {r: 0.21960784, g: 0.21960784, b: 0.21960784, a: 1}
+      Pressed: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
+      Disabled: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.49803922}
+      Selected: {r: 0, g: 0.5921569, b: 1, a: 1}
+    InputField:
+      Normal: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
+      Highlight: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
+      Pressed: {r: 0.1254902, g: 0.1254902, b: 0.1254902, a: 1}
+      Disabled: {r: 0.36078432, g: 0.36078432, b: 0.36078432, a: 0.49803922}
+      Selected: {r: 0, g: 0.5921569, b: 1, a: 1}
+    InputField2:
+      Normal: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
+      Highlight: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
+      Pressed: {r: 0.1254902, g: 0.1254902, b: 0.1254902, a: 1}
+      Disabled: {r: 0.36078432, g: 0.36078432, b: 0.36078432, a: 0.49803922}
+      Selected: {r: 0.1254902, g: 0.1254902, b: 0.1254902, a: 1}
+    Button:
+      Normal: {r: 0.26666668, g: 0.26666668, b: 0.26666668, a: 1}
+      Highlight: {r: 0.33333334, g: 0.33333334, b: 0.33333334, a: 1}
+      Pressed: {r: 0.21960784, g: 0.21960784, b: 0.21960784, a: 0.49803922}
+      Disabled: {r: 0.36078432, g: 0.36078432, b: 0.36078432, a: 0.4}
+      Selected: {r: 0, g: 0.5921569, b: 1, a: 1}
+    Button2:
+      Normal: {r: 255, g: 255, b: 255, a: 255}
+      Highlight: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+      Pressed: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+      Disabled: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.49803922}
+      Selected: {r: 0, g: 0.5921569, b: 1, a: 1}
+    Slider:
+      Normal: {r: 0.26666668, g: 0.26666668, b: 0.26666668, a: 1}
+      Highlight: {r: 0.33333334, g: 0.33333334, b: 0.33333334, a: 1}
+      Pressed: {r: 0.21960784, g: 0.21960784, b: 0.21960784, a: 0.49803922}
+      Disabled: {r: 0.36078432, g: 0.36078432, b: 0.36078432, a: 0.4}
+      Selected: {r: 0, g: 0.5921569, b: 1, a: 1}
+    Dropdown:
+      Normal: {r: 0.26666668, g: 0.26666668, b: 0.26666668, a: 1}
+      Highlight: {r: 0.33333334, g: 0.33333334, b: 0.33333334, a: 1}
+      Pressed: {r: 0.21960784, g: 0.21960784, b: 0.21960784, a: 0.49803922}
+      Disabled: {r: 0.36078432, g: 0.36078432, b: 0.36078432, a: 0.4}
+      Selected: {r: 0, g: 0.5921569, b: 1, a: 1}
+  m_prefabs: []
 --- !u!114 &5849259614496068631
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5205,10 +5256,24 @@ MonoBehaviour:
       type: 3}
     MaxWindows: 1
     Created: 0
+  m_animationWindow:
+    Icon: {fileID: 21300000, guid: db09905cb4d2c194d82eb81bfe79940e, type: 3}
+    Header: Animation
+    ContentPrefab: {fileID: 8756119970407778076, guid: d3df920c84472c2418b495811e6f5204,
+      type: 3}
+    MaxWindows: 1
+    Created: 0
   m_saveSceneDialog:
     Icon: {fileID: 21300000, guid: e5a00995c2633e046bcc7a83ad24c42e, type: 3}
     Header: Save Scene As ...
     ContentPrefab: {fileID: 1000010003848526, guid: bda63a6b64080df4297f99b8a72d520f,
+      type: 3}
+    MaxWindows: 1
+    Created: 0
+  m_saveAssetDialog:
+    Icon: {fileID: 21300000, guid: e5a00995c2633e046bcc7a83ad24c42e, type: 3}
+    Header: Save Asset As ...
+    ContentPrefab: {fileID: 1000010003848526, guid: feea27e171ca7bb4ea7567726cac5e3f,
       type: 3}
     MaxWindows: 1
     Created: 0
@@ -5261,10 +5326,39 @@ MonoBehaviour:
       type: 3}
     MaxWindows: 1
     Created: 0
-  m_customWindows: []
+  m_selectAnimationPropertiesDialog:
+    Icon: {fileID: 0}
+    Header: Select Properties
+    ContentPrefab: {fileID: 1332217457950486, guid: dd47718b55641fc499209a4fc02e99db,
+      type: 3}
+    MaxWindows: 1
+    Created: 0
+  m_customWindows:
+  - TypeName: importfile
+    IsDialog: 1
+    Descriptor:
+      Icon: {fileID: 21300000, guid: 93e198295d49d7348b9328fcfb88d0cb, type: 3}
+      Header: Import File
+      ContentPrefab: {fileID: 1000010003848526, guid: 24e72d14919037844941c3ffc9aba369,
+        type: 3}
+      MaxWindows: 1
+      Created: 0
+  - TypeName: scenesettings
+    IsDialog: 1
+    Descriptor:
+      Icon: {fileID: 21300000, guid: 89a4e12e4493f6341928b4e2f80ec665, type: 3}
+      Header: Scene Settings
+      ContentPrefab: {fileID: 1332217457950486, guid: ec34abdc89db59e42b4487f79cd8d277,
+        type: 3}
+      MaxWindows: 1
+      Created: 0
   m_dockPanels: {fileID: 111226606771800033}
   m_componentsRoot: {fileID: 5849259612975468223}
   m_toolsRoot: {fileID: 6236831816304581951}
+  m_topBar: {fileID: 0}
+  m_bottomBar: {fileID: 0}
+  m_leftBar: {fileID: 0}
+  m_rightBar: {fileID: 0}
 --- !u!114 &1868234900
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5277,6 +5371,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c7cd5001bd1a34488d31cf39ca787a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_gizmoScale: 1
 --- !u!114 &5849259614496068630
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5301,6 +5396,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f2cbc35edb251049b0589730891cdfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_defaultMaterial: {fileID: 0}
 --- !u!114 &848462208471534376
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5327,22 +5423,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_menu: {fileID: 233234377}
   m_contextMenuArea: {fileID: 5849259612951747679}
---- !u!114 &5849259614496068627
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5849259614496068639}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 302b7c7acc0328f499e38885f86c1aa0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_staticAssetLibraries: {fileID: 0}
-  m_sceneDepsLibrary: 
-  m_builtInLibrary: 
-  m_dynamicPrefabsRoot: {fileID: 0}
 --- !u!114 &5849259614496068636
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5355,18 +5435,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc53d47bdd913364ab588f6a2988559a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &5849259614496068637
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5849259614496068639}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0c313619cbc2924aa7f3e0ffd848850, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &5849259614496068625
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5377,6 +5445,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 07ea087bcd0e3f0418cf1b4d8a6e0d61, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1536991848831767602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5849259614496068639}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65271a532d9a4a347b89851aa25c801f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &5849259614507436825
@@ -5448,7 +5528,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614507436825}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1301386320, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreReversedGraphics: 1
@@ -5465,7 +5545,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614507436825}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1980459831, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_UiScaleMode: 0
@@ -5519,7 +5599,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614521164893}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -619905303, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_FirstSelected: {fileID: 0}
@@ -5534,7 +5614,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614521164893}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1077351063, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 4f231c4fb786f3946a6b90b886c48677, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_HorizontalAxis: Horizontal
@@ -5602,7 +5682,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614669755915}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -5611,8 +5691,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
@@ -5622,6 +5700,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &5849259614669755913
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5631,7 +5710,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614669755915}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
@@ -5659,6 +5738,7 @@ MonoBehaviour:
   m_pointerOverColor: {r: 0, g: 0.5921569, b: 1, a: 0.49803922}
   m_focusedColor: {r: 0, g: 0.5921569, b: 1, a: 1}
   m_normalColor: {r: 1, g: 1, b: 1, a: 0}
+  m_text: {fileID: 0}
 --- !u!114 &8917869522317704742
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5668,7 +5748,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5849259614669755915}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -405508275, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -5682,6 +5762,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!1 &6236831816304581948
 GameObject:
   m_ObjectHideFlags: 0
@@ -5736,7 +5818,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6236831816304581948}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
@@ -5798,7 +5880,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8723887679692684185}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -405508275, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -5812,6 +5894,8 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
 --- !u!114 &1847582012126783132
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5821,7 +5905,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8723887679692684185}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0

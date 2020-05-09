@@ -161,23 +161,62 @@ namespace Battlehub.RTEditor
         }
     }
 
-    public interface IProjectTree
+    public class ProjectTreeContextMenuEventArgs : ProjectTreeEventArgs
     {
-        ProjectItem SelectedFolder
+        public List<MenuItemInfo> MenuItems
         {
             get;
+            private set;
         }
+        
+        public ProjectTreeContextMenuEventArgs(ProjectItem[] projectItems, List<MenuItemInfo> menuItems)
+            : base(projectItems)
+        {
+            MenuItems = menuItems;
+        }
+    }
+
+    public class ProjectTreeCancelEventArgs : ProjectTreeEventArgs
+    {
+        public bool Cancel;
+
+        public ProjectTreeCancelEventArgs(ProjectItem[] items) : base(items)
+        {
+        }
+    }
+
+    public interface IProjectTree
+    {
+        event EventHandler<ItemDataBindingArgs> ItemDataBinding;
+        event EventHandler<SelectionChangedArgs<ProjectItem>> SelectionChanged;
+        event EventHandler<ProjectTreeCancelEventArgs> ItemsDeleting;
+        event EventHandler<ProjectTreeRenamedEventArgs> ItemRenamed;
+        event EventHandler<ProjectTreeEventArgs> ItemsDeleted;
+        event EventHandler<ProjectTreeContextMenuEventArgs> ContextMenu;
+        event EventHandler Destroyed;
+
+        ProjectItem SelectedItem
+        {
+            get;
+            set;
+        }
+
+        void DeleteSelectedItems();
     }
 
     public class ProjectTreeView : RuntimeWindow, IProjectTree
     {
+        public event EventHandler<ItemDataBindingArgs> ItemDataBinding;
         public event EventHandler<SelectionChangedArgs<ProjectItem>> SelectionChanged;
         public event EventHandler<ProjectTreeRenamedEventArgs> ItemRenamed;
-        public event EventHandler<ProjectTreeEventArgs> ItemDeleted;
-        //public event EventHandler<ItemDropArgs> Drop;
+        public event EventHandler<ProjectTreeCancelEventArgs> ItemsDeleting;
+        public event EventHandler<ProjectTreeEventArgs> ItemsDeleted;
+        public event EventHandler<ProjectTreeContextMenuEventArgs> ContextMenu;
+        public event EventHandler Destroyed;
 
         private IProject m_project;
         private IWindowManager m_wm;
+        private ILocalization m_localization;
 
         [SerializeField]
         private GameObject TreeViewPrefab = null;
@@ -187,7 +226,7 @@ namespace Battlehub.RTEditor
         [SerializeField]
         private Sprite ExposedFolderIcon = null;
         private VirtualizingTreeView m_treeView;
-
+  
         public KeyCode RemoveKey = KeyCode.Delete;
         [HideInInspector]
         public bool ShowRootFolder = true;
@@ -205,7 +244,7 @@ namespace Battlehub.RTEditor
             }
         }
       
-        public ProjectItem SelectedFolder
+        public ProjectItem SelectedItem
         {
             get
             {
@@ -290,6 +329,7 @@ namespace Battlehub.RTEditor
 
             m_project = IOC.Resolve<IProject>();
             m_wm = IOC.Resolve<IWindowManager>();
+            m_localization = IOC.Resolve<ILocalization>();
 
             m_treeView = Instantiate(TreeViewPrefab, transform).GetComponent<VirtualizingTreeView>();
             m_treeView.name = "ProjectTreeView";
@@ -322,11 +362,13 @@ namespace Battlehub.RTEditor
             {
                 gameObject.AddComponent<ProjectTreeViewInput>();
             }
+
+            IOC.RegisterFallback<IProjectTree>(this);
         }
 
         protected virtual void Start()
         {
-            IOC.RegisterFallback<IProjectTree>(this);
+            
         }
 
         private void OnItemClick(object sender, ItemArgs e)
@@ -335,32 +377,46 @@ namespace Battlehub.RTEditor
             {
                 IContextMenu menu = IOC.Resolve<IContextMenu>();
 
-                MenuItemInfo createFolder = new MenuItemInfo { Path = "Create Folder" };
+                MenuItemInfo createFolder = new MenuItemInfo { Path = m_localization.GetString("ID_RTEditor_ProjectTreeView_CreateFolder", "Create Folder") };
                 createFolder.Action = new MenuItemEvent();
                 createFolder.Action.AddListener(CreateFolder);
 
-                MenuItemInfo deleteFolder = new MenuItemInfo { Path = "Delete" };
+                MenuItemInfo deleteFolder = new MenuItemInfo { Path = m_localization.GetString("ID_RTEditor_ProjectTreeView_Delete",  "Delete") };
                 deleteFolder.Action = new MenuItemEvent();
                 deleteFolder.Action.AddListener(DeleteFolder);
 
-                MenuItemInfo renameFolder = new MenuItemInfo { Path = "Rename" };
+                MenuItemInfo renameFolder = new MenuItemInfo { Path = m_localization.GetString("ID_RTEditor_ProjectTreeView_Rename", "Rename") };
                 renameFolder.Action = new MenuItemEvent();
                 renameFolder.Action.AddListener(RenameFolder);
 
-                menu.Open(new[] 
+                List<MenuItemInfo> menuItems = new List<MenuItemInfo>
                 {
                     createFolder,
                     deleteFolder,
                     renameFolder
-                });
+                };
+
+                if (ContextMenu != null)
+                {
+                    ProjectTreeContextMenuEventArgs args = new ProjectTreeContextMenuEventArgs(e.Items.OfType<ProjectItem>().ToArray(), menuItems);
+                    ContextMenu(this, args);
+                }
+
+                if(menuItems.Count > 0)
+                {
+                    menu.Open(menuItems.ToArray());
+                }
             }
         }
-
 
         protected override void OnDestroyOverride()
         {
             base.OnDestroyOverride();
             Unsubscribe();
+            if(Destroyed != null)
+            {
+                Destroyed(this, EventArgs.Empty);
+            }
             IOC.UnregisterFallback<IProjectTree>(this);
         }
     
@@ -642,9 +698,9 @@ namespace Battlehub.RTEditor
 
         private void OnItemsRemoved(object sender, ItemsRemovedArgs e)
         {
-            if(ItemDeleted != null)
+            if(ItemsDeleted != null)
             {
-                ItemDeleted(this, new ProjectTreeEventArgs(e.Items.OfType<ProjectItem>().ToArray()));
+                ItemsDeleted(this, new ProjectTreeEventArgs(e.Items.OfType<ProjectItem>().ToArray()));
             }
         }
 
@@ -682,6 +738,11 @@ namespace Battlehub.RTEditor
                 e.CanEdit = !m_project.IsStatic(item) && item.Parent != null;
                 e.CanDrag = !m_project.IsStatic(item) && item.Parent != null;
                 e.HasChildren = item.Children != null && item.Children.Count(projectItem => CanDisplayFolder(projectItem)) > 0;
+            }
+
+            if (ItemDataBinding != null)
+            {
+                ItemDataBinding(this, e);
             }
         }
 
@@ -812,7 +873,7 @@ namespace Battlehub.RTEditor
             ProjectItem folder = new ProjectItem();
 
             string[] existingNames = parentFolder.Children.Where(c => c.IsFolder).Select(c => c.Name).ToArray();
-            folder.Name = m_project.GetUniqueName("Folder", parentFolder.Children == null ? new string[0] : existingNames);
+            folder.Name = m_project.GetUniqueName(m_localization.GetString("ID_RTEditor_ProjectTreeView_Folder", "Folder"), parentFolder.Children == null ? new string[0] : existingNames);
             folder.Children = new List<ProjectItem>();
             parentFolder.AddChild(folder);
 
@@ -824,7 +885,7 @@ namespace Battlehub.RTEditor
 
         private void DeleteFolder(string arg)
         {
-            DeleteSelectedFolders();
+            DeleteSelectedItems();
         }
 
         private void RenameFolder(string arg)
@@ -836,23 +897,38 @@ namespace Battlehub.RTEditor
             }
         }
 
-        public void DeleteSelectedFolders()
+        public void DeleteSelectedItems()
         {
             if (m_treeView.SelectedItem != null)
             {
                 ProjectItem[] projectItems = m_treeView.SelectedItems.OfType<ProjectItem>().ToArray();
+                if(ItemsDeleting != null)
+                {
+                    ProjectTreeCancelEventArgs args = new ProjectTreeCancelEventArgs(projectItems);
+                    ItemsDeleting(this, args);
+                    if(args.Cancel)
+                    {
+                        return;
+                    }
+                }
+
                 if (projectItems.Any(p => p.Parent == null))
                 {
-                    m_wm.MessageBox("Unable to Remove", "Unable to remove root folder");
+                    m_wm.MessageBox(
+                        m_localization.GetString("ID_RTEditor_ProjectTreeView_UnableToRemove", "Unable to remove"),
+                        m_localization.GetString("ID_RTEditor_ProjectTreeView_UnableToRemoveRootFolder", "Unable to remove root folder"));
                 }
                 else
                 {
-                    m_wm.Confirmation("Delete Selected Assets", "You cannot undo this action", (dialog, arg) =>
+                    m_wm.Confirmation(
+                        m_localization.GetString("ID_RTEditor_ProjectTreeView_DeleteSelectedAssets", "Delete selected assets"),
+                        m_localization.GetString("ID_RTEditor_ProjectTreeView_YouCannotUndoThisAction", "You cannot undo this action"), (dialog, arg) =>
                     {
                         m_treeView.RemoveSelectedItems();
                     },
                     (dialog, arg) => { },
-                    "Delete", "Cancel");
+                        m_localization.GetString("ID_RTEditor_ProjectTreeView_Btn_Delete", "Delete"),
+                        m_localization.GetString("ID_RTEditor_ProjectTreeView_Btn_Cancel", "Cancel"));
                 }
             }
         }
@@ -868,7 +944,7 @@ namespace Battlehub.RTEditor
             AddItem(parentFolder, folder, existingNames);
         }
 
-        private  void AddItem(ProjectItem parentFolder, ProjectItem folder, string[] existingNames)
+        private void AddItem(ProjectItem parentFolder, ProjectItem folder, string[] existingNames)
         {
             m_treeView.AddChild(parentFolder, folder);
 
@@ -891,8 +967,8 @@ namespace Battlehub.RTEditor
             m_treeView.ScrollIntoView(folder);
             m_treeView.SelectedItem = folder;
 
-            VirtualizingTreeViewItem treeViewItem = m_treeView.GetTreeViewItem(folder);
-            treeViewItem.IsEditing = true;
+          // VirtualizingTreeViewItem treeViewItem = m_treeView.GetTreeViewItem(folder);
+          // treeViewItem.IsEditing = true;
         }
     }
 }

@@ -1,39 +1,36 @@
 ﻿using ProtoBuf.Meta;
 using System;
 using System.IO;
-using UnityEngine;
-
+using Battlehub.RTSL.Interface;
 namespace Battlehub.RTSL
-{
-    public interface ISerializer
-    {
-        TData DeepClone<TData>(TData data);
-
-        TData Deserialize<TData>(Stream stream);
-
-        TData Deserialize<TData>(byte[] b);
-
-        object Deserialize(Stream stream, Type type);
-
-        void Serialize<TData>(TData data, Stream stream);
-
-        byte[] Serialize<TData>(TData data);
-    }
-  
+{  
     [ProtoBuf.ProtoContract]
     public class NilContainer { }
 
     public class ProtobufSerializer : ISerializer
     {
-#if !UNITY_EDITOR 
-        private static RTSLTypeModel model = new RTSLTypeModel();
-#else
-        private static RuntimeTypeModel model = TypeModelCreator.Create();
-#endif
+        private static TypeModel model;
 
         static ProtobufSerializer()
         {
-            model.UseImplicitZeroDefaults = false;
+#if !UNITY_EDITOR
+            Type type = Type.GetType("RTSLTypeModel, RTSLTypeModel");
+
+            if(type != null)
+            {
+                model = Activator.CreateInstance(type) as TypeModel;
+            }  
+
+            if(model == null)
+            {
+                UnityEngine.Debug.LogError("RTSLTypeModel.dll was not found. Please build type model using Tools->Runtime SaveLoad->Build All menu item from Unity Editor");
+            }
+#endif
+            if (model == null)
+            {
+                model = TypeModelCreator.Create();
+            }
+            
             model.DynamicTypeFormatting += (sender, args) =>
             {
                 if (args.FormattedName == null)
@@ -47,9 +44,13 @@ namespace Battlehub.RTSL
                 }
             };
 
-#if UNITY_EDITOR
-            model.CompileInPlace();
-#endif
+            #if UNITY_EDITOR
+            RuntimeTypeModel runtimeTypeModel = model as RuntimeTypeModel;
+            if(runtimeTypeModel != null)
+            {
+                runtimeTypeModel.CompileInPlace();
+            }      
+            #endif  
         }
 
 
@@ -64,6 +65,14 @@ namespace Battlehub.RTSL
             return deserialized;
         }
 
+        public object Deserialize(byte[] b, Type type)
+        {
+            using (var stream = new MemoryStream(b))
+            {
+                return model.Deserialize(stream, null, type);
+            }
+        }
+
         public object Deserialize(Stream stream, Type type)
         {
             return model.Deserialize(stream, null, type);
@@ -74,6 +83,15 @@ namespace Battlehub.RTSL
             using (var stream = new MemoryStream(b))
             {
                 TData deserialized = (TData)model.Deserialize(stream, null, typeof(TData));
+                return deserialized;
+            }
+        }
+
+        public TData Deserialize<TData>(byte[] b, TData obj)
+        {
+            using (var stream = new MemoryStream(b))
+            {
+                TData deserialized = (TData)model.Deserialize(stream, obj, typeof(TData));
                 return deserialized;
             }
         }

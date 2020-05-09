@@ -23,15 +23,15 @@ namespace Battlehub.RTEditor
         public KeyCode DeleteKey = KeyCode.Delete;
         protected virtual bool SelectAllAction()
         {
-            return Input.GetKeyDown(SelectAllKey) && Input.GetKey(ModifierKey);
+            return m_editor.Input.GetKeyDown(SelectAllKey) && Input.GetKey(ModifierKey);
         }
         protected virtual bool DuplicateAction()
         {
-            return Input.GetKeyDown(DuplicateKey) && Input.GetKey(ModifierKey);
+            return m_editor.Input.GetKeyDown(DuplicateKey) && Input.GetKey(ModifierKey);
         }
         protected virtual bool DeleteAction()
         {
-            return Input.GetKeyDown(DeleteKey);
+            return m_editor.Input.GetKeyDown(DeleteKey);
         }
 
         private T m_window;
@@ -49,7 +49,7 @@ namespace Battlehub.RTEditor
         private IInput m_input;
         protected IInput Input
         {
-            get { return m_input; }
+            get { return m_editor.Input; }
         }
 
         private IWindowManager m_wm;
@@ -58,7 +58,6 @@ namespace Battlehub.RTEditor
         {
             m_window = GetComponent<T>();
             m_editor = m_window.Editor;
-            m_input = m_editor.Input;
             m_wm = IOC.Resolve<IWindowManager>();
             StartOverride();
         }

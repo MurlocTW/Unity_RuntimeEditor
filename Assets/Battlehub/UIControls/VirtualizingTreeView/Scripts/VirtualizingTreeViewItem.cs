@@ -144,8 +144,11 @@ namespace Battlehub.UIControls
                 }
 
                 child.m_treeViewItemData.Indent = parent.m_treeViewItemData.Indent + TreeView.Indent;
-                child.m_itemLayout.padding.left = child.m_treeViewItemData.Indent;
-
+                if(child.m_itemLayout != null && child.m_itemLayout.padding != null)
+                {
+                    child.m_itemLayout.padding.left = child.m_treeViewItemData.Indent;
+                }
+                
                 itemIndex++;
                 SetIndent(child, ref itemIndex);
             }

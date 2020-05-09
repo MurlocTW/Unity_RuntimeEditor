@@ -3,22 +3,40 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Rendering;
 
-using UnityObject = UnityEngine.Object;
 namespace Battlehub.RTCommon
 {
-    public class SpriteGizmoManager : MonoBehaviour
+    public interface ISpriteGizmoManager
     {
-        private static readonly Dictionary<Type, string> m_typeToMaterialName = new Dictionary<Type, string>
+        void Register(Type type, Material material);
+        void Refresh();
+    }
+
+    [DefaultExecutionOrder(-1)]
+    public class SpriteGizmoManager : MonoBehaviour, ISpriteGizmoManager
+    {
+        private readonly Dictionary<Type, string> m_builtIn = new Dictionary<Type, string>
             {
                 {  typeof(Light), "BattlehubLightGizmo" },
                 {  typeof(Camera), "BattlehubCameraGizmo" },
                 {  typeof(AudioSource), "BattlehubAudioSourceGizmo" }
             };
 
-        private static Dictionary<Type, Material> m_typeToMaterial;
-        private static Type[] m_types;
+        private Dictionary<Type, Tuple<Mesh, Material>> m_registered = new Dictionary<Type, Tuple<Mesh, Material>>();
+        private Dictionary<Type, Tuple<Mesh, Material>> m_typeToMeshAndMaterial;
+        private Type[] m_types;
         private IRTE m_editor;
+        private IRTEGraphics m_graphics;
+        private IMeshesCache m_meshesCache;
+  
+        [SerializeField]
+        private float m_gizmoScale = 1;
+        public float GizmoScale
+        {
+            get { return m_gizmoScale; }
+            set { m_gizmoScale = value; }
+        }
 
         private void Awake()
         {
@@ -28,15 +46,17 @@ namespace Battlehub.RTCommon
                 Debug.LogError("RTE is null");
             }
 
-
+            IOC.RegisterFallback<ISpriteGizmoManager>(this);
             AwakeOverride();
         }
 
         private void Start()
         {
-            Cleanup();
-            Initialize();
+            m_graphics = IOC.Resolve<IRTEGraphics>();
+            m_meshesCache = m_graphics.CreateMeshesCache(CameraEvent.BeforeImageEffects);
+            m_meshesCache.RefreshMode = CacheRefreshMode.OnTransformChange;
 
+            Refresh();
             StartOverride();
         }
 
@@ -44,10 +64,14 @@ namespace Battlehub.RTCommon
         {
             Cleanup();
 
-            m_typeToMaterial = null;
+            m_graphics.Destroy(m_meshesCache);
+
+            m_typeToMeshAndMaterial = null;
             m_types = null;
 
             OnDestroyOverride();
+
+            IOC.UnregisterFallback<ISpriteGizmoManager>(this);
         }
 
         protected virtual void AwakeOverride()
@@ -69,11 +93,28 @@ namespace Battlehub.RTCommon
         {
             return types;
         }
-        
+
+        public void Register(Type type, Material material)
+        {
+            if(!material.enableInstancing)
+            {
+                Debug.LogWarning("material enableInstance == false");
+                return;
+            }
+
+            m_registered[type] = new Tuple<Mesh, Material>(GraphicsUtility.CreateQuad(), material);
+        }
+
+        public void Refresh()
+        {
+            Cleanup();
+            Initialize();
+        }
+
         protected virtual void GreateGizmo(GameObject go, Type type)
         {
-            Material material;
-            if (m_typeToMaterial.TryGetValue(type, out material))
+            Tuple<Mesh, Material> tuple;
+            if (m_typeToMeshAndMaterial.TryGetValue(type, out tuple))
             {
                 SpriteGizmo gizmo = go.GetComponent<SpriteGizmo>();
                 if (!gizmo)
@@ -81,7 +122,9 @@ namespace Battlehub.RTCommon
                     gizmo = go.AddComponent<SpriteGizmo>();
                 }
 
-                gizmo.Material = material;
+                gizmo.Mesh = tuple.Item1;
+                m_meshesCache.Add(gizmo.Mesh, gizmo.transform);
+                m_meshesCache.SetMaterial(tuple.Item1, tuple.Item2);
             }
         }
 
@@ -91,6 +134,7 @@ namespace Battlehub.RTCommon
             if (gizmo)
             {
                 Destroy(gizmo);
+                m_meshesCache.Remove(gizmo.Mesh, gizmo.transform);
             }
         }
 
@@ -102,19 +146,32 @@ namespace Battlehub.RTCommon
                 return;
             }
 
-            m_typeToMaterial = new Dictionary<Type, Material>();
-            foreach (KeyValuePair<Type, string> kvp in m_typeToMaterialName)
+            m_typeToMeshAndMaterial = new Dictionary<Type, Tuple<Mesh, Material>>();
+            foreach(KeyValuePair<Type, Tuple<Mesh, Material>> kvp in m_registered)
             {
+                if (kvp.Value != null)
+                {
+                    m_typeToMeshAndMaterial.Add(kvp.Key, kvp.Value);
+                }   
+            }
+
+            foreach (KeyValuePair<Type, string> kvp in m_builtIn)
+            {
+                if(m_typeToMeshAndMaterial.ContainsKey(kvp.Key))
+                {
+                    continue;
+                }
+
                 Material material = Resources.Load<Material>(kvp.Value);
                 if (material != null)
                 {
-                    m_typeToMaterial.Add(kvp.Key, material);
+                    m_typeToMeshAndMaterial.Add(kvp.Key, new Tuple<Mesh, Material>(GraphicsUtility.CreateQuad(), material));
                 }
             }
 
             int index = 0;
-            m_types = new Type[m_typeToMaterial.Count];
-            foreach (Type type in m_typeToMaterial.Keys)
+            m_types = new Type[m_typeToMeshAndMaterial.Count];
+            foreach (Type type in m_typeToMeshAndMaterial.Keys)
             {
                 m_types[index] = type;
                 index++;
@@ -128,7 +185,7 @@ namespace Battlehub.RTCommon
         private void Cleanup()
         {
             m_types = null;
-            m_typeToMaterial = null;
+            m_typeToMeshAndMaterial = null;
             if(m_editor != null)
             {
                 m_editor.IsOpenedChanged -= OnIsOpenedChanged;
@@ -166,6 +223,7 @@ namespace Battlehub.RTCommon
                     }
                 }
 
+                m_meshesCache.Refresh();
                 Subscribe();
             }
             else
@@ -199,6 +257,7 @@ namespace Battlehub.RTCommon
                     GreateGizmo(obj.gameObject, m_types[i]);
                 }
             }
+            m_meshesCache.Refresh();
         }
 
         private void OnDestroyed(ExposeToEditor obj)
@@ -213,5 +272,4 @@ namespace Battlehub.RTCommon
             }
         }
     }
-
 }

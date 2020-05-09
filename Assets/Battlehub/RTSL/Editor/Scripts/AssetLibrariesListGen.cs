@@ -64,7 +64,7 @@ namespace Battlehub.RTSL
 
             AssetLibrariesListAsset asset = Create();
             asset.Identity = identity;
-            
+
             AssetDatabase.DeleteAsset(path);
             AssetDatabase.CreateAsset(asset, path);
             AssetDatabase.SaveAssets();
@@ -83,9 +83,6 @@ namespace Battlehub.RTSL
                 string assetLib = assetLibraries[i];
 
                 assetLib = AssetDatabase.GUIDToAssetPath(assetLib);
-
-                
-                
 
                 if (assetLib.StartsWith("Assets" + RTSLPath.UserRoot + "/" + RTSLPath.LibrariesFolder + "/Resources/Scenes/"))
                 {

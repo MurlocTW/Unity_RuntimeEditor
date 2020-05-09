@@ -72,30 +72,12 @@ namespace Battlehub.RTSL
                 EditorGUILayout.HelpBox("One or more prefabs have been changed. AssetLibrary need to be synchronized.", MessageType.Warning);
                 click = GUILayout.Button("Synchronize");
             }
-           
-            m_projectGUI.OnGUI();
-            m_assetsGUI.OnGUI();
-            
-            //EditorGUI.BeginChangeCheck();
-            //EditorGUILayout.Space();
-           // EditorGUILayout.BeginHorizontal();
-            //Asset.KeepRuntimeProjectInSync = EditorGUILayout.Toggle("Keep in sync", Asset.KeepRuntimeProjectInSync);
-            //EditorGUILayout.EndHorizontal();
-           // if (Asset.KeepRuntimeProjectInSync)
-            //{
-            //    EditorGUILayout.HelpBox("Runtime project tree will be updated each time you launch runtime editor and will reflect all changes in this asset library", MessageType.Info);
-            //}
-           
-            //if(EditorGUI.EndChangeCheck())
-            //{
-            //    SaveAsset();
-            //}
 
+
+            m_projectGUI.OnGUI();
             EditorGUILayout.Space();
-            //EditorGUILayout.BeginHorizontal();
-            //GUILayout.FlexibleSpace();
-            //GUILayout.Button("Create Reference", GUILayout.Width(100));
-            //EditorGUILayout.EndHorizontal();
+            m_assetsGUI.OnGUI();
+            EditorGUILayout.Space();
 
             if (click)
             {
@@ -109,6 +91,8 @@ namespace Battlehub.RTSL
             }
 
             EditorGUILayout.EndVertical();
+
+
         }
 
         private void OnSelectedFoldersChanged(object sender, EventArgs e)

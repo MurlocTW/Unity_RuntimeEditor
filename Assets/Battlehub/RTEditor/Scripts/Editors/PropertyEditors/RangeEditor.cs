@@ -6,7 +6,7 @@ namespace Battlehub.RTEditor
     {
         public float Min;
         public float Max;
-
+        
         public Range(float min, float max)
         {
             Min = min;
@@ -32,16 +32,16 @@ namespace Battlehub.RTEditor
         protected override void StartOverride()
         {
             base.StartOverride();
-            m_slider.minValue = Min;
-            m_slider.maxValue = Max;
+            m_slider.minValue = FromMeters(Min);
+            m_slider.maxValue = FromMeters(Max);
         }
 
         protected override void SetInputField(float value)
         {
             base.SetInputField(value);
-            m_slider.minValue = Min;
-            m_slider.maxValue = Max;
-            m_slider.value = value;
+            m_slider.minValue = FromMeters(Min);
+            m_slider.maxValue = FromMeters(Max);
+            m_slider.value = FromMeters(value);
         }
 
         protected override void OnDestroyOverride()
@@ -66,7 +66,7 @@ namespace Battlehub.RTEditor
             {
                 if(Min <= val && val <= Max)
                 {
-                    SetValue(val);
+                    SetValue(ToMeters(val));
                     m_slider.value = val;
                 }
             }

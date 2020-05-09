@@ -6,6 +6,7 @@ Shader "Battlehub/RTHandles/Models/SSCircleShader"
 	{
 		_Color("Color", Color) = (1, 1, 1, 1) // color
 		_ZTest("ZTest", Float) = 0.0
+		[Enum(Off,0,On,1)]_ZWrite("ZWrite", Float) = 1.0
 	}
 	SubShader
 	{
@@ -17,6 +18,7 @@ Shader "Battlehub/RTHandles/Models/SSCircleShader"
 		{
 			Blend SrcAlpha OneMinusSrcAlpha
 			ZTest[_ZTest]
+			ZWrite[_ZWrite]
 			CGPROGRAM
 
 			#pragma vertex vert

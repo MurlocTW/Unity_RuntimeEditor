@@ -91,7 +91,7 @@ namespace Battlehub.RTCommon
 
         }
 
-        private void OnActiveWindowChanging(RuntimeWindow activatedWindow)
+        protected virtual void OnActiveWindowChanging(RuntimeWindow activatedWindow)
         {
             if(activatedWindow == Window)
             {

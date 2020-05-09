@@ -17,8 +17,7 @@ namespace Battlehub.RTSL
         public static RuntimeTypeModel Create()
         {
             RuntimeTypeModel model = TypeModel.Create();
-            model.UseImplicitZeroDefaults = false;
-
+            
             model.Add(typeof(IntArray), true);
             model.Add(typeof(ProjectItem), true)
                 .AddSubType(1025, typeof(AssetItem));
@@ -82,6 +81,10 @@ namespace Battlehub.RTSL
 
                 model.Add(typeof(List<>).MakeGenericType(type), true);
             }
+
+            //This is special kind of peristent object which can be used to serialize types using reflection. (This is required to serialize objects of type created at runtime for example)
+            model.Add(typeof(PersistentRuntimeSerializableObject), true);
+            model[typeof(PersistentObject)].AddSubType(1024, typeof(PersistentRuntimeSerializableObject));
 
             model.AutoAddMissingTypes = false;
             return model;

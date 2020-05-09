@@ -15,6 +15,10 @@ namespace Battlehub.RTSL
     /// </summary>
     public class CodeGen
     {
+        public static bool InitializeLists = false;
+        public static bool InitializeDictionaries = false;
+        public static bool InitializeHs = false;
+        
         /// <summary>
         /// Automatically generated fields have ProtoMember tag offset = 256. 1 - 256 is reserved for user defined fields.
         /// User defined fields should be located in auto-generated partial class.
@@ -106,6 +110,14 @@ namespace Battlehub.RTSL
         private static readonly string FieldTemplate =
             "[ProtoMember({0})]" + BR + TAB2 +
             "public {1} {2};" + END + TAB2;
+
+        private static readonly string FieldInitializationTemplate =
+            "[ProtoMember({0})]" + BR + TAB2 +
+            "public {1} {2} = new {1}();" + END + TAB2;
+
+        private static readonly string ReplacementFieldInitializationTemplate =
+            "[ProtoMember({0})]" + BR + TAB2 +
+            "public long[] {1} = new long[0];" + END + TAB2;
 
         private static readonly string ReadFromMethodTemplate =
             "protected override void ReadFromImpl(object obj)" + BR + TAB2 +
@@ -248,7 +260,7 @@ namespace Battlehub.RTSL
         /// <returns></returns>
         public static PropertyInfo[] GetProperties(Type type)
         {
-            return GetAllProperties(type).Where(p => p.GetGetMethod() != null && p.GetSetMethod() != null).ToArray();
+            return GetAllProperties(type).Where(p => p.GetGetMethod() != null && p.GetSetMethod() != null /*&& !Reflection.IsDelegate(p.PropertyType)*/).ToArray();
         }
 
         /// <summary>
@@ -259,7 +271,7 @@ namespace Battlehub.RTSL
         public static PropertyInfo[] GetAllProperties(Type type)
         {
             return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                .Where(p => (!p.PropertyType.IsGenericType || IsGenericList(p.PropertyType)) && p.GetIndexParameters().Length == 0).ToArray();
+                .Where(p => (!p.PropertyType.IsGenericType || IsGenericList(p.PropertyType) || IsHashSet(p.PropertyType) || IsDictionary(p.PropertyType)) && p.GetIndexParameters().Length == 0).ToArray();
         }
 
         /// <summary>
@@ -269,14 +281,15 @@ namespace Battlehub.RTSL
         /// <returns></returns>
         public static FieldInfo[] GetFields(Type type)
         {
-            if(type.IsSubclassOf(typeof(MonoBehaviour)))
+            Func<FieldInfo, bool> filter = f => /*!Reflection.IsDelegate(f.FieldType) &&*/ (!f.FieldType.IsGenericType || IsGenericList(f.FieldType) || IsHashSet(f.FieldType) ||  IsDictionary(f.FieldType));
+            if (type.IsSubclassOf(typeof(MonoBehaviour)))
             {
                 return type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Union(
-                    type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(f => (f.FieldType.IsPublic || f.FieldType.IsNestedPublic) && f.GetCustomAttributes(typeof(SerializeField), true).Length > 0)).ToArray();
+                    type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(f => (f.FieldType.IsPublic || f.FieldType.IsNestedPublic) && f.GetCustomAttributes(typeof(SerializeField), true).Length > 0)).Where(filter).ToArray();
             }
 
             return type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Union(
-                    type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(f => f.FieldType.IsPublic || f.FieldType.IsNestedPublic)).ToArray();
+                    type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(f => f.FieldType.IsPublic || f.FieldType.IsNestedPublic)).Where(filter).ToArray();
         }
 
         public static MethodInfo[] GetMethods(Type type)
@@ -290,21 +303,41 @@ namespace Battlehub.RTSL
             return isList;
         }
 
+        public static bool IsHashSet(Type type)
+        {
+            bool isHs = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(HashSet<>);
+            return isHs;
+        }
+
+        public static bool IsDictionary(Type type)
+        {
+            bool isDict = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
+            return isDict;
+        }
+
         /// <summary>
         /// Get type which is not subclass of UnityObject and "suitable" to be persistent object
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static Type GetSurrogateType(Type type)
+        public static Type GetSurrogateType(Type type, int index)
         {
+            if(type == null)
+            {
+                return null;
+            }
+
             if (type.IsArray)
             {
                 type = type.GetElementType();
             }
-
-            if(IsGenericList(type))
+            else if(IsGenericList(type) || IsHashSet(type))
             {
                 type = type.GetGenericArguments()[0];
+            }
+            else if(IsDictionary(type))
+            {
+                type = type.GetGenericArguments()[index];
             }
 
             if (!type.IsSubclassOf(typeof(UnityObject)) &&
@@ -313,6 +346,8 @@ namespace Battlehub.RTSL
                 !type.IsGenericType &&
                 !type.IsArray &&
                 !IsGenericList(type) &&
+                !IsHashSet(type) &&
+                !IsDictionary(type) &&
                 !type.IsPrimitive &&
                 (type.IsPublic || type.IsNestedPublic) &&
                 (type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null) &&
@@ -346,14 +381,23 @@ namespace Battlehub.RTSL
         {
             if (type.IsArray)
             {
-                type = type.GetElementType();
+                return HasDependencies(inspectedTypes, type.GetElementType());
             }
-
-            if(IsGenericList(type))
+            else if (IsGenericList(type) || IsHashSet(type))
             {
-                type = type.GetGenericArguments()[0];
+                return HasDependencies(inspectedTypes, type.GetGenericArguments()[0]);
+            }
+            else if(IsDictionary(type))
+            {
+                Type[] args = type.GetGenericArguments();
+                return HasDependencies(inspectedTypes, args[0]) || HasDependencies(inspectedTypes, args[1]);
             }
 
+            return HasDependencies(inspectedTypes, type);
+        }
+
+        private bool HasDependencies(HashSet<Type> inspectedTypes, Type type)
+        {
             if (inspectedTypes.Contains(type))
             {
                 return false;
@@ -361,7 +405,7 @@ namespace Battlehub.RTSL
 
             inspectedTypes.Add(type);
 
-            if(type.IsSubclassOf(typeof(UnityEventBase)))
+            if (type.IsSubclassOf(typeof(UnityEventBase)))
             {
                 return true;
             }
@@ -393,14 +437,23 @@ namespace Battlehub.RTSL
         {
             if (type.IsArray)
             {
-                type = type.GetElementType();
+                return HasDependenciesRecursive(inspectedTypes, type.GetElementType());
             }
-
-            if (IsGenericList(type))
+            else if (IsGenericList(type) || IsHashSet(type))
             {
-                type = type.GetGenericArguments()[0];
+                return HasDependenciesRecursive(inspectedTypes, type.GetGenericArguments()[0]);
+            }
+            else if (IsDictionary(type))
+            {
+                Type[] args = type.GetGenericArguments();
+                return HasDependenciesRecursive(inspectedTypes, args[0]) || HasDependenciesRecursive(inspectedTypes, args[1]);
             }
 
+            return HasDependenciesRecursive(inspectedTypes, type);
+        }
+
+        private bool HasDependenciesRecursive(HashSet<Type> inspectedTypes, Type type)
+        {
             if (type.IsSubclassOf(typeof(UnityObject)))
             {
                 return true;
@@ -411,11 +464,23 @@ namespace Battlehub.RTSL
                 return true;
             }
 
-            Type surrogateType = GetSurrogateType(type);
-            if (surrogateType != null)
+            if (IsDictionary(type))
             {
-                return HasDependencies(surrogateType, inspectedTypes);
+                Type surrogateType0 = GetSurrogateType(type, 0);
+                Type surrogateType1 = GetSurrogateType(type, 1);
+
+                return surrogateType0 != null && HasDependencies(surrogateType0, inspectedTypes) ||
+                       surrogateType1 != null && HasDependencies(surrogateType1, inspectedTypes);
             }
+            else
+            {
+                Type surrogateType = GetSurrogateType(type, 0);
+                if (surrogateType != null)
+                {
+                    return HasDependencies(surrogateType, inspectedTypes);
+                }
+            }
+
             return false;
         }
 
@@ -426,6 +491,17 @@ namespace Battlehub.RTSL
         /// <returns></returns>
         public static string TypeName(Type type)
         {
+            if(type.IsArray)
+            {
+                Type elementType = type.GetElementType();
+                if(elementType.DeclaringType == null)
+                {
+                    return _TypeName(type);
+                }
+
+                return TypeName(elementType.DeclaringType) + "+" + _TypeName(type);
+            }
+
             if (type.DeclaringType == null)
             {
                 return _TypeName(type);
@@ -443,9 +519,9 @@ namespace Battlehub.RTSL
                 name = Regex.Replace(name, @", Culture=\w+", string.Empty);
                 name = Regex.Replace(name, @", PublicKeyToken=\w+", string.Empty);
                 
-                if (!string.IsNullOrEmpty(type.Namespace))
+                if (!string.IsNullOrEmpty(Namespace(type)))
                 {
-                    name = name.Remove(0, type.Namespace.Length + 1);
+                    name = name.Remove(0, Namespace(type).Length + 1);
                 }
                 return name;
             }
@@ -466,6 +542,29 @@ namespace Battlehub.RTSL
             return FullTypeName(type.DeclaringType) + "+" + _TypeName(type);
         }
 
+        private string DictionaryPersistentArgTypeName(Type type)
+        {
+            string argTypeName;
+            if (type.IsSubclassOf(typeof(UnityObject)))
+            {
+                argTypeName = PrepareMappedTypeName(TypeName(type));
+            }
+            else if (!m_primitiveNames.TryGetValue(type, out argTypeName))
+            {
+                argTypeName = "Persistent" + PreparePersistentTypeName(TypeName(type));
+            }
+           
+            return argTypeName;
+        }
+
+        private string DictionaryMappedArgTypeName(Type type)
+        {
+            if (!m_primitiveNames.TryGetValue(type, out string argTypeName))
+            {
+                argTypeName = PrepareMappedTypeName(TypeName(type));
+            }
+            return argTypeName;
+        }
 
         public string PreparePersistentTypeName(string typeName)
         {
@@ -625,7 +724,7 @@ namespace Battlehub.RTSL
                     //sb.AppendFormat(AddTypeTemplate, PreparePersistentTypeName(mapping.PersistentTypeName), "true", endOfLine + SEMICOLON + BR + TAB3);
                     sb.AppendFormat(AddTypeTemplate, PreparePersistentTypeName(mapping.PersistentFullTypeName), "true", endOfLine + SEMICOLON + BR + TAB3);
 
-                    if (GetSurrogateType(mappingType) != null)
+                    if (GetSurrogateType(mappingType, 0) != null)
                     {
                         if (!mappingType.IsSubclassOf(typeof(UnityEventBase)))
                         {
@@ -780,11 +879,80 @@ namespace Battlehub.RTSL
                 }
 
                 string typeName = GetTypeName(prop);
+                int tag = prop.PersistentTag - 1;
+                if (InitializeLists && IsGenericList(prop.MappedType) || InitializeHs && IsHashSet(prop.MappedType))
+                {
+                    Type replacementType = GetReplacementType(prop.MappedType);
+                    if (replacementType == null)
+                    {
+                        sb.AppendFormat(
+                            FieldInitializationTemplate, tag + AutoFieldTagOffset,
+                            typeName,
+                            prop.PersistentName);
+                    }
+                    else if(replacementType == typeof(long[]))
+                    {
+                        sb.AppendFormat(
+                            ReplacementFieldInitializationTemplate, tag + AutoFieldTagOffset,
+                            prop.PersistentName);
+                    }
+                }
+                else
+                {
+                    if(IsDictionary(prop.MappedType))
+                    {
+                        string fieldTemplate;
+                        if (InitializeDictionaries)
+                        {
+                            fieldTemplate = FieldInitializationTemplate;
+                        }
+                        else
+                        {
+                            fieldTemplate = FieldTemplate;
+                        }
 
-                sb.AppendFormat(
-                    FieldTemplate, i + AutoFieldTagOffset,
-                    typeName,
-                    prop.PersistentName);
+
+                        Type[] args = prop.MappedType.GetGenericArguments();
+                        Type t0 = GetReplacementType(args[0]);
+                        Type t1 = GetReplacementType(args[1]);
+                        if(t0 != null && t1 != null)
+                        {
+                            sb.AppendFormat(
+                                fieldTemplate, tag + AutoFieldTagOffset,
+                                "Dictionary<long, long>",
+                                prop.PersistentName);
+                        }
+                        else if(t0 != null)
+                        {
+
+                            sb.AppendFormat(
+                                fieldTemplate, tag + AutoFieldTagOffset,
+                                string.Format("Dictionary<long, {0}>", DictionaryPersistentArgTypeName(args[1])),
+                                prop.PersistentName);
+                        }
+                        else if(t1 != null)
+                        {
+                            sb.AppendFormat(
+                                fieldTemplate, tag + AutoFieldTagOffset,
+                                string.Format("Dictionary<{0}, long>", DictionaryPersistentArgTypeName(args[0])),
+                                prop.PersistentName);
+                        }
+                        else
+                        {
+                            sb.AppendFormat(
+                                fieldTemplate, tag + AutoFieldTagOffset,
+                                string.Format("Dictionary<{0}, {1}>", DictionaryPersistentArgTypeName(args[0]), DictionaryPersistentArgTypeName(args[1])),
+                                prop.PersistentName);
+                        }
+                    }
+                    else
+                    {
+                        sb.AppendFormat(
+                            FieldTemplate, tag + AutoFieldTagOffset,
+                            typeName,
+                            prop.PersistentName);
+                    }
+                }
             }
 
             string readMethodBody = CreateReadMethodBody(mapping);
@@ -792,17 +960,13 @@ namespace Battlehub.RTSL
             string getDepsMethodBody = CreateDepsMethodBody(mapping);
             string getDepsFromMethodBody = CreateDepsFromMethodBody(mapping);
 
-            string mappedTypeName = PrepareMappedTypeName(mapping.MappedTypeName);
-            if (mappedTypeName == "Object")
-            {
-                mappedTypeName = "UnityObject";
-            }
+            string mappedTypeName = ToMappedTypeName(mapping);
 
             if (!string.IsNullOrEmpty(readMethodBody))
             {
                 sb.AppendFormat(ReadFromMethodTemplate, readMethodBody, mappedTypeName);
             }
-        
+
             if (!string.IsNullOrEmpty(writeMethodBody))
             {
                 sb.Append(BR + TAB2);
@@ -821,22 +985,34 @@ namespace Battlehub.RTSL
             }
 
             Type mappingType = Type.GetType(mapping.MappedAssemblyQualifiedName);
-            if(mappingType != null)
+            if (mappingType != null)
             {
                 if (mappingType.GetConstructor(Type.EmptyTypes) != null || mappingType.IsValueType)
                 {
-                    if(!mappingType.IsSubclassOf(typeof(UnityObject)))
+                    if (!mappingType.IsSubclassOf(typeof(UnityObject)))
                     {
                         sb.Append(BR + TAB2);
                         sb.AppendFormat(ImplicitOperatorsTemplate, mappedTypeName, PreparePersistentTypeName(mapping.PersistentTypeName));
                     }
                 }
             }
-          
+
             return sb.ToString();
         }
 
-        private string GetTypeName(PersistentPropertyMapping prop, bool useReplacementType = true)
+        private string ToMappedTypeName(PersistentClassMapping mapping)
+        {
+            string mappedTypeName = PrepareMappedTypeName(mapping.MappedTypeName);
+            if (mappedTypeName == "Object")
+            {
+                mappedTypeName = "UnityObject";
+            }
+
+            return mappedTypeName;
+        }
+
+      
+        private string GetTypeName(PersistentPropertyMapping prop, bool useReplacementType = true, bool forceMappedTypeName = false)
         {
             string typeName;
             Type repacementType = GetReplacementType(prop.MappedType);
@@ -864,25 +1040,23 @@ namespace Battlehub.RTSL
                     if (IsGenericList(prop.MappedType))
                     {
                         Type argType = prop.MappedType.GetGenericArguments()[0];
-                        if (m_primitiveNames.TryGetValue(argType, out primitiveTypeName))
-                        {
-                            typeName = string.Format("List<{0}>", primitiveTypeName);
-                        }
-                        else
-                        {
-                            if (prop.UseSurrogate)
-                            {
-                                typeName = string.Format("List<Persistent{0}>", PreparePersistentTypeName(TypeName(argType)));
-                            }
-                            else
-                            {
-                                typeName = string.Format("List<{0}>", PrepareMappedTypeName(FullTypeName(argType)));
-                            }
-                        }
+                        typeName = string.Format("List<{0}>", GetArgName(prop, argType, forceMappedTypeName));
+                    }
+                    else if (IsHashSet(prop.MappedType))
+                    {
+                        Type argType = prop.MappedType.GetGenericArguments()[0];
+                        typeName = string.Format("HashSet<{0}>", GetArgName(prop, argType, forceMappedTypeName));
+                    }
+                    else if(IsDictionary(prop.MappedType))
+                    {
+                        Type[] args = prop.MappedType.GetGenericArguments();
+                        typeName = string.Format("Dictionary<{0},{1}>", 
+                            GetArgName(prop, args[0], forceMappedTypeName),
+                            GetArgName(prop, args[1], forceMappedTypeName));
                     }
                     else
                     {
-                        if (prop.UseSurrogate)
+                        if (prop.UseSurrogate && !forceMappedTypeName)
                         {
                             typeName = "Persistent" + PreparePersistentTypeName(prop.PersistentTypeName);
                         }
@@ -891,17 +1065,32 @@ namespace Battlehub.RTSL
                             typeName = PrepareMappedTypeName(prop.MappedTypeName);
                         }
                     }
-
                 }
             }
 
             return typeName;
         }
 
+        private string GetArgName(PersistentPropertyMapping prop, Type type, bool forceMappedTypeName)
+        {
+            string primitiveTypeName;
+            if (m_primitiveNames.TryGetValue(type, out primitiveTypeName))
+            {
+                return primitiveTypeName;
+            }
+
+            if (prop.UseSurrogate && !forceMappedTypeName)
+            {
+                return string.Format("Persistent{0}", PreparePersistentTypeName(TypeName(type)));
+            }
+
+            return PrepareMappedTypeName(FullTypeName(type));
+        }
+
         private string CreateReadMethodBody(PersistentClassMapping mapping)
         {
             StringBuilder sb = new StringBuilder();
-
+            string mappedTypeName = ToMappedTypeName(mapping);
             for (int i = 0; i < mapping.PropertyMappings.Length; ++i)
             {
                 PersistentPropertyMapping prop = mapping.PropertyMappings[i];
@@ -920,42 +1109,72 @@ namespace Battlehub.RTSL
                 string get = "uo.{1}";
                 if(prop.IsNonPublic)
                 {
-                    get = "GetPrivate<" + GetTypeName(prop, false) + ">(uo, \"{1}\")";
+                    get = "GetPrivate<" + mappedTypeName + "," + GetTypeName(prop, false, true) + ">(uo, \"{1}\")";
                 }
 
-                
-                if(prop.MappedType.IsSubclassOf(typeof(UnityObject)) ||
-                   prop.MappedType.IsArray && prop.MappedType.GetElementType().IsSubclassOf(typeof(UnityObject)) || 
-                   IsGenericList(prop.MappedType) && prop.MappedType.GetGenericArguments()[0].IsSubclassOf(typeof(UnityObject)))
+                if(IsDictionary(prop.MappedType))
                 {
-                    //generate code which will convert unity object to identifier
-                    sb.AppendFormat("{0} = ToID(" + get + ");", prop.PersistentName, prop.MappedName);
+                    Type[] args = prop.MappedType.GetGenericArguments();
+                    bool isArg0UnityObj = args[0].IsSubclassOf(typeof(UnityObject));
+                    bool isArg1UnityObj = args[1].IsSubclassOf(typeof(UnityObject));
+                    if(isArg0UnityObj || isArg1UnityObj)
+                    {
+                        if(isArg0UnityObj && isArg1UnityObj)
+                        {
+                            sb.AppendFormat("{0} = ToID(" + get + ");", prop.PersistentName, prop.MappedName);
+                        }
+                        else if(isArg0UnityObj)
+                        {
+                            sb.AppendFormat("{0} = ToID(" + get + ", v_ => ({2})v_);", prop.PersistentName, prop.MappedName,
+                                DictionaryPersistentArgTypeName(args[1]));
+                        }
+                        else
+                        {
+                            sb.AppendFormat("{0} = ToID(" + get + ", k_ => ({2})k_);", prop.PersistentName, prop.MappedName,
+                                DictionaryPersistentArgTypeName(args[0]));
+                        }
+                    }
+                    else
+                    {
+                        sb.AppendFormat("{0} = Assign(" + get + ", k_ => ({2})k_, v_ => ({3})v_);", 
+                            prop.PersistentName, prop.MappedName,
+                            DictionaryPersistentArgTypeName(args[0]),
+                            DictionaryPersistentArgTypeName(args[1]));
+                    }
                 }
                 else
                 {
-                    if (prop.UseSurrogate)
+                    if (prop.MappedType.IsSubclassOf(typeof(UnityObject)) ||
+                        prop.MappedType.IsArray && prop.MappedType.GetElementType().IsSubclassOf(typeof(UnityObject)) ||
+                        (IsGenericList(prop.MappedType) || IsHashSet(prop.MappedType)) && prop.MappedType.GetGenericArguments()[0].IsSubclassOf(typeof(UnityObject)))
                     {
-                        if (IsGenericList(prop.MappedType))
+                        //generate code which will convert unity object to identifier
+                        sb.AppendFormat("{0} = ToID(" + get + ");", prop.PersistentName, prop.MappedName);
+                    }
+                    else
+                    {
+                        if (prop.UseSurrogate)
                         {
-                            //sb.AppendFormat("{0} = Assign(" + get + ", v_ => ({2})v_);", prop.PersistentName, prop.MappedName, PreparePersistentTypeName("Persistent" +  prop.MappedType.GetGenericArguments()[0].Name));
-                            sb.AppendFormat("{0} = Assign(" + get + ", v_ => ({2})v_);", prop.PersistentName, prop.MappedName, PreparePersistentTypeName("Persistent" + TypeName(prop.MappedType.GetGenericArguments()[0])));
-                        }
-                        else if(prop.MappedType.IsArray)
-                        {
-                            //sb.AppendFormat("{0} = Assign(" + get + ", v_ => ({2})v_);", prop.PersistentName, prop.MappedName, PreparePersistentTypeName("Persistent" + prop.MappedType.GetElementType().Name));
-                            sb.AppendFormat("{0} = Assign(" + get + ", v_ => ({2})v_);", prop.PersistentName, prop.MappedName, PreparePersistentTypeName("Persistent" + TypeName(prop.MappedType.GetElementType())));
+                            if (IsGenericList(prop.MappedType) || IsHashSet(prop.MappedType))
+                            {
+                                sb.AppendFormat("{0} = Assign(" + get + ", v_ => ({2})v_);", prop.PersistentName, prop.MappedName, PreparePersistentTypeName("Persistent" + TypeName(prop.MappedType.GetGenericArguments()[0])));
+                            }
+                            else if (prop.MappedType.IsArray)
+                            {
+                                sb.AppendFormat("{0} = Assign(" + get + ", v_ => ({2})v_);", prop.PersistentName, prop.MappedName, PreparePersistentTypeName("Persistent" + TypeName(prop.MappedType.GetElementType())));
+                            }
+                            else
+                            {
+                                sb.AppendFormat("{0} = " + get + ";", prop.PersistentName, prop.MappedName);
+                            }
                         }
                         else
                         {
                             sb.AppendFormat("{0} = " + get + ";", prop.PersistentName, prop.MappedName);
                         }
                     }
-                    else
-                    {
-                        sb.AppendFormat("{0} = " + get + ";", prop.PersistentName, prop.MappedName);
-                    }
                 }
-
+                
                 sb.Append(BR + TAB2);
             }
 
@@ -965,6 +1184,7 @@ namespace Battlehub.RTSL
         private string CreateWriteMethodBody(PersistentClassMapping mapping)
         {
             StringBuilder sb = new StringBuilder();
+            string mappedTypeName = ToMappedTypeName(mapping);
 
             for (int i = 0; i < mapping.PropertyMappings.Length; ++i)
             {
@@ -983,57 +1203,128 @@ namespace Battlehub.RTSL
                 string get = "uo.{0}";
                 if (prop.IsNonPublic)
                 {
-                    get = "GetPrivate<" + GetTypeName(prop, false) + ">(uo, \"{0}\")";
+                    get = "GetPrivate<" + mappedTypeName + "," + GetTypeName(prop, false, true) + ">(uo, \"{0}\")";
                 }
 
-                if (prop.MappedType.IsSubclassOf(typeof(UnityObject)) || 
-                    prop.MappedType.IsArray && prop.MappedType.GetElementType().IsSubclassOf(typeof(UnityObject)) ||
-                    IsGenericList(prop.MappedType) && prop.MappedType.GetGenericArguments()[0].IsSubclassOf(typeof(UnityObject)))
+                if(IsDictionary(prop.MappedType))
                 {
-                    //generate code which will convert identifier to unity object
-
-                    //Type mappedType = prop.MappedType.IsArray ? prop.MappedType.GetElementType() : prop.MappedType;
-                    //sb.AppendFormat("uo.{0} = FromID<{2}>({1}, uo.{0});", prop.MappedName, prop.PersistentName, PrepareMappedTypeName(mappedType.Name));
-                    if (prop.IsNonPublic)
+                    Type[] args = prop.MappedType.GetGenericArguments();
+                    bool isArg0UnityObj = args[0].IsSubclassOf(typeof(UnityObject));
+                    bool isArg1UnityObj = args[1].IsSubclassOf(typeof(UnityObject));
+                    if (isArg0UnityObj || isArg1UnityObj)
                     {
-                        sb.AppendFormat("SetPrivate(uo, \"{0}\", FromID({1}, " + get + "));", prop.MappedName, prop.PersistentName);
+                        if (isArg0UnityObj && isArg1UnityObj)
+                        {
+                            if (prop.IsNonPublic)
+                            {
+                                sb.AppendFormat("SetPrivate(uo, \"{0}\", FromID({1}, " + get + "));", prop.MappedName, prop.PersistentName);
+                            }
+                            else
+                            {
+                                sb.AppendFormat("uo.{0} = FromID({1}, " + get + ");", prop.MappedName, prop.PersistentName);
+                            }
+                        }
+                        else if (isArg0UnityObj)
+                        {
+                            if (prop.IsNonPublic)
+                            {
+                                sb.AppendFormat("SetPrivate(uo, \"{0}\", FromID({1}, v_ => ({2})v_, " + get + "));",
+                                    prop.MappedName, prop.PersistentName,
+                                    DictionaryMappedArgTypeName(args[1]));
+                            }
+                            else
+                            {
+                                sb.AppendFormat("uo.{0} = FromID({1}, v_ => ({2})v_, " + get + ");",
+                                    prop.MappedName, prop.PersistentName,
+                                    DictionaryMappedArgTypeName(args[1]));
+                            }
+                        }
+                        else
+                        {
+                            if (prop.IsNonPublic)
+                            {
+                                sb.AppendFormat("SetPrivate(uo, \"{0}\", FromID({1}, k_ => ({2})k_, " + get + "));",
+                                    prop.MappedName, prop.PersistentName,
+                                    DictionaryMappedArgTypeName(args[0]));
+                            }
+                            else
+                            {
+                                sb.AppendFormat("uo.{0} = FromID({1}, k_ => ({2})k_, " + get + ");",
+                                    prop.MappedName, prop.PersistentName,
+                                    DictionaryMappedArgTypeName(args[0]));
+                            }
+                        }
                     }
                     else
                     {
-                        sb.AppendFormat("uo.{0} = FromID({1}, " + get + ");", prop.MappedName, prop.PersistentName);
+                        if (prop.IsNonPublic)
+                        {
+                            sb.AppendFormat("SetPrivate(uo, \"{0}\", Assign({1}, k_ => ({2})k_, v_ => ({3})v_));", 
+                                prop.MappedName, prop.PersistentName,
+                                DictionaryMappedArgTypeName(args[0]),
+                                DictionaryMappedArgTypeName(args[1]));
+                        }
+                        else
+                        {
+                            sb.AppendFormat("uo.{0} = Assign({1}, k_ => ({2})k_, v_ => ({3})v_);", 
+                                prop.MappedName, prop.PersistentName,
+                                DictionaryMappedArgTypeName(args[0]),
+                                DictionaryMappedArgTypeName(args[1]));
+                        }
                     }
                 }
                 else
                 {
-                    if (prop.UseSurrogate)
+                    if (prop.MappedType.IsSubclassOf(typeof(UnityObject)) ||
+                        prop.MappedType.IsArray && prop.MappedType.GetElementType().IsSubclassOf(typeof(UnityObject)) ||
+                        (IsGenericList(prop.MappedType) || IsHashSet(prop.MappedType)) && prop.MappedType.GetGenericArguments()[0].IsSubclassOf(typeof(UnityObject)))
                     {
-                        if (IsGenericList(prop.MappedType))
+                        if (prop.IsNonPublic)
                         {
-                            if (prop.IsNonPublic)
-                            {
-                                //sb.AppendFormat("SetPrivate(uo, \"{0}\", Assign({1}, v_ => ({2})v_));", prop.MappedName, prop.PersistentName, prop.MappedType.GetGenericArguments()[0].Name);
-                                sb.AppendFormat("SetPrivate(uo, \"{0}\", Assign({1}, v_ => ({2})v_));", prop.MappedName, prop.PersistentName, PrepareMappedTypeName(TypeName(prop.MappedType.GetGenericArguments()[0])));
-                            }
-                            else
-                            {
-                                //sb.AppendFormat("uo.{0} = Assign({1}, v_ => ({2})v_);", prop.MappedName, prop.PersistentName, prop.MappedType.GetGenericArguments()[0].Name);
-                                sb.AppendFormat("uo.{0} = Assign({1}, v_ => ({2})v_);", prop.MappedName, prop.PersistentName, PrepareMappedTypeName(TypeName(prop.MappedType.GetGenericArguments()[0])));
-                            }
+                            sb.AppendFormat("SetPrivate(uo, \"{0}\", FromID({1}, " + get + "));", prop.MappedName, prop.PersistentName);
                         }
-                        else if (prop.MappedType.IsArray)
+                        else
                         {
-                            if (prop.IsNonPublic)
+                            sb.AppendFormat("uo.{0} = FromID({1}, " + get + ");", prop.MappedName, prop.PersistentName);
+                        }
+                    }
+                    else
+                    {
+                        if (prop.UseSurrogate)
+                        {
+                            if (IsGenericList(prop.MappedType) || IsHashSet(prop.MappedType))
                             {
-                                //sb.AppendFormat("SetPrivate(uo, \"{0}\", Assign({1}, v_ => ({2})v_));", prop.MappedName, prop.PersistentName, prop.MappedType.GetElementType().Name);
-                                sb.AppendFormat("SetPrivate(uo, \"{0}\", Assign({1}, v_ => ({2})v_));", prop.MappedName, prop.PersistentName, PrepareMappedTypeName(TypeName(prop.MappedType.GetElementType())));
+                                if (prop.IsNonPublic)
+                                {
+                                    sb.AppendFormat("SetPrivate(uo, \"{0}\", Assign({1}, v_ => ({2})v_));", prop.MappedName, prop.PersistentName, PrepareMappedTypeName(TypeName(prop.MappedType.GetGenericArguments()[0])));
+                                }
+                                else
+                                {
+                                    sb.AppendFormat("uo.{0} = Assign({1}, v_ => ({2})v_);", prop.MappedName, prop.PersistentName, PrepareMappedTypeName(TypeName(prop.MappedType.GetGenericArguments()[0])));
+                                }
+                            }
+                            else if (prop.MappedType.IsArray)
+                            {
+                                if (prop.IsNonPublic)
+                                {
+                                    sb.AppendFormat("SetPrivate(uo, \"{0}\", Assign({1}, v_ => ({2})v_));", prop.MappedName, prop.PersistentName, PrepareMappedTypeName(TypeName(prop.MappedType.GetElementType())));
+                                }
+                                else
+                                {
+                                    sb.AppendFormat("uo.{0} = Assign({1}, v_ => ({2})v_);", prop.MappedName, prop.PersistentName, PrepareMappedTypeName(TypeName(prop.MappedType.GetElementType())));
+                                }
                             }
                             else
                             {
-                                //sb.AppendFormat("uo.{0} = Assign({1}, v_ => ({2})v_);", prop.MappedName, prop.PersistentName, prop.MappedType.GetElementType().Name);
-                                sb.AppendFormat("uo.{0} = Assign({1}, v_ => ({2})v_);", prop.MappedName, prop.PersistentName, PrepareMappedTypeName(TypeName(prop.MappedType.GetElementType())));
+                                if (prop.IsNonPublic)
+                                {
+                                    sb.AppendFormat("SetPrivate<{0}, {1}>(uo, \"{2}\", {3});", mappedTypeName, GetTypeName(prop, false, true), prop.MappedName, prop.PersistentName);
+                                }
+                                else
+                                {
+                                    sb.AppendFormat("uo.{0} = {1};", prop.MappedName, prop.PersistentName);
+                                }
                             }
-
-                            
                         }
                         else
                         {
@@ -1047,18 +1338,6 @@ namespace Battlehub.RTSL
                             }
                         }
                     }
-                    else
-                    {
-                        if (prop.IsNonPublic)
-                        {
-                            sb.AppendFormat("SetPrivate(uo, \"{0}\", {1});", prop.MappedName, prop.PersistentName);
-                        }
-                        else
-                        {
-                            sb.AppendFormat("uo.{0} = {1};", prop.MappedName, prop.PersistentName);
-                        }
-                    }
-                    
                 }
 
                 sb.Append(BR + TAB2);
@@ -1089,19 +1368,40 @@ namespace Battlehub.RTSL
 
                 if (prop.HasDependenciesOrIsDependencyItself)
                 {
-                    if (prop.UseSurrogate)
+                    if(IsDictionary(prop.MappedType))
                     {
-                        sb.Append(TAB);
-                        sb.AppendFormat("AddSurrogateDeps({0}, context);", prop.PersistentName);
-                        sb.Append(BR + TAB2);
+                        Type[] args = prop.MappedType.GetGenericArguments();
+                        bool isArg0UnityObj = args[0].IsSubclassOf(typeof(UnityObject));
+                        bool isArg1UnityObj = args[1].IsSubclassOf(typeof(UnityObject));
+                        if(isArg0UnityObj && isArg1UnityObj)
+                        {
+                            sb.Append(TAB);
+                            sb.AppendFormat("AddDep({0}, context);", prop.PersistentName);
+                            sb.Append(BR + TAB2);
+                        }
+                        else
+                        {
+                            sb.Append(TAB);
+                            sb.AppendFormat("AddSurrogateDeps({0}, context);", prop.PersistentName);
+                            sb.Append(BR + TAB2);
+                        }
                     }
-                    else if (prop.MappedType.IsSubclassOf(typeof(UnityObject)) ||
-                        prop.MappedType.IsArray && prop.MappedType.GetElementType().IsSubclassOf(typeof(UnityObject)) ||
-                        IsGenericList(prop.MappedType) && prop.MappedType.GetGenericArguments()[0].IsSubclassOf(typeof(UnityObject)))
+                    else
                     {
-                        sb.Append(TAB);
-                        sb.AppendFormat("AddDep({0}, context);", prop.PersistentName);
-                        sb.Append(BR + TAB2);
+                        if (prop.UseSurrogate)
+                        {
+                            sb.Append(TAB);
+                            sb.AppendFormat("AddSurrogateDeps({0}, context);", prop.PersistentName);
+                            sb.Append(BR + TAB2);
+                        }
+                        else if (prop.MappedType.IsSubclassOf(typeof(UnityObject)) ||
+                            prop.MappedType.IsArray && prop.MappedType.GetElementType().IsSubclassOf(typeof(UnityObject)) ||
+                            (IsGenericList(prop.MappedType) || IsHashSet(prop.MappedType)) && prop.MappedType.GetGenericArguments()[0].IsSubclassOf(typeof(UnityObject)))
+                        {
+                            sb.Append(TAB);
+                            sb.AppendFormat("AddDep({0}, context);", prop.PersistentName);
+                            sb.Append(BR + TAB2);
+                        }
                     }
                 }    
             }
@@ -1116,6 +1416,8 @@ namespace Battlehub.RTSL
         private string CreateDepsFromMethodBody(PersistentClassMapping mapping)
         {
             StringBuilder sb = new StringBuilder();
+            string mappedTypeName = ToMappedTypeName(mapping);
+
             for (int i = 0; i < mapping.PropertyMappings.Length; ++i)
             {
                 PersistentPropertyMapping prop = mapping.PropertyMappings[i];
@@ -1132,41 +1434,64 @@ namespace Battlehub.RTSL
                     string get = "uo.{0}";
                     if (prop.IsNonPublic)
                     {
-                        get = "GetPrivate<" + GetTypeName(prop, false) + ">(uo, \"{0}\")";
+                        get = "GetPrivate<" + mappedTypeName + "," + GetTypeName(prop, false, true) + ">(uo, \"{0}\")";
                     }
 
-                    if (prop.UseSurrogate)
+                    if (IsDictionary(prop.MappedType))
                     {
-                        sb.Append(TAB);
-
-                        string persistentTypeName;
-                        if(prop.MappedType != null && IsGenericList(prop.MappedType))
+                        Type[] args = prop.MappedType.GetGenericArguments();
+                        bool isArg0UnityObj = args[0].IsSubclassOf(typeof(UnityObject));
+                        bool isArg1UnityObj = args[1].IsSubclassOf(typeof(UnityObject));
+                        if (isArg0UnityObj && isArg1UnityObj)
                         {
-                            Type type = prop.MappedType.GetGenericArguments()[0];
-                            //persistentTypeName = PreparePersistentTypeName("Persistent" + type.Name);
-                            persistentTypeName = PreparePersistentTypeName("Persistent" + TypeName(type));
-                        }
-                        else if(prop.MappedType != null && prop.MappedType.IsArray)
-                        {
-                            Type type = prop.MappedType.GetElementType();
-                            //persistentTypeName = PreparePersistentTypeName("Persistent" + type.Name);
-                            persistentTypeName = PreparePersistentTypeName("Persistent" + TypeName(type));
+                            sb.Append(TAB);
+                            sb.AppendFormat("AddDep(" + get + ", context);", prop.MappedName);
+                            sb.Append(BR + TAB2);
                         }
                         else
                         {
-                            persistentTypeName = PreparePersistentTypeName("Persistent" + prop.PersistentTypeName);
+                            sb.Append(TAB);
+
+                            sb.AppendFormat("AddSurrogateDeps(" + get + ", k_ => ({1})k_, v_ => ({2})v_, context);", prop.MappedName,
+                                DictionaryPersistentArgTypeName(args[0]),
+                                DictionaryPersistentArgTypeName(args[1]));
+
+                            sb.Append(BR + TAB2);
                         }
-                        
-                        sb.AppendFormat("AddSurrogateDeps(" + get + ", v_ => ({1})v_, context);", prop.MappedName, persistentTypeName);
-                        sb.Append(BR + TAB2);
                     }
-                    if (prop.MappedType.IsSubclassOf(typeof(UnityObject)) ||
-                        prop.MappedType.IsArray && prop.MappedType.GetElementType().IsSubclassOf(typeof(UnityObject)) ||
-                        IsGenericList(prop.MappedType) && prop.MappedType.GetGenericArguments()[0].IsSubclassOf(typeof(UnityObject)))
+                    else
                     {
-                        sb.Append(TAB);
-                        sb.AppendFormat("AddDep(" + get + ", context);", prop.MappedName);
-                        sb.Append(BR + TAB2);
+                        if (prop.UseSurrogate)
+                        {
+                            sb.Append(TAB);
+
+                            string persistentTypeName;
+                            if (prop.MappedType != null && (IsGenericList(prop.MappedType) || IsHashSet(prop.MappedType)))
+                            {
+                                Type type = prop.MappedType.GetGenericArguments()[0];
+                                persistentTypeName = PreparePersistentTypeName("Persistent" + TypeName(type));
+                            }
+                            else if (prop.MappedType != null && prop.MappedType.IsArray)
+                            {
+                                Type type = prop.MappedType.GetElementType();
+                                persistentTypeName = PreparePersistentTypeName("Persistent" + TypeName(type));
+                            }
+                            else
+                            {
+                                persistentTypeName = PreparePersistentTypeName("Persistent" + prop.PersistentTypeName);
+                            }
+
+                            sb.AppendFormat("AddSurrogateDeps(" + get + ", v_ => ({1})v_, context);", prop.MappedName, persistentTypeName);
+                            sb.Append(BR + TAB2);
+                        }
+                        if (prop.MappedType.IsSubclassOf(typeof(UnityObject)) ||
+                            prop.MappedType.IsArray && prop.MappedType.GetElementType().IsSubclassOf(typeof(UnityObject)) ||
+                            (IsGenericList(prop.MappedType) || IsHashSet(prop.MappedType)) && prop.MappedType.GetGenericArguments()[0].IsSubclassOf(typeof(UnityObject)))
+                        {
+                            sb.Append(TAB);
+                            sb.AppendFormat("AddDep(" + get + ", context);", prop.MappedName);
+                            sb.Append(BR + TAB2);
+                        }
                     }
                 }
             }
@@ -1224,25 +1549,43 @@ namespace Battlehub.RTSL
                         {
                             AddNamespace(type, namespaces, propertyMapping.PersistentNamespace);
 
-                            if (type != null && IsGenericList(type))
+                            if (IsDictionary(type))
+                            {
+                                Type[] args = type.GetGenericArguments();
+                                if (!namespaces.Contains(Namespace(args[0])) && !string.IsNullOrEmpty(Namespace(args[0])))
+                                {
+                                    namespaces.Add(Namespace(args[0]));
+                                }
+
+                                AddNamespace(args[0], namespaces, PersistentClassMapping.ToPersistentNamespace(Namespace(args[0])));
+
+                                if (!namespaces.Contains(Namespace(args[1])) && !string.IsNullOrEmpty(Namespace(args[1])))
+                                {
+                                    namespaces.Add(Namespace(args[1]));
+                                }
+
+                                AddNamespace(args[1], namespaces, PersistentClassMapping.ToPersistentNamespace(Namespace(args[1])));
+
+                            }
+                            else if (IsGenericList(type) || IsHashSet(type))
                             {
                                 type = type.GetGenericArguments()[0];
-                                if (!namespaces.Contains(type.Namespace) && !string.IsNullOrEmpty(type.Namespace))
+                                if (!namespaces.Contains(Namespace(type)) && !string.IsNullOrEmpty(Namespace(type)))
                                 {
-                                    namespaces.Add(type.Namespace);
+                                    namespaces.Add(Namespace(type));
                                 }
 
-                                AddNamespace(type, namespaces, PersistentClassMapping.ToPersistentNamespace(type.Namespace));
+                                AddNamespace(type, namespaces, PersistentClassMapping.ToPersistentNamespace(Namespace(type)));
                             }
-                            else if (type != null && type.IsArray)
+                            else if ( type.IsArray)
                             {
                                 type = type.GetElementType();
-                                if (!namespaces.Contains(type.Namespace) && !string.IsNullOrEmpty(type.Namespace))
+                                if (!namespaces.Contains(Namespace(type)) && !string.IsNullOrEmpty(Namespace(type)))
                                 {
-                                    namespaces.Add(type.Namespace);
+                                    namespaces.Add(Namespace(type));
                                 }
 
-                                AddNamespace(type, namespaces, PersistentClassMapping.ToPersistentNamespace(type.Namespace));
+                                AddNamespace(type, namespaces, PersistentClassMapping.ToPersistentNamespace(Namespace(type)));
                             }
                         }
                         else
@@ -1265,9 +1608,9 @@ namespace Battlehub.RTSL
             Type replacementType = GetReplacementType(type);
             if (replacementType != null)
             {
-                if (!namespaces.Contains(replacementType.Namespace))
+                if (!namespaces.Contains(Namespace(replacementType)))
                 {
-                    namespaces.Add(replacementType.Namespace);
+                    namespaces.Add(Namespace(replacementType));
                 }
             }
             else
@@ -1293,7 +1636,7 @@ namespace Battlehub.RTSL
                 }
             }
 
-            if(IsGenericList(type))
+            if(IsGenericList(type) || IsHashSet(type))
             {
                 Type elementType = type.GetGenericArguments()[0];
                 if (elementType.IsSubclassOf(typeof(UnityObject)))
@@ -1343,11 +1686,21 @@ namespace Battlehub.RTSL
                 PropertyInfo pInfo = properties[p];
                 if (!typesHS.Contains(pInfo.PropertyType))
                 {
-                    Type surrogateType = GetSurrogateType(pInfo.PropertyType);
+                    Type surrogateType = GetSurrogateType(pInfo.PropertyType, 0);
                     if (surrogateType != null && !typesHS.Contains(surrogateType))
                     {
                         typesHS.Add(surrogateType);
                         GetTypesRecursive(surrogateType, typesHS);
+                    }
+
+                    if(IsDictionary(pInfo.PropertyType))
+                    {
+                        surrogateType = GetSurrogateType(pInfo.PropertyType, 1);
+                        if (surrogateType != null && !typesHS.Contains(surrogateType))
+                        {
+                            typesHS.Add(surrogateType);
+                            GetTypesRecursive(surrogateType, typesHS);
+                        }
                     }
                 }
             }
@@ -1357,11 +1710,21 @@ namespace Battlehub.RTSL
                 FieldInfo fInfo = fields[f];
                 if (!typesHS.Contains(fInfo.FieldType))
                 {
-                    Type surrogateType = GetSurrogateType(fInfo.FieldType);
+                    Type surrogateType = GetSurrogateType(fInfo.FieldType, 0);
                     if (surrogateType != null && !typesHS.Contains(surrogateType))
                     {
                         typesHS.Add(surrogateType);
                         GetTypesRecursive(surrogateType, typesHS);
+                    }
+
+                    if(IsDictionary(fInfo.FieldType))
+                    {
+                        surrogateType = GetSurrogateType(fInfo.FieldType, 1);
+                        if (surrogateType != null && !typesHS.Contains(surrogateType))
+                        {
+                            typesHS.Add(surrogateType);
+                            GetTypesRecursive(surrogateType, typesHS);
+                        }
                     }
                 }
             }
@@ -1377,11 +1740,21 @@ namespace Battlehub.RTSL
                         ParameterInfo pInfo = parameters[i];
                         if(pInfo != null && pInfo.ParameterType != null)
                         {
-                            Type surrogateType = GetSurrogateType(pInfo.ParameterType);
+                            Type surrogateType = GetSurrogateType(pInfo.ParameterType, 0);
                             if (surrogateType != null &&  !string.IsNullOrEmpty(surrogateType.FullName) && surrogateType != typeof(object) && !typesHS.Contains(surrogateType))
                             {
                                 typesHS.Add(surrogateType);
                                 GetTypesRecursive(surrogateType, typesHS);
+                            }
+
+                            if(IsDictionary(pInfo.ParameterType))
+                            {
+                                surrogateType = GetSurrogateType(pInfo.ParameterType, 1);
+                                if (surrogateType != null && !string.IsNullOrEmpty(surrogateType.FullName) && surrogateType != typeof(object) && !typesHS.Contains(surrogateType))
+                                {
+                                    typesHS.Add(surrogateType);
+                                    GetTypesRecursive(surrogateType, typesHS);
+                                }
                             }
                         }
                     }
@@ -1412,6 +1785,15 @@ namespace Battlehub.RTSL
             }
 
             types = allTypesHS.ToArray();
+        }
+
+        public static string Namespace(Type type)
+        {
+            if(type.IsArray)
+            {
+                return type.GetElementType().Namespace;
+            }
+            return type.Namespace;
         }
     }
 }

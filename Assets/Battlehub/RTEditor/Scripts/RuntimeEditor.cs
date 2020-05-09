@@ -1,16 +1,16 @@
-﻿using System;
+﻿using Battlehub.RTCommon;
+using Battlehub.RTHandles;
+using Battlehub.RTSL;
+using Battlehub.RTSL.Interface;
+using Battlehub.UIControls;
+using Battlehub.UIControls.MenuControl;
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Battlehub.RTCommon;
-using Battlehub.RTSL.Interface;
-using Battlehub.UIControls.MenuControl;
-
 using UnityObject = UnityEngine.Object;
-using Battlehub.RTHandles;
-using Battlehub.UIControls;
-using Battlehub.RTSL;
 
 namespace Battlehub.RTEditor
 {
@@ -43,6 +43,51 @@ namespace Battlehub.RTEditor
         ProjectAsyncOperation<AssetItem> UpdatePreview(UnityObject obj, Action<AssetItem> done = null);
     }
 
+    public static class IRuntimEditorExt
+    {
+        public static IRuntimeSelectionComponent GetScenePivot(this IRTE editor)
+        {
+            if (editor.ActiveWindow != null)
+            {
+                IRuntimeSceneComponent scenePivot = editor.ActiveWindow.IOCContainer.Resolve<IRuntimeSceneComponent>();
+                if (scenePivot != null)
+                {
+                    return scenePivot;
+                }
+            }
+
+            RuntimeWindow sceneWindow = editor.GetWindow(RuntimeWindowType.Scene);
+            if (sceneWindow != null)
+            {
+                IRuntimeSelectionComponent scenePivot = sceneWindow.IOCContainer.Resolve<IRuntimeSelectionComponent>();
+                if (scenePivot != null)
+                {
+                    return scenePivot;
+                }
+            }
+
+            return null;
+        }
+
+        public static void AddGameObjectToScene(this IRTE editor, GameObject go)
+        {
+            Vector3 pivot = Vector3.zero;
+            IRuntimeSelectionComponent selectionComponent = editor.GetScenePivot();
+            if (selectionComponent != null)
+            {
+                pivot = selectionComponent.SecondaryPivot;
+            }
+
+            editor.AddGameObjectToHierarchy(go);
+
+            go.transform.position = pivot;
+            go.AddComponent<ExposeToEditor>();
+            go.SetActive(true);
+            editor.RegisterCreatedObjects(new[] { go }, selectionComponent != null ? selectionComponent.CanSelect : true);
+        }
+
+    }
+
     [DefaultExecutionOrder(-90)]
     [RequireComponent(typeof(RuntimeObjects))]
     public class RuntimeEditor : RTEBase, IRuntimeEditor
@@ -56,12 +101,22 @@ namespace Battlehub.RTEditor
 
         private IProject m_project;
         private IWindowManager m_wm;
+        private ILocalization m_localization;
 
         [SerializeField]
         private GameObject m_progressIndicator = null;
 
+        [Serializable]
+        public class Settings
+        {
+            public bool OpenDefaultProject = true;
+            public string DefaultProjectName = null;
+            public bool CreateCamera = true;
+            public bool CreateLight = true;
+        }
+
         [SerializeField]
-        private string m_defaultProjectName = null;
+        private Settings m_extraSettings;
 
         public override bool IsBusy
         {
@@ -116,11 +171,43 @@ namespace Battlehub.RTEditor
 
         protected override void Awake()
         {
+            if (!RenderPipelineInfo.UseRenderTextures)
+            {
+                CameraLayerSettings layerSettings = CameraLayerSettings;
+                Transform uiBgCameraTransform = transform.Find("UIBackgroundCamera");
+                Transform uiCameraTransform = transform.Find("UICamera");
+                Transform uiBgTransform = transform.Find("UIBackground");
+                if(uiBgCameraTransform != null && uiCameraTransform != null && uiBgTransform != null)
+                {
+                    Camera uiBgCamera = uiBgCameraTransform.GetComponent<Camera>();
+                    Camera uiCamera = uiCameraTransform.GetComponent<Camera>();
+                    Canvas uiBg = uiBgTransform.GetComponent<Canvas>();
+                    if(uiBgCamera != null && uiCamera != null && uiBg != null)
+                    {
+                        uiBgCamera.enabled = true;
+                        uiBg.worldCamera = uiBgCamera;
+                        uiBgCamera.gameObject.SetActive(true);
+
+                        uiCamera.clearFlags = CameraClearFlags.Depth;
+                        uiCamera.cullingMask = 1 << LayerMask.NameToLayer("UI");
+                    }
+                }
+            }
+            else
+            {
+                Transform uiBgCameraTransform = transform.Find("UIBackgroundCamera");
+                if(uiBgCameraTransform != null)
+                {
+                    Destroy(uiBgCameraTransform.gameObject);
+                }
+            }
+
             base.Awake();
       
             IOC.Resolve<IRTEAppearance>();
             m_project = IOC.Resolve<IProject>();
             m_wm = IOC.Resolve<IWindowManager>();
+            m_localization = IOC.Resolve<ILocalization>();
 
             m_project.NewSceneCreating += OnNewSceneCreating;
             m_project.NewSceneCreated += OnNewSceneCreated;
@@ -131,16 +218,24 @@ namespace Battlehub.RTEditor
             m_project.OpenProjectCompleted += OnProjectOpened;
             m_project.DeleteProjectCompleted += OnProjectDeleted;
 
-            if(string.IsNullOrEmpty(m_defaultProjectName))
+            if(m_extraSettings == null)
             {
-                m_defaultProjectName = PlayerPrefs.GetString("RuntimeEditor.DefaultProject", "DefaultProject");
+                m_extraSettings = new Settings();
             }
 
-            IsBusy = true;
-            m_project.OpenProject(m_defaultProjectName, (error, projectInfo) =>
+            if(m_extraSettings.OpenDefaultProject)
             {
-                IsBusy = false;
-            });
+                if (string.IsNullOrEmpty(m_extraSettings.DefaultProjectName))
+                {
+                    m_extraSettings.DefaultProjectName = PlayerPrefs.GetString("RuntimeEditor.DefaultProject", "DefaultProject");
+                }
+
+                IsBusy = true;
+                m_project.OpenProject(m_extraSettings.DefaultProjectName, (error, projectInfo) =>
+                {
+                    IsBusy = false;
+                });
+            }
         }
 
         protected override void Start()
@@ -185,12 +280,18 @@ namespace Battlehub.RTEditor
 
         public void SetDefaultLayout()
         {
+            string persistentLayoutName = m_wm.DefaultPersistentLayoutName;
+            if(m_wm.LayoutExist(persistentLayoutName))
+            {
+                m_wm.DeleteLayout(persistentLayoutName);
+            }
+
             m_wm.SetDefaultLayout();
         }
 
         public void CmdCreateWindowValidate(MenuItemValidationArgs args)
         {
-            #if !(UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN)
+            #if !(UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN || UNITY_WSA)
             if (args.Command.ToLower() == RuntimeWindowType.ImportFile.ToString().ToLower())
             {
                 args.IsVisible = false;          
@@ -228,7 +329,6 @@ namespace Battlehub.RTEditor
         public override void ActivateWindow(RuntimeWindow window)
         {
             base.ActivateWindow(window);
-
             if (window != null)
             {
                 m_wm.ActivateWindow(window.transform);
@@ -239,12 +339,15 @@ namespace Battlehub.RTEditor
         {
             if(confirm)
             {
-                m_wm.Confirmation("Create New Scene", "Do you want to create new scene?" + System.Environment.NewLine + "All unsaved changeds will be lost", (dialog, args) =>
-                {
-                    m_project.CreateNewScene();
-                }, (dialog, args) => { }, 
-                "Create",
-                "Cancel");
+                m_wm.Confirmation(m_localization.GetString("ID_RTEditor_CreateNewScene", "Create New Scene"),
+                    m_localization.GetString("ID_RTEditor_DoYouWantCreateNewScene", "Do you want to create new scene?") + System.Environment.NewLine +
+                    m_localization.GetString("ID_RTEditor_UnsavedChangesWillBeLost", "All unsaved changes will be lost"), (dialog, args) =>
+                    {
+                        m_project.CreateNewScene();
+                    },
+                    (dialog, args) => { },
+                    m_localization.GetString("ID_RTEditor_Create", "Create"),
+                    m_localization.GetString("ID_RTEditor_Cancel", "Cancel"));
             }
             else
             {
@@ -262,7 +365,9 @@ namespace Battlehub.RTEditor
             {
                 if(IsPlaying)
                 {
-                    m_wm.MessageBox("Unable to save scene", "Unable to save scene in play mode");
+                    m_wm.MessageBox(
+                        m_localization.GetString("ID_RTEditor_UnableToSaveScene", "Unable to save scene"), 
+                        m_localization.GetString("ID_RTEditor_UnableToSaveSceneInPlayMode", "Unable to save scene in play mode"));
                     return;
                 }
 
@@ -271,7 +376,7 @@ namespace Battlehub.RTEditor
                 {
                     if (error.HasError)
                     {
-                        m_wm.MessageBox("Unable to save scene", error.ErrorText);
+                        m_wm.MessageBox(m_localization.GetString("ID_RTEditor_UnableToSaveScene", "Unable to save scene"), error.ErrorText);
                     }
                 });    
             }
@@ -348,7 +453,9 @@ namespace Battlehub.RTEditor
         {
             if (IsPlaying)
             {
-                m_wm.MessageBox("Save Scene", "Scene can not be saved in playmode");
+                m_wm.MessageBox(
+                    m_localization.GetString("ID_RTEditor_UnableToSaveScene", "Unable to save scene"),
+                    m_localization.GetString("ID_RTEditor_UnableToSaveSceneInPlayMode", "Unable to save scene in play mode"));
                 return;
             }
 
@@ -360,8 +467,6 @@ namespace Battlehub.RTEditor
 
             CreateOrActivateWindow("SaveScene");
         }
-
-
 
         public void CmdGameObjectValidate(MenuItemValidationArgs args)
         {
@@ -413,21 +518,8 @@ namespace Battlehub.RTEditor
 
         public ProjectAsyncOperation<AssetItem[]> CreatePrefab(ProjectItem dropTarget, ExposeToEditor dragObject, bool? includeDependencies, Action<AssetItem[]> done)
         {
-            SelectionGizmoModel gizmo = dragObject.GetComponentInChildren<SelectionGizmoModel>();
-            if (gizmo != null)
-            {
-                gizmo.transform.SetParent(null);
-                gizmo.gameObject.SetActive(false);
-            }
-
             Action<AssetItem[]> callback = assetItems =>
             {
-                if (gizmo != null)
-                {
-                    gizmo.transform.SetParent(dragObject.transform);
-                    gizmo.gameObject.SetActive(true);
-                }
-
                 if(done != null)
                 {
                     done(assetItems);
@@ -437,7 +529,9 @@ namespace Battlehub.RTEditor
             ProjectAsyncOperation<AssetItem[]> ao = new ProjectAsyncOperation<AssetItem[]>();
             if (!includeDependencies.HasValue)
             {
-                m_wm.Confirmation("Create Prefab", "Include dependencies?",
+                m_wm.Confirmation(
+                    m_localization.GetString("ID_RTEditor_CreatePrefab", "Create Prefab"),
+                    m_localization.GetString("ID_RTEditor_IncludeDependencies", "Include dependencies?"),
                     (sender, args) =>
                     {
                         CreatePrefabWithDependencies(dropTarget, dragObject, result => OnCreatePrefabWithDepenenciesCompleted(result, ao, callback));
@@ -446,8 +540,8 @@ namespace Battlehub.RTEditor
                     {
                         CreatePrefabWithoutDependencies(dropTarget, dragObject, result => OnCreatePrefabWithDepenenciesCompleted(result, ao, callback));
                     },
-                    "Yes",
-                    "No");
+                    m_localization.GetString("ID_RTEditor_Yes", "Yes"),
+                    m_localization.GetString("ID_RTEditor_No", "No"));
             }
             else
             {
@@ -515,27 +609,80 @@ namespace Battlehub.RTEditor
                         previewData[i] = previewUtility.CreatePreviewData((UnityObject)objects[i]);
                     }
                 }
+
                 CreatePrefab(dropTarget, previewData, objects, done);
             });
         }
 
         private void CreatePrefab(ProjectItem dropTarget, byte[][] previewData, object[] objects, Action<AssetItem[]> done)
         {
-            IsBusy = true;
-            m_project.Save(new[] { dropTarget }, previewData, objects, null, (error, assetItems) =>
+            StartCoroutine(CoCreatePrefab(dropTarget, previewData, objects, done));
+        }
+
+        private IEnumerator CoCreatePrefab(ProjectItem dropTarget, byte[][] previewData, object[] objects, Action<AssetItem[]> done)
+        {            
+            if(objects.Any(o => !(o is GameObject)))
             {
-                IsBusy = false;
-                if (error.HasError)
+                IsBusy = true;
+
+                if (dropTarget.Children == null || dropTarget.Get("DropTarget/Data") == null)
                 {
-                    m_wm.MessageBox("Unable to create prefab", error.ErrorText);
-                    return;
+                    ProjectAsyncOperation createFoldersAo = m_project.CreateFolder(dropTarget.Get("DropTarget/Data", true));
+                    yield return createFoldersAo;
+                    if (createFoldersAo.HasError)
+                    {
+                        m_wm.MessageBox("Unable to create data folder", createFoldersAo.Error.ToString());
+                        IsBusy = false;
+                        if (done != null)
+                        {
+                            done(null);
+                        }
+                        yield break;
+                    }
                 }
 
+                IProjectTree projectTree = IOC.Resolve<IProjectTree>();
+                if (projectTree != null)
+                {
+                    projectTree.SelectedItem = dropTarget;
+                }
+            }
+
+            IsBusy = true;
+
+            ProjectItem dataFolder = dropTarget.Get("DropTarget/Data");
+            List<ProjectItem> parents = new List<ProjectItem>();
+            for (int i = 0; i < objects.Length; ++i)
+            {
+                object obj = objects[i];
+                if (obj is GameObject)
+                {
+                    parents.Add(dropTarget);
+                }
+                else
+                {
+                    parents.Add(dataFolder);
+                }
+            }
+
+            ProjectAsyncOperation<AssetItem[]> saveAo = m_project.Save(parents.ToArray(), previewData, objects, null);
+            yield return saveAo;
+            if (saveAo.HasError)
+            {
+                m_wm.MessageBox(m_localization.GetString("ID_RTEditor_UnableToCreatePrefab", "Unable to create prefab"), saveAo.Error.ErrorText);
+                IsBusy = false;
                 if(done != null)
                 {
-                    done(assetItems);
+                    done(null);
                 }
-            });
+                yield break;
+            }
+
+            IsBusy = false;
+            if (done != null)
+            {
+                done(saveAo.Result.ToArray());
+            }
         }
 
         public ProjectAsyncOperation<AssetItem> SaveAsset(UnityObject obj, Action<AssetItem> done)
@@ -562,7 +709,7 @@ namespace Battlehub.RTEditor
                 if (saveError.HasError)
                 {
                     IsBusy = false;
-                    m_wm.MessageBox("Unable to save asset", saveError.ErrorText);
+                    m_wm.MessageBox(m_localization.GetString("ID_RTEditor_UnableToSaveAsset", "Unable to save asset"), saveError.ErrorText);
 
                     if (done != null)
                     {
@@ -630,7 +777,7 @@ namespace Battlehub.RTEditor
                 IsBusy = false;
                 if (deleteError.HasError)
                 {
-                    m_wm.MessageBox("Unable to delete folders", deleteError.ErrorText);
+                    m_wm.MessageBox(m_localization.GetString("ID_RTEditor_UnableToDeleteFolders", "Unable to delete folders"), deleteError.ErrorText);
 
                     if (done != null)
                     {
@@ -675,7 +822,7 @@ namespace Battlehub.RTEditor
                     if (loadError.HasError)
                     {
                         IsBusy = false;
-                        m_wm.MessageBox("Unable to load assets", loadError.ErrorText);
+                        m_wm.MessageBox(m_localization.GetString("ID_RTEditor_UnableToLoadAssets", "Unable to load assets"), loadError.ErrorText);
                         return;
                     }
 
@@ -699,7 +846,7 @@ namespace Battlehub.RTEditor
                         if (savePreviewError.HasError)
                         {
                             IsBusy = false;
-                            m_wm.MessageBox("Unable to load assets", savePreviewError.ErrorText);
+                            m_wm.MessageBox(m_localization.GetString("ID_RTEditor_UnableToLoadAssets", "Unable to load assets"), savePreviewError.ErrorText);
                             return;
                         }
 
@@ -759,25 +906,35 @@ namespace Battlehub.RTEditor
                 return;
             }
 
-            if(m_project.ToGuid(typeof(Light)) != Guid.Empty)
+            if (m_extraSettings.CreateLight)
             {
-                GameObject lightGO = new GameObject("Directional Light");
-                lightGO.transform.position = Vector3.up * 3;
-                lightGO.transform.rotation = Quaternion.Euler(50, -30, 0);
+                if (m_project.ToGuid(typeof(Light)) != Guid.Empty)
+                {
+                    GameObject lightGO = new GameObject(m_localization.GetString("ID_RTEditor_DirectionalLight", "Directional Light"));
+                    lightGO.transform.position = Vector3.up * 3;
+                    lightGO.transform.rotation = Quaternion.Euler(50, -30, 0);
 
-                Light light = lightGO.AddComponent<Light>();
-                light.type = LightType.Directional;
-                lightGO.AddComponent<ExposeToEditor>();
+                    Light light = lightGO.AddComponent<Light>();
+                    light.type = LightType.Directional;
+                    light.shadows = LightShadows.Soft;
+                    lightGO.AddComponent<ExposeToEditor>();
+                }
             }
 
-            if(m_project.ToGuid(typeof(Camera)) != Guid.Empty)
-            {
-                GameObject cameraGO = new GameObject("Camera");
-                cameraGO.transform.position = new Vector3(0, 1, -10);
+            if(m_extraSettings.CreateCamera)
+            { 
+                if (m_project.ToGuid(typeof(Camera)) != Guid.Empty)
+                {
+                    GameObject cameraGO = new GameObject(m_localization.GetString("ID_RTEditor_Camera", "Camera"));
+                    cameraGO.transform.position = new Vector3(0, 1, -10);
 
-                cameraGO.AddComponent<Camera>();
-                cameraGO.AddComponent<ExposeToEditor>();
-                cameraGO.AddComponent<GameViewCamera>();
+                    cameraGO.gameObject.SetActive(false);
+                    cameraGO.AddComponent<Camera>();
+                    cameraGO.AddComponent<ExposeToEditor>();
+                    cameraGO.gameObject.SetActive(true);
+
+                    cameraGO.AddComponent<GameViewCamera>();
+                }
             }
 
             Selection.objects = null;
@@ -817,7 +974,6 @@ namespace Battlehub.RTEditor
                 if (assetItem != null && m_project.IsScene(assetItem))
                 {
                     callback();
-                    //StartCoroutine(CoCallback(callback));
                 }
             }
         }
@@ -870,7 +1026,7 @@ namespace Battlehub.RTEditor
             });
         }
 
-        private void OnSaveCompleted(Error error, AssetItem[] result, bool isNew)
+        private void OnSaveCompleted(Error error, AssetItem[] result, bool userAction)
         {
             RaiseIfIsScene(error, result, () =>
             {
@@ -884,8 +1040,6 @@ namespace Battlehub.RTEditor
         private void OnProjectOpened(Error error, ProjectInfo result)
         {
             PlayerPrefs.SetString("RuntimeEditor.DefaultProject", result.Name);
-
-           // m_wm.MessageBox("MB", "MB");
         }
 
         private void OnProjectDeleted(Error error, string projectName)
@@ -895,5 +1049,7 @@ namespace Battlehub.RTEditor
                 PlayerPrefs.DeleteKey("RuntimeEditor.DefaultProject");
             }
         }
+
+
     }
 }

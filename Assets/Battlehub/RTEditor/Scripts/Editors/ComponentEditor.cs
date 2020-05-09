@@ -13,11 +13,12 @@ namespace Battlehub.RTEditor
     public struct PropertyDescriptor
     {
         public string Label;
+        public string AnimationPropertyName;
         public MemberInfo MemberInfo;
         public MemberInfo ComponentMemberInfo;
         public PropertyEditorCallback ValueChangedCallback;
+        public PropertyEditorCallback EndEditCallback;
         public Range Range;
-
         public PropertyDescriptor[] ChildDesciptors;
      
         public Type MemberType
@@ -44,17 +45,40 @@ namespace Battlehub.RTEditor
             }
         }
 
+        public Type ComponentMemberType
+        {
+            get
+            {
+                if (ComponentMemberInfo is PropertyInfo)
+                {
+                    PropertyInfo prop = (PropertyInfo)ComponentMemberInfo;
+                    return prop.PropertyType;
+                }
+                else if (ComponentMemberInfo is FieldInfo)
+                {
+                    FieldInfo field = (FieldInfo)ComponentMemberInfo;
+                    return field.FieldType;
+                }
+
+                return null;
+            }
+        }
+
 		public object Target;
         
-        public PropertyDescriptor(string label, object target, MemberInfo memberInfo)
+        public PropertyDescriptor(string label, object target, MemberInfo memberInfo) : this(label, target, memberInfo, memberInfo.Name) {}
+
+        public PropertyDescriptor(string label, object target, MemberInfo memberInfo, string animationPropertyName)
         {
             MemberInfo = memberInfo;
             ComponentMemberInfo = memberInfo;
             Label = label;
             Target = target;
             ValueChangedCallback = null;
+            EndEditCallback = null;
             Range = TryGetRange(memberInfo);
             ChildDesciptors = null;
+            AnimationPropertyName = animationPropertyName;
         }
 
         public PropertyDescriptor(string label, object target, MemberInfo memberInfo, MemberInfo componentMemberInfo)
@@ -64,8 +88,10 @@ namespace Battlehub.RTEditor
             Label = label;
             Target = target;
             ValueChangedCallback = null;
+            EndEditCallback = null;
             Range = TryGetRange(memberInfo);
             ChildDesciptors = null;
+            AnimationPropertyName = null;
         }
 
         public PropertyDescriptor(string label, object target, MemberInfo memberInfo, MemberInfo componentMemberInfo, PropertyEditorCallback valueChangedCallback)
@@ -75,8 +101,23 @@ namespace Battlehub.RTEditor
             Label = label;
             Target = target;
             ValueChangedCallback = valueChangedCallback;
+            EndEditCallback = null;
             Range = TryGetRange(memberInfo);
             ChildDesciptors = null;
+            AnimationPropertyName = null;
+        }
+
+        public PropertyDescriptor(string label, object target, MemberInfo memberInfo, MemberInfo componentMemberInfo, PropertyEditorCallback valueChangedCallback, PropertyEditorCallback endEditCallback)
+        {
+            MemberInfo = memberInfo;
+            ComponentMemberInfo = componentMemberInfo;
+            Label = label;
+            Target = target;
+            ValueChangedCallback = valueChangedCallback;
+            EndEditCallback = endEditCallback;
+            Range = TryGetRange(memberInfo);
+            ChildDesciptors = null;
+            AnimationPropertyName = null;
         }
 
         public PropertyDescriptor(string label, object target, MemberInfo memberInfo, MemberInfo componentMemberInfo, PropertyEditorCallback valueChangedCallback, Range range)
@@ -86,8 +127,10 @@ namespace Battlehub.RTEditor
             Label = label;
             Target = target;
             ValueChangedCallback = valueChangedCallback;
+            EndEditCallback = null;
             Range = range;
             ChildDesciptors = null;
+            AnimationPropertyName = null;
         }
 
         private static Range TryGetRange(MemberInfo memberInfo)
@@ -109,48 +152,22 @@ namespace Battlehub.RTEditor
 
     }
 
+    public class VoidComponentEditor : ComponentEditor
+    {
+        public override Component Component
+        {
+            get { return m_component; }
+            set { m_component = value; }
+        }
+
+        protected override void UpdateOverride()
+        {
+
+        }
+    }
 
     public class ComponentEditor : MonoBehaviour
     {
-        private static Dictionary<Type, IComponentDescriptor> m_componentDescriptors;
-        static ComponentEditor()
-        {
-            var type = typeof(IComponentDescriptor);
-
-#if !UNITY_WSA || UNITY_EDITOR
-            var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p => type.IsAssignableFrom(p) && p.IsClass && !p.IsAbstract);
-#else
-            var types = type.GetTypeInfo().Assembly.GetTypes().
-                Where(p => type.IsAssignableFrom(p) && p.GetTypeInfo().IsClass);
-#endif
-
-            m_componentDescriptors = new Dictionary<Type, IComponentDescriptor>();
-            foreach (Type t in types)
-            {
-                IComponentDescriptor descriptor = (IComponentDescriptor)Activator.CreateInstance(t);
-                if (descriptor == null)
-                {
-                    Debug.LogWarningFormat("Unable to instantiate selector of type " + t.FullName);
-                    continue;
-                }
-                if (descriptor.ComponentType == null)
-                {
-                    Debug.LogWarningFormat("ComponentType is null. Selector Type {0}", t.FullName);
-                    continue;
-                }
-                if (m_componentDescriptors.ContainsKey(descriptor.ComponentType))
-                {
-                    Debug.LogWarningFormat("Duplicate selector for {0} found. Type name {1}. Using {2} instead", descriptor.ComponentType.FullName, descriptor.GetType().FullName, m_componentDescriptors[descriptor.ComponentType].GetType().FullName);
-                }
-                else
-                {
-                    m_componentDescriptors.Add(descriptor.ComponentType, descriptor);
-                }
-            }
-        }
-
         public PropertyEditorCallback EndEditCallback;
 
         [SerializeField]
@@ -186,8 +203,8 @@ namespace Battlehub.RTEditor
             }
         }
 
-        private Component m_component;
-        public Component Component
+        protected Component m_component;
+        public virtual Component Component
         {
             get { return m_component; }
             set
@@ -199,43 +216,51 @@ namespace Battlehub.RTEditor
                 }
 
                 IComponentDescriptor componentDescriptor = GetComponentDescriptor();
+                if(EnabledEditor != null)
+                {
+                    PropertyInfo enabledProperty = EnabledProperty;
+                    if (enabledProperty != null && (componentDescriptor == null || componentDescriptor.GetHeaderDescriptor(m_editor).ShowEnableButton))
+                    {
+                        EnabledEditor.gameObject.SetActive(true);
+                        EnabledEditor.Init(Component, Component, enabledProperty, null, string.Empty, () => { },
+                            () =>
+                            {
+                                if (IsComponentEnabled)
+                                {
+                                    TryCreateGizmo(componentDescriptor);
+                                }
+                                else
+                                {
+                                    DestroyGizmo();
+                                }
+                            },
+                            () =>
+                            {
+                                if (EndEditCallback != null)
+                                {
+                                    EndEditCallback();
+                                }
+                            });
+                    }
+                    else
+                    {
+                        EnabledEditor.gameObject.SetActive(false);
+                    }
+                }
 
-                PropertyInfo enabledProperty = EnabledProperty;
-                if (enabledProperty != null && (componentDescriptor == null || componentDescriptor.GetHeaderDescriptor(m_editor).ShowEnableButton))
+              
+                if(Header != null)
                 {
-                    EnabledEditor.gameObject.SetActive(true);
-                    EnabledEditor.Init(Component, Component, enabledProperty, null, string.Empty, () => { },
-                        () =>
-                        {
-                            if(IsComponentEnabled)
-                            {
-                                TryCreateGizmo(componentDescriptor);
-                            }
-                            else
-                            {
-                                DestroyGizmo();
-                            }
-                        }, 
-                        () =>
-                        {
-                            if (EndEditCallback != null)
-                            {
-                                EndEditCallback();
-                            }
-                        });
-                }
-                else
-                {
-                    EnabledEditor.gameObject.SetActive(false);
-                }
-
-                if(componentDescriptor != null)
-                {
-                    Header.text = componentDescriptor.GetHeaderDescriptor(m_editor).DisplayName;
-                }
-                else
-                {
-                    Header.text = Component.GetType().Name;
+                    if (componentDescriptor != null)
+                    {
+                        Header.text = componentDescriptor.GetHeaderDescriptor(m_editor).DisplayName;
+                    }
+                    else
+                    {
+                        string typeName = Component.GetType().Name;
+                        ILocalization localization = IOC.Resolve<ILocalization>();
+                        Header.text = localization.GetString("ID_RTEditor_CD_" + typeName, typeName);
+                    }
                 }
                 
                 if(Expander != null)
@@ -244,7 +269,6 @@ namespace Battlehub.RTEditor
                 }
                 
                 BuildEditor();
-
             }
         }
 
@@ -300,6 +324,10 @@ namespace Battlehub.RTEditor
         private void Awake()
         {
             m_editor = IOC.Resolve<IRTE>();
+            if(m_editor.Object != null)
+            {
+                m_editor.Object.ReloadComponentEditor += OnReloadComponentEditor;
+            }
             m_project = IOC.Resolve<IProject>();
             m_editorsMap = IOC.Resolve<IEditorsMap>();
 
@@ -333,10 +361,12 @@ namespace Battlehub.RTEditor
             {
                 RemoveButton.onClick.AddListener(OnRemove);
             }
-            
+
+            m_editor.Object.ReloadComponentEditor -= OnReloadComponentEditor;
+            m_editor.Object.ReloadComponentEditor += OnReloadComponentEditor;
             m_editor.Undo.UndoCompleted += OnUndoCompleted;
             m_editor.Undo.RedoCompleted += OnRedoCompleted;
-
+            
             StartOverride();
         }
 
@@ -351,8 +381,12 @@ namespace Battlehub.RTEditor
             {
                 m_editor.Undo.UndoCompleted -= OnUndoCompleted;
                 m_editor.Undo.RedoCompleted -= OnRedoCompleted;
+                if(m_editor.Object != null)
+                {
+                    m_editor.Object.ReloadComponentEditor -= OnReloadComponentEditor;
+                }
             }
-            
+
             if (Expander != null)
             {
                 Expander.onValueChanged.RemoveListener(OnExpanded);
@@ -398,34 +432,11 @@ namespace Battlehub.RTEditor
         protected IComponentDescriptor GetComponentDescriptor()
         {
             IComponentDescriptor componentDescriptor;
-            if (m_componentDescriptors.TryGetValue(Component.GetType(), out componentDescriptor))
+            if (m_editorsMap.ComponentDescriptors.TryGetValue(Component.GetType(), out componentDescriptor))
             {
                 return componentDescriptor;
             }
             return null;
-        }
-
-        private PropertyDescriptor[] GetDescriptors(object converter)
-        {
-            IComponentDescriptor componentDescriptor = GetComponentDescriptor();
-            if (componentDescriptor != null)
-            {
-                PropertyDescriptor[] properties = componentDescriptor.GetProperties(this, converter);
-                return properties;
-            }
-            else
-            {
-                if (Component.GetType().IsScript())
-                {
-                    FieldInfo[] serializableFields = Component.GetType().GetSerializableFields();
-                    return serializableFields.Select(f => new PropertyDescriptor(f.Name, Component, f, f)).ToArray();
-                }
-                else
-                {
-                    PropertyInfo[] properties = Component.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => p.CanRead && p.CanWrite).ToArray();
-                    return properties.Select(p => new PropertyDescriptor(p.Name, Component, p, p)).ToArray();
-                }
-            }
         }
 
         public void BuildEditor()
@@ -436,7 +447,7 @@ namespace Battlehub.RTEditor
                 m_converter = componentDescriptor.CreateConverter(this);
             }
 
-            PropertyDescriptor[] descriptors = GetDescriptors(m_converter);
+            PropertyDescriptor[] descriptors = m_editorsMap.GetPropertyDescriptors(Component.GetType(), this, m_converter);
             if (descriptors == null || descriptors.Length == 0)
             {
                 if(ExpanderGraphics != null)
@@ -447,19 +458,29 @@ namespace Battlehub.RTEditor
                 return;
             }
 
-            
+            ISettingsComponent settingsComponent = IOC.Resolve<ISettingsComponent>();
+            BuiltInWindowsSettings settings;
+            if (settingsComponent == null)
+            {
+                settings = BuiltInWindowsSettings.Default;
+            }
+            else
+            {
+                settings = settingsComponent.BuiltInWindowsSettings;
+            }
+
             if (ResetButton != null)
             {
                 ResetButton.gameObject.SetActive(componentDescriptor != null ?
                     componentDescriptor.GetHeaderDescriptor(m_editor).ShowResetButton :
-                    m_editor.ComponentEditorSettings.ShowResetButton);
+                    settings.Inspector.ComponentEditor.ShowResetButton);
             }
 
             if (RemoveButton != null)
             {
                 bool showRemoveButton = componentDescriptor != null ?
                     componentDescriptor.GetHeaderDescriptor(m_editor).ShowRemoveButton :
-                    m_editor.ComponentEditorSettings.ShowRemoveButton;
+                    settings.Inspector.ComponentEditor.ShowRemoveButton;
                 if (showRemoveButton)
                 {
                     bool canRemove = m_project == null || m_project.ToAssetItem(Component.gameObject) == null;
@@ -476,7 +497,7 @@ namespace Battlehub.RTEditor
             {
                 EnabledEditor.gameObject.SetActive(componentDescriptor != null ?
                     componentDescriptor.GetHeaderDescriptor(m_editor).ShowEnableButton :
-                    m_editor.ComponentEditorSettings.ShowEnableButton);
+                    settings.Inspector.ComponentEditor.ShowEnableButton);
             }
 
             if (Expander == null)
@@ -485,7 +506,7 @@ namespace Battlehub.RTEditor
             }
             else
             {
-                if (componentDescriptor != null ? !componentDescriptor.GetHeaderDescriptor(m_editor).ShowExpander : !m_editor.ComponentEditorSettings.ShowExpander)
+                if (componentDescriptor != null ? !componentDescriptor.GetHeaderDescriptor(m_editor).ShowExpander : !settings.Inspector.ComponentEditor.ShowExpander)
                 {
                     Expander.isOn = true;
                     Expander.enabled = false;
@@ -495,7 +516,7 @@ namespace Battlehub.RTEditor
                 {
                     if (ExpanderGraphics != null)
                     {
-                        ExpanderGraphics.SetActive(componentDescriptor != null ? componentDescriptor.GetHeaderDescriptor(m_editor).ShowExpander : m_editor.ComponentEditorSettings.ShowExpander);
+                        ExpanderGraphics.SetActive(componentDescriptor != null ? componentDescriptor.GetHeaderDescriptor(m_editor).ShowExpander : settings.Inspector.ComponentEditor.ShowExpander);
                     }
                     BuildEditor(componentDescriptor, descriptors);
                 }
@@ -534,6 +555,12 @@ namespace Battlehub.RTEditor
                     rangeEditor.Min = (int)descriptor.Range.Min;
                     rangeEditor.Max = (int)descriptor.Range.Max;
                 }
+                else if(descriptor.Range is RangeOptions)
+                {
+                    RangeOptions range = (RangeOptions)descriptor.Range;
+                    OptionsEditor optionsEditor = editor as OptionsEditor;
+                    optionsEditor.Options = range.Options;
+                }
                 else
                 {
                     RangeEditor rangeEditor = editor as RangeEditor;
@@ -547,7 +574,7 @@ namespace Battlehub.RTEditor
 
         protected virtual void InitEditor(PropertyEditor editor, PropertyDescriptor descriptor)
         {
-            editor.Init(descriptor.Target, descriptor.Target, descriptor.MemberInfo, null, descriptor.Label, null, descriptor.ValueChangedCallback, EndEditCallback, true, descriptor.ChildDesciptors);
+            editor.Init(descriptor.Target, descriptor.Target, descriptor.MemberInfo, null, descriptor.Label, null, descriptor.ValueChangedCallback, () => { descriptor.EndEditCallback?.Invoke(); EndEditCallback?.Invoke(); }, true, descriptor.ChildDesciptors);
         }
 
         protected virtual void DestroyEditor()
@@ -592,19 +619,29 @@ namespace Battlehub.RTEditor
                 return null;
             }
 
-            if (descriptor.MemberType == null)
+            Type memberType;
+            if (descriptor.MemberInfo is MethodInfo)
+            {
+                memberType = typeof(MethodInfo);
+            }
+            else
+            {
+                memberType = descriptor.MemberType;
+            }
+
+            if (memberType == null)
             {
                 Debug.LogError("descriptor.MemberType is null");
                 return null;
             }
 
-            GameObject editorGo = m_editorsMap.GetPropertyEditor(descriptor.MemberType);
+            GameObject editorGo = m_editorsMap.GetPropertyEditor(memberType);
             if (editorGo == null)
             {
                 return null;
             }
 
-            if (!m_editorsMap.IsPropertyEditorEnabled(descriptor.MemberType))
+            if (!m_editorsMap.IsPropertyEditorEnabled(memberType))
             {
                 return null;
             }
@@ -625,7 +662,7 @@ namespace Battlehub.RTEditor
             if (expanded)
             {
                 IComponentDescriptor componentDescriptor = GetComponentDescriptor();
-                PropertyDescriptor[] descriptors = GetDescriptors(m_converter);
+                PropertyDescriptor[] descriptors = m_editorsMap.GetPropertyDescriptors(Component.GetType(), this, m_converter);
                 if(ExpanderGraphics != null)
                 {
                     ExpanderGraphics.SetActive(true);
@@ -654,27 +691,35 @@ namespace Battlehub.RTEditor
 
         private void OnRedoCompleted()
         {
-            ReloadEditors();
+            ReloadEditors(false);
         }
 
         private void OnUndoCompleted()
         {
-            ReloadEditors();
+            ReloadEditors(false);
         }
 
-        private void ReloadEditors()
+        private void OnReloadComponentEditor(ExposeToEditor obj, Component component, bool force)
+        {
+            if(Component == component)
+            {
+                ReloadEditors(force);
+            }
+        }
+
+        private void ReloadEditors(bool force)
         {
             foreach (Transform t in EditorsPanel)
             {
                 PropertyEditor propertyEditor = t.GetComponent<PropertyEditor>();
                 if (propertyEditor != null)
                 {
-                    propertyEditor.Reload();
+                    propertyEditor.Reload(force);
                 }
             }
         }
 
-        private void OnResetClick()
+        protected virtual void OnResetClick()
         {
             GameObject go = new GameObject();
             go.SetActive(false);
@@ -687,8 +732,8 @@ namespace Battlehub.RTEditor
 
             bool isMonoBehavior = component is MonoBehaviour;
 
-            PropertyDescriptor[] descriptors = GetDescriptors(m_converter);
-            for(int i = 0; i < descriptors.Length; ++i)
+            PropertyDescriptor[] descriptors = m_editorsMap.GetPropertyDescriptors(Component.GetType(), this, m_converter);
+            for (int i = 0; i < descriptors.Length; ++i)
             {
                 PropertyDescriptor descriptor = descriptors[i];
                 MemberInfo memberInfo = descriptor.ComponentMemberInfo;
@@ -750,10 +795,10 @@ namespace Battlehub.RTEditor
             m_editor.Undo.EndRecord();
         }
 
-        private void OnRemove()
+        protected virtual void OnRemove()
         {
-            PropertyDescriptor[] descriptors = GetDescriptors(m_converter);
-            Editor.Undo.DestroyComponent(Component, descriptors.Select(d => d.ComponentMemberInfo).ToArray());
+            PropertyDescriptor[] descriptors = m_editorsMap.GetPropertyDescriptors(Component.GetType(), this, m_converter);
+            Editor.Undo.DestroyComponent(Component, descriptors.Where(d => d.Target == (object)Component).Select(d => d.ComponentMemberInfo).ToArray());
         }
     }
 

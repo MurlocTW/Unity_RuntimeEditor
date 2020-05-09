@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 using Battlehub.RTCommon;
 using System.Linq;
-using Battlehub.UIControls;
 using Battlehub.RTSL.Interface;
 using Battlehub.UIControls.DockPanels;
 using System.Collections;
@@ -13,6 +11,8 @@ namespace Battlehub.RTEditor
     {
         private IWindowManager m_windowManager;
         private IProject m_project;
+        private ILocalization m_localization;
+
         private IResourcePreviewUtility m_resourcePreview;
         [SerializeField]
         private ProjectTreeView m_projectTree = null;
@@ -29,7 +29,8 @@ namespace Battlehub.RTEditor
         {
             m_windowManager = IOC.Resolve<IWindowManager>();
             m_project = IOC.Resolve<IProject>();
-            if(m_project == null)
+            m_localization = IOC.Resolve<ILocalization>();
+            if (m_project == null)
             {
                 Debug.LogWarning("RTSLDeps.Get.Project is null");
                 Destroy(gameObject);
@@ -50,12 +51,12 @@ namespace Battlehub.RTEditor
 
             m_projectResources.ItemDoubleClick += OnProjectResourcesDoubleClick;
             m_projectResources.ItemRenamed += OnProjectResourcesRenamed; 
-            m_projectResources.ItemDeleted += OnProjectResourcesDeleted;
+            m_projectResources.ItemsDeleted += OnProjectResourcesDeleted;
             m_projectResources.SelectionChanged += OnProjectResourcesSelectionChanged;
                 
             m_projectTree.SelectionChanged += OnProjectTreeSelectionChanged;
             m_projectTree.ItemRenamed += OnProjectTreeItemRenamed;
-            m_projectTree.ItemDeleted += OnProjectTreeItemDeleted;
+            m_projectTree.ItemsDeleted += OnProjectTreeItemDeleted;
 
             m_project.OpenProjectCompleted += OnProjectOpenCompleted;
             m_project.CloseProjectCompleted += OnCloseProjectCompleted;
@@ -71,7 +72,7 @@ namespace Battlehub.RTEditor
             if (m_project.IsOpened)
             {
                 m_projectTree.LoadProject(m_project.Root);
-                m_projectTree.SelectedFolder = m_project.Root;
+                m_projectTree.SelectedItem = m_project.Root;
             }
         }
 
@@ -83,14 +84,14 @@ namespace Battlehub.RTEditor
             {
                 m_projectResources.ItemDoubleClick -= OnProjectResourcesDoubleClick;
                 m_projectResources.ItemRenamed -= OnProjectResourcesRenamed;
-                m_projectResources.ItemDeleted -= OnProjectResourcesDeleted;
+                m_projectResources.ItemsDeleted -= OnProjectResourcesDeleted;
                 m_projectResources.SelectionChanged -= OnProjectResourcesSelectionChanged;
             }
 
             if(m_projectTree != null)
             {
                 m_projectTree.SelectionChanged -= OnProjectTreeSelectionChanged;
-                m_projectTree.ItemDeleted -= OnProjectTreeItemDeleted;
+                m_projectTree.ItemsDeleted -= OnProjectTreeItemDeleted;
                 m_projectTree.ItemRenamed -= OnProjectTreeItemRenamed;
             }
 
@@ -113,56 +114,56 @@ namespace Battlehub.RTEditor
             Editor.IsBusy = false;
             if (error.HasError)
             {
-                m_windowManager.MessageBox("Can't open project", error.ToString());
+                m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_ProjectView_CantOpenProject", "Can't open project"), error.ToString());
                 return;
             }
             
             m_projectTree.LoadProject(m_project.Root);
-            m_projectTree.SelectedFolder = null;
-            m_projectTree.SelectedFolder = m_project.Root;
+            m_projectTree.SelectedItem = null;
+            m_projectTree.SelectedItem = m_project.Root;
         }
 
         private void OnCloseProjectCompleted(Error error)
         {
             if (error.HasError)
             {
-                m_windowManager.MessageBox("Can't close project", error.ToString());
+                m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_ProjectView_CantCloseProject", "Can't close project"), error.ToString());
                 return;
             }
 
             m_projectTree.LoadProject(null);
-            m_projectTree.SelectedFolder = null;
+            m_projectTree.SelectedItem = null;
             m_projectResources.SetItems(null, null, true);
         }
 
         private void OnImportCompleted(Error error, AssetItem[] result)
         {
-            Editor.IsBusy = false;
+            //Editor.IsBusy = false;
             if (error.HasError)
             {
-                m_windowManager.MessageBox("Unable to Import assets", error.ErrorText);
+                m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_ProjectView_UnableToImportAssets", "Unable to import assets") , error.ErrorText);
             }
 
             string path = string.Empty;
-            if (m_projectTree.SelectedFolder != null)
+            if (m_projectTree.SelectedItem != null)
             {
-                path = m_projectTree.SelectedFolder.ToString();
+                path = m_projectTree.SelectedItem.ToString();
             }
 
             m_projectTree.LoadProject(m_project.Root);
 
             if (!string.IsNullOrEmpty(path))
             {
-                if (m_projectTree.SelectedFolder == m_project.Root)
+                if (m_projectTree.SelectedItem == m_project.Root)
                 {
-                    m_projectTree.SelectedFolder = null;
+                    m_projectTree.SelectedItem = null;
                 }
 
-                m_projectTree.SelectedFolder = m_project.Root.Get(path);
+                m_projectTree.SelectedItem = m_project.Root.Get(path);
             }
             else
             {
-                m_projectTree.SelectedFolder = m_project.Root;
+                m_projectTree.SelectedItem = m_project.Root;
             }
         }
 
@@ -171,7 +172,7 @@ namespace Battlehub.RTEditor
             Editor.IsBusy = false;
             if (error.HasError)
             {
-                m_windowManager.MessageBox("Unable to remove", error.ErrorText);
+                m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_ProjectView_UnableToRemove", "Unable to remove"), error.ErrorText);
             }
            
         }
@@ -202,30 +203,35 @@ namespace Battlehub.RTEditor
             Editor.IsBusy = false;
             if (error.HasError)
             {
-                m_windowManager.MessageBox("Unable to rename asset", error.ToString());
+                m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_ProjectView_UnableToRenameAsset", "Unable to rename asset"), error.ToString());
             }
         }
 
-        private void OnCreateCompleted(Error error, ProjectItem result)
+        private void OnCreateCompleted(Error error, ProjectItem[] result)
         {
             Editor.IsBusy = false;
             if (error.HasError)
             {
-                m_windowManager.MessageBox("Unable to create folder", error.ToString());
+                m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_ProjectView_UnableToCreateFolder", "Unable to create folder"), error.ToString());
                 return;
             }
 
-            m_projectTree.AddItem(result.Parent, result);
-            m_projectTree.SelectedFolder = result;
+            foreach(ProjectItem item in result)
+            {
+                m_projectTree.AddItem(item.Parent, item);
+            }
+            m_projectTree.SelectedItem = result.Last();
         }
 
         private void OnMoveCompleted(Error error, ProjectItem[] projectItems, ProjectItem[] oldParents)
         {
             if (error.HasError)
             {
-                m_windowManager.MessageBox("Unable to move assets", error.ErrorText);
+                m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_ProjectView_UnableToMoveAssets", "Unable to move assets"), error.ErrorText);
                 return;
             }
+
+            m_projectResources.Remove(projectItems);
 
             for (int i = 0; i < projectItems.Length; ++i)
             {
@@ -238,11 +244,10 @@ namespace Battlehub.RTEditor
             }
         }
 
-     
-        private void OnSaveCompleted(Error createPrefabError, AssetItem[] result, bool isNew)
+        private void OnSaveCompleted(Error createPrefabError, AssetItem[] result, bool userAction)
         {
             Editor.IsBusy = false;
-            m_projectResources.InsertItems(result, isNew);
+            m_projectResources.InsertItems(result, userAction);
         }
 
         private void OnDuplicateCompleted(Error error, AssetItem[] result)
@@ -257,7 +262,7 @@ namespace Battlehub.RTEditor
             {  
                 if (error.HasError)
                 {
-                    m_windowManager.MessageBox("Can't GetAssets", error.ToString());
+                    m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_ProjectView_CantGetAssets", "Can't get assets"), error.ToString());
                     return;
                 }
 
@@ -297,7 +302,7 @@ namespace Battlehub.RTEditor
 
             if(e.ProjectItem.IsFolder)
             {
-                m_projectTree.SelectedFolder = e.ProjectItem;
+                m_projectTree.SelectedItem = e.ProjectItem;
             }
             else
             {
@@ -310,7 +315,7 @@ namespace Battlehub.RTEditor
                         Editor.IsBusy = false;
                         if(error.HasError)
                         {
-                            m_windowManager.MessageBox("Unable to load scene " + e.ProjectItem.ToString(), error.ToString());
+                            m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_ProjectView_UnableToLoadScene", "Unable to load scene") + " " + e.ProjectItem.ToString(), error.ToString());
                         }
                     });
                 }

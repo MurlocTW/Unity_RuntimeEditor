@@ -19,6 +19,7 @@ namespace Battlehub.RTCommon
     public delegate void ExposeToEditorChangeEvent<T>(ExposeToEditor obj, T oldValue, T newValue);
     public delegate void ExposeToEditorEvent(ExposeToEditor obj);
     public delegate void ExposeToEditorEvent<T>(ExposeToEditor obj, T arg);
+    public delegate void ExposeToEditorEvent<T, T2>(ExposeToEditor obj, T arg, T2 arg2);
 
     [System.Serializable]
     public class ExposeToEditorUnityEvent : UnityEvent<ExposeToEditor> { }
@@ -26,6 +27,8 @@ namespace Battlehub.RTCommon
     [DisallowMultipleComponent]
     public class ExposeToEditor : MonoBehaviour
     {
+        public const string HierarchyRootTag = "HierarchyRoot";
+
         public static event ExposeToEditorEvent _Awaked;
         public static event ExposeToEditorEvent _Destroying;
         public static event ExposeToEditorEvent _Destroyed;
@@ -38,7 +41,8 @@ namespace Battlehub.RTCommon
         public static event ExposeToEditorEvent _Disabled;
         public static event ExposeToEditorChangeEvent<ExposeToEditor> _ParentChanged;
         public static event ExposeToEditorEvent<Component> _ComponentAdded;
-        
+        public static event ExposeToEditorEvent<Component, bool> _ReloadComponentEditor;
+
         [SerializeField]
         [HideInInspector]
         private Collider[] m_colliders;
@@ -80,11 +84,13 @@ namespace Battlehub.RTCommon
         public bool CanRename = true;
         public bool CanCreatePrefab = true;
         public bool ShowSelectionGizmo = true;
-        
+
+        [HideInInspector, Obsolete]
+        public bool CanSelect = true;
+
         [HideInInspector]
         public bool CanSnap = true;
         public bool AddColliders = true;
-        
 
         private bool m_markAsDestroyed;
         public bool MarkAsDestroyed
@@ -99,6 +105,7 @@ namespace Battlehub.RTCommon
                     {
                         _MarkAsDestroyedChanging(this);
                     }
+                    gameObject.hideFlags = m_markAsDestroyed ? HideFlags.DontSave : HideFlags.None;
                     gameObject.SetActive(!m_markAsDestroyed);
                     if (_MarkAsDestroyedChanged != null)
                     {
@@ -136,7 +143,7 @@ namespace Battlehub.RTCommon
                     {
                         return m_skinned.sharedMesh.bounds;
                     }
-                    else if(m_spriteRenderer != null)
+                    else if (m_spriteRenderer != null)
                     {
                         return m_spriteRenderer.sprite.bounds;
                     }
@@ -158,7 +165,7 @@ namespace Battlehub.RTCommon
                         return m_skinned.sharedMesh.bounds;
                     }
                 }
-                else if(m_effectiveBoundsType == BoundsType.Sprite)
+                else if (m_effectiveBoundsType == BoundsType.Sprite)
                 {
                     if (m_spriteRenderer != null)
                     {
@@ -173,6 +180,44 @@ namespace Battlehub.RTCommon
             }
         }
 
+        public Vector3 LocalPosition
+        {
+            get { return transform.localPosition; }
+            set { transform.localPosition = value; }
+        }
+
+        public Vector3 LocalScale
+        {
+            get { return transform.localScale; }
+            set { transform.localScale = value; }
+        }
+
+        private Vector3 m_localEulerAngles;
+        public Vector3 LocalEuler
+        {
+            get
+            {
+                if(transform.localRotation != Quaternion.Euler(m_localEulerAngles))
+                {
+                    m_localEulerAngles = transform.localEulerAngles;
+                }
+                return m_localEulerAngles;
+            }
+            set
+            {
+                if(m_localEulerAngles != value)
+                {
+                    m_localEulerAngles = value;
+                    transform.localRotation = Quaternion.Euler(m_localEulerAngles);
+                }
+            }
+        }
+
+        public bool IsAwaked
+        {
+            get;
+            private set;
+        }
 
         private bool m_initialized;
         public void Init()
@@ -191,6 +236,7 @@ namespace Battlehub.RTCommon
         private void Awake()
         {
             Init();
+            IsAwaked = true;
 
             m_effectiveBoundsType = BoundsType;
             m_filter = BoundsObject.GetComponent<MeshFilter>();
@@ -201,7 +247,18 @@ namespace Battlehub.RTCommon
                 m_spriteRenderer = BoundsObject.GetComponent<SpriteRenderer>();
             }
 
-            if (hideFlags != HideFlags.HideAndDontSave)
+            bool visible = (hideFlags & HideFlags.HideInHierarchy) == 0;
+            if (visible)
+            {
+                if (transform.parent != null && transform.parent.GetComponent<ExposeToEditor>() == null && transform.parent.tag != HierarchyRootTag)
+                {
+                    //gameObject.hideFlags = HideFlags.HideInHierarchy;
+                    visible = false;
+                    Debug.LogWarning(gameObject.name + ": parent GameObject is not exposed to editor");
+                }
+            }
+
+            if (visible)
             {
                 if (_Awaked != null)
                 {
@@ -212,8 +269,7 @@ namespace Battlehub.RTCommon
 
         private void Start()
         {
-           
-            if (hideFlags != HideFlags.HideAndDontSave)
+            if ((hideFlags & HideFlags.HideInHierarchy) == 0)
             {
                 if (_Started != null)
                 {
@@ -224,7 +280,7 @@ namespace Battlehub.RTCommon
 
         private void OnEnable()
         {
-            if (hideFlags != HideFlags.HideAndDontSave)
+            if ((hideFlags & HideFlags.HideInHierarchy) == 0)
             {
                 if (_Enabled != null)
                 {
@@ -235,7 +291,7 @@ namespace Battlehub.RTCommon
 
         private void OnDisable()
         {
-            if (hideFlags != HideFlags.HideAndDontSave)
+            if ((hideFlags & HideFlags.HideInHierarchy) == 0)
             {
                 if (_Disabled != null)
                 {
@@ -248,7 +304,7 @@ namespace Battlehub.RTCommon
         {
             if (!m_isPaused)
             {
-                if (hideFlags != HideFlags.HideAndDontSave)
+                if ((hideFlags & HideFlags.HideInHierarchy) == 0)
                 {
                     if (_Destroying != null)
                     {
@@ -256,7 +312,7 @@ namespace Battlehub.RTCommon
                     }
                 }
 
-                if (hideFlags != HideFlags.HideAndDontSave)
+                if ((hideFlags & HideFlags.HideInHierarchy) == 0)
                 {
                     if (_Destroyed != null)
                     {
@@ -294,7 +350,7 @@ namespace Battlehub.RTCommon
                 {
                     transform.hasChanged = false;
 
-                    if (hideFlags != HideFlags.HideAndDontSave)
+                    if ((hideFlags & HideFlags.HideInHierarchy) == 0)
                     {
                         if (_TransformChanged != null)
                         {
@@ -326,10 +382,10 @@ namespace Battlehub.RTCommon
             m_oldParent = null;
         }
 
-        public void SetName(string name)
+        public void SetName(string name, bool ignoreHideFlags = false)
         {
             gameObject.name = name;
-            if (hideFlags != HideFlags.HideAndDontSave)
+            if ((hideFlags & HideFlags.HideInHierarchy) == 0 || ignoreHideFlags)
             {
                 if (_NameChanged != null)
                 {
@@ -348,6 +404,13 @@ namespace Battlehub.RTCommon
             return component;
         }
 
+        public void ReloadComponentEditor(Component component, bool force)
+        {
+            if(_ReloadComponentEditor != null)
+            {
+                _ReloadComponentEditor(this, component, force);
+            }
+        }
 
         public ExposeToEditor NextSibling(List<GameObject> rootGameObjects)
         {

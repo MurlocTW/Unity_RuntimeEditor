@@ -51,21 +51,23 @@ namespace Battlehub.RTEditor
 
         private IEnumerator m_coCreatePreviews;
 
+        private ILocalization m_localization;
         private IWindowManager m_windowManager;
-
+        
         protected override void AwakeOverride()
         {
             WindowType = RuntimeWindowType.ImportAssets;
             base.AwakeOverride();
+            m_localization = IOC.Resolve<ILocalization>();
         }
 
         private void Start()
         {
             m_parentDialog = GetComponentInParent<Dialog>();
             m_parentDialog.IsOkVisible = true;
-            m_parentDialog.OkText = "Import";
+            m_parentDialog.OkText = m_localization.GetString("ID_RTEditor_AssetLibImportDialog_Btn_Import", "Import");
             m_parentDialog.IsCancelVisible = true;
-            m_parentDialog.CancelText = "Cancel";
+            m_parentDialog.CancelText = m_localization.GetString("ID_RTEditor_AssetLibImportDialog_Btn_Cancel", "Cancel"); 
             m_parentDialog.Ok += OnOk;
             m_parentDialog.Cancel += OnCancel;
 
@@ -95,7 +97,7 @@ namespace Battlehub.RTEditor
                 if (error.HasError)
                 {
                     Editor.IsBusy = false;
-                    m_windowManager.MessageBox("Unable to load AssetLibrary", error.ErrorText, (sender, arg) =>
+                    m_windowManager.MessageBox(m_localization.GetString("ID_RTEditor_AssetLibImportDialog_UnableToLoadAssetLibrary", "Unable to load AssetLibrary"), error.ErrorText, (sender, arg) =>
                     {
                         m_parentDialog.Close(false);
                     });
@@ -228,8 +230,14 @@ namespace Battlehub.RTEditor
                 return;
             }
 
+            Editor.StartCoroutine(CoImport());
+        }
+
+        private IEnumerator CoImport()
+        {
             Editor.IsBusy = true;
-            m_project.Import(SelectedAssets);
+            yield return m_project.Import(SelectedAssets);
+            Editor.IsBusy = false;
         }
 
 
@@ -251,10 +259,10 @@ namespace Battlehub.RTEditor
             {
                 m_project.UnloadImportItems(m_treeView.Items.OfType<ProjectItem>().FirstOrDefault());
             }
-            else
-            {
-                Debug.LogWarning("m_treeView.Items == null");
-            }
+            //else
+            //{
+            //    Debug.LogWarning("m_treeView.Items == null");
+            //}
         }
     }
 }

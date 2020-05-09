@@ -7,6 +7,11 @@ namespace Battlehub.RTCommon
 {
     public interface IResourcePreviewUtility
     {
+        Camera Camera
+        {
+            get;
+        }
+
         byte[] CreatePreviewData(UnityObject obj);
         Texture2D TakeSnapshot(GameObject go);
     }
@@ -23,6 +28,18 @@ namespace Battlehub.RTCommon
         private Vector3 m_scale = new Vector3(0.9f, 0.9f, 0.9f);
 
         private Shader m_unlitTexShader;
+
+        public Camera Camera
+        {
+            get
+            {
+                if(m_objectToTextureCamera != null)
+                {
+                    return m_objectToTextureCamera.GetComponent<Camera>();
+                }
+                return null;
+            }
+        }
 
         private void Awake()
         {
@@ -61,7 +78,6 @@ namespace Battlehub.RTCommon
                 light.type = LightType.Directional;
                 light.cullingMask = 1 << rte.CameraLayerSettings.ResourcePreviewLayer;
             }
-
         }
 
         private void OnDestroy()
@@ -99,12 +115,12 @@ namespace Battlehub.RTCommon
         public byte[] CreatePreviewData(UnityObject obj)
         {
             byte[] previewData = new byte[0];
-            if(obj is GameObject)
+            if (obj is GameObject)
             {
                 GameObject go = (GameObject)obj;
                 previewData = TakeSnapshotBytes(go);
             }
-            else if(obj is Material)
+            else if (obj is Material)
             {
                 Material material = (Material)obj;
                 Shader shader = material.shader;
@@ -123,23 +139,35 @@ namespace Battlehub.RTCommon
                 previewData = TakeSnapshotBytes(materialSphere);
                 DestroyImmediate(materialSphere);
 
-                if(replaceParticlesShader)
+                if (replaceParticlesShader)
                 {
                     material.shader = shader;
                 }
             }
-            else if(obj is Texture2D)
+            else if (obj is Texture2D)
             {
                 Texture2D texture = (Texture2D)obj;
-                if(texture.IsReadable())
+                bool isReadable = texture.isReadable;
+                bool isSupportedFormat = texture.format == TextureFormat.ARGB32 ||
+                                      texture.format == TextureFormat.RGBA32 ||
+                                      texture.format == TextureFormat.RGB24 ||
+                                      texture.format == TextureFormat.Alpha8;
+
+                if(isReadable && isSupportedFormat)
                 {
                     texture = Instantiate(texture);
-                    TextureScale.Bilinear(texture, m_objectToTextureCamera.snapshotTextureWidth, m_objectToTextureCamera.snapshotTextureHeight);
-                    previewData = texture.EncodeToPNG();
-                    Destroy(texture);
                 }
+                else
+                {
+                    texture = texture.DeCompress();
+                }
+
+                float textureAspect = (texture.width * m_objectToTextureCamera.snapshotTextureHeight) / (float)Mathf.Max(1, texture.height * m_objectToTextureCamera.snapshotTextureWidth);
+                TextureScale.Bilinear(texture, Mathf.RoundToInt(m_objectToTextureCamera.snapshotTextureWidth * textureAspect), m_objectToTextureCamera.snapshotTextureHeight);
+                previewData = texture.EncodeToPNG();
+                Destroy(texture);
             }
-            else if(obj is Sprite)
+            else if (obj is Sprite)
             {
                 Sprite sprite = (Sprite)obj;
                 previewData = FromSprite(sprite);
@@ -151,7 +179,7 @@ namespace Battlehub.RTCommon
         private byte[] FromSprite(Sprite sprite)
         {
             byte[] previewData = null;
-            if (sprite.texture != null && sprite.texture.IsReadable())
+            if (sprite.texture != null && sprite.texture.isReadable)
             {
                 Texture2D texture = new Texture2D((int)sprite.rect.width, (int)sprite.rect.height);
                 Color[] newColors = sprite.texture.GetPixels((int)sprite.textureRect.x,

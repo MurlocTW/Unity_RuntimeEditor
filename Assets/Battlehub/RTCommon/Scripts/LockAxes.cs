@@ -29,6 +29,9 @@ namespace Battlehub.RTCommon
         public bool ScaleY { get { return m_scaleY || (m_globalLock != null ? m_globalLock.m_scaleY : false); } set { m_scaleY = value; } }
         public bool ScaleZ { get { return m_scaleZ || (m_globalLock != null ? m_globalLock.m_scaleZ : false); } set { m_scaleZ = value; } }
 
+        public RuntimePivotMode? PivotMode { get; set; }
+        public RuntimePivotRotation? PivotRotation { get; set; }
+
         public bool IsPositionLocked
         {
             get { return PositionX && PositionY && PositionZ; }
@@ -72,6 +75,12 @@ namespace Battlehub.RTCommon
         public bool ScaleY;
         public bool ScaleZ;
 
+        public bool PivotMode;
+        public RuntimePivotMode PivotModeValue;
+        public bool PivotRotation;
+        public RuntimePivotRotation PivotRotationValue;
+        
+
         public static LockObject Eval(LockAxes[] lockAxes)
         {
             LockObject lockObject = new LockObject();
@@ -90,6 +99,32 @@ namespace Battlehub.RTCommon
                 lockObject.ScaleX = lockAxes.Any(la => la.ScaleX);
                 lockObject.ScaleY = lockAxes.Any(la => la.ScaleY);
                 lockObject.ScaleZ = lockAxes.Any(la => la.ScaleZ);
+
+                lockObject.PivotMode = null;
+                if(lockAxes.Any(la => la.PivotMode))
+                {
+                    if(lockAxes.All(la => la.PivotModeValue == RuntimePivotMode.Center))
+                    {
+                        lockObject.PivotMode = RuntimePivotMode.Center;
+                    }
+                    else if(lockAxes.All(la => la.PivotModeValue == RuntimePivotMode.Pivot))
+                    {
+                        lockObject.PivotMode = RuntimePivotMode.Pivot;
+                    }
+                }
+
+                lockObject.PivotRotation = null;
+                if(lockAxes.Any(la => la.PivotRotation))
+                {
+                    if (lockAxes.All(la => la.PivotRotationValue == RuntimePivotRotation.Global))
+                    {
+                        lockObject.PivotRotation = RuntimePivotRotation.Global;
+                    }
+                    else if (lockAxes.All(la => la.PivotRotationValue == RuntimePivotRotation.Local))
+                    {
+                        lockObject.PivotRotation = RuntimePivotRotation.Local;
+                    }
+                }
             }
 
             return lockObject;

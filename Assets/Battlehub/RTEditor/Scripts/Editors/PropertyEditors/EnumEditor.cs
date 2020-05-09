@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using TMPro;
+using Battlehub.RTCommon;
 
 namespace Battlehub.RTEditor
 {
@@ -46,12 +47,15 @@ namespace Battlehub.RTEditor
             base.InitOverride(target, accessor, memberInfo, eraseTargetCallback, label);
             List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
 
+            ILocalization localization = IOC.Resolve<ILocalization>();
+
             Type enumType = GetEnumType(accessor);
             string[] names = Enum.GetNames(enumType);
 
             for (int i = 0; i < names.Length; ++i)
             {
-                options.Add(new TMP_Dropdown.OptionData(names[i]));
+                string name = localization.GetString("ID_" + enumType.FullName + "." + names[i], names[i]);
+                options.Add(new TMP_Dropdown.OptionData(name.Replace('_', ' ')));
             }
 
             m_input.options = options;

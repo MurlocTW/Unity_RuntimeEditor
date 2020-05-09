@@ -1,6 +1,8 @@
 ﻿using Battlehub.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,6 +11,7 @@ namespace Battlehub.RTCommon
 {
     public delegate void ObjectEvent(ExposeToEditor obj);
     public delegate void ObjectEvent<T>(ExposeToEditor obj, T arg);
+    public delegate void ObjectEvent<T, T2>(ExposeToEditor obj, T arg, T2 arg2);
     public delegate void ObjectParentChangedEvent(ExposeToEditor obj, ExposeToEditor oldValue, ExposeToEditor newValue);
    
     public interface IRuntimeObjects
@@ -25,6 +28,7 @@ namespace Battlehub.RTCommon
         event ObjectEvent NameChanged;
         event ObjectParentChangedEvent ParentChanged;
         event ObjectEvent<Component> ComponentAdded;
+        event ObjectEvent<Component, bool> ReloadComponentEditor;
 
         IEnumerable<ExposeToEditor> Get(bool rootsOnly, bool useCache = true);
     }
@@ -43,6 +47,7 @@ namespace Battlehub.RTCommon
         public event ObjectEvent NameChanged;
         public event ObjectParentChangedEvent ParentChanged;
         public event ObjectEvent<Component> ComponentAdded;
+        public event ObjectEvent<Component, bool> ReloadComponentEditor;
 
         private IRTE m_editor;
 
@@ -120,7 +125,9 @@ namespace Battlehub.RTCommon
             ExposeToEditor._TransformChanged += OnTransformChanged;
             ExposeToEditor._NameChanged += OnNameChanged;
             ExposeToEditor._ParentChanged += OnParentChanged;
+
             ExposeToEditor._ComponentAdded += OnComponentAdded;
+            ExposeToEditor._ReloadComponentEditor += OnReloadComponentEditor;
         }
 
         private void OnDestroy()
@@ -146,6 +153,7 @@ namespace Battlehub.RTCommon
             ExposeToEditor._ParentChanged -= OnParentChanged;
 
             ExposeToEditor._ComponentAdded -= OnComponentAdded;
+            ExposeToEditor._ReloadComponentEditor -= OnReloadComponentEditor;
         }
 
         private void OnIsOpenedChanged()
@@ -294,11 +302,11 @@ namespace Battlehub.RTCommon
             }
         }
 
-        private static bool IsExposedToEditor(ExposeToEditor exposeToEditor)
+        private static bool HasValidState(ExposeToEditor exposeToEditor)
         {
             return exposeToEditor != null &&
                 !exposeToEditor.MarkAsDestroyed &&
-                exposeToEditor.hideFlags != HideFlags.HideAndDontSave;
+                (exposeToEditor.hideFlags & HideFlags.HideInHierarchy) == 0 && exposeToEditor.IsAwaked;
         }
 
         private static List<ExposeToEditor> FindAll()
@@ -317,7 +325,7 @@ namespace Battlehub.RTCommon
                     continue;
                 }
 
-                if(!IsExposedToEditor(obj))
+                if(!HasValidState(obj))
                 {
                     continue;
                 }
@@ -341,7 +349,7 @@ namespace Battlehub.RTCommon
                 for (int j = 0; j < exposedObjects.Length; ++j)
                 {
                     ExposeToEditor obj = exposedObjects[j];
-                    if (IsExposedToEditor(obj))
+                    if (HasValidState(obj))
                     {
                         result.Add(obj);
                     }
@@ -438,7 +446,7 @@ namespace Battlehub.RTCommon
                 {
                     if (obj.AddColliders && !isRigidBody)
                     {
-                        Mesh box = RuntimeGraphics.CreateCubeMesh(Color.black, obj.CustomBounds.center, 1, obj.CustomBounds.extents.x * 2, obj.CustomBounds.extents.y * 2, obj.CustomBounds.extents.z * 2);
+                        Mesh box = GraphicsUtility.CreateCube(Color.black, obj.CustomBounds.center, 1, obj.CustomBounds.extents.x * 2, obj.CustomBounds.extents.y * 2, obj.CustomBounds.extents.z * 2);
 
                         MeshCollider collider = obj.BoundsObject.AddComponent<MeshCollider>();
                         collider.convex = isRigidBody;
@@ -481,7 +489,9 @@ namespace Battlehub.RTCommon
             }
             else
             {
-                if(!m_editModeCache.Contains(obj))
+                obj.SendMessage("EditorAwake", SendMessageOptions.DontRequireReceiver);
+
+                if (!m_editModeCache.Contains(obj))
                 {
                     m_editModeCache.Add(obj);
                     if (m_editor.IsOpened)
@@ -518,7 +528,8 @@ namespace Battlehub.RTCommon
             }
             else 
             {
-                if(m_editModeCache.Contains(obj))
+                obj.SendMessage("OnEditorDestroy", SendMessageOptions.DontRequireReceiver);
+                if (m_editModeCache.Contains(obj))
                 {
                     m_editModeCache.Remove(obj);
                     TryToDestroyColliders(obj);
@@ -549,6 +560,7 @@ namespace Battlehub.RTCommon
                         {
                             ExposeToEditor child = children[i];
                             m_playModeCache.Remove(child);
+                            SendMessageTo(child.gameObject, "OnMarkAsDestroyed");
                         }
                     }
                     else
@@ -557,6 +569,7 @@ namespace Battlehub.RTCommon
                         {
                             ExposeToEditor child = children[i];
                             m_playModeCache.Add(child);
+                            SendMessageTo(child.gameObject, "OnMarkAsRestored");
                         }
                     }
                 }
@@ -565,13 +578,14 @@ namespace Battlehub.RTCommon
                     if (obj.MarkAsDestroyed)
                     {
                         m_playModeCache.Remove(obj);
+                        SendMessageTo(obj.gameObject, "OnMarkAsDestroyed");
                     }
                     else
                     {
                         m_playModeCache.Add(obj);
+                        SendMessageTo(obj.gameObject, "OnMarkAsRestored");
                     }
                 }
-
             }
             else
             {
@@ -584,6 +598,7 @@ namespace Battlehub.RTCommon
                         {
                             ExposeToEditor child = children[i];
                             m_editModeCache.Remove(child);
+                            SendMessageTo(child.gameObject, "OnMarkAsDestroyed");
                         }
                     }
                     else
@@ -592,6 +607,7 @@ namespace Battlehub.RTCommon
                         {
                             ExposeToEditor child = children[i];
                             m_editModeCache.Add(child);
+                            SendMessageTo(child.gameObject, "OnMarkAsRestored");
                         }
                     }
                 }
@@ -599,19 +615,41 @@ namespace Battlehub.RTCommon
                 {
                     if (obj.MarkAsDestroyed)
                     {
+                        
                         m_editModeCache.Remove(obj);
+                        SendMessageTo(obj.gameObject, "OnMarkAsDestroyed");
                     }
                     else
                     {
                         m_editModeCache.Add(obj);
+                        SendMessageTo(obj.gameObject, "OnMarkAsRestored");
                     }
                 }
-               
             }
 
             if(MarkAsDestroyedChanging != null)
             {
                 MarkAsDestroyedChanging(obj);
+            }
+        }
+
+        public void SendMessageTo(GameObject gameobject, string methodName, params object[] parameters)
+        {
+            MonoBehaviour[] components = gameobject.GetComponentsInChildren<MonoBehaviour>(true);
+            foreach (MonoBehaviour m in components)
+            {
+                InvokeIfExists(m, methodName, parameters);
+            }
+        }
+
+        private void InvokeIfExists(object objectToCheck, string methodName, params object[] parameters)
+        {
+            Type type = objectToCheck.GetType();
+            
+            MethodInfo methodInfo = type.GetMethod(methodName);
+            if (methodInfo != null)
+            {
+                methodInfo.Invoke(objectToCheck, parameters);
             }
         }
 
@@ -636,6 +674,10 @@ namespace Battlehub.RTCommon
             if (m_editor.IsPlaying)
             {
                 obj.SendMessage("RuntimeStart", SendMessageOptions.DontRequireReceiver);
+            }
+            else
+            {
+                obj.SendMessage("EditorStart", SendMessageOptions.DontRequireReceiver);
             }
 
             if (Started != null)
@@ -681,6 +723,14 @@ namespace Battlehub.RTCommon
             if(ComponentAdded != null)
             {
                 ComponentAdded(obj, component);
+            }
+        }
+
+        private void OnReloadComponentEditor(ExposeToEditor obj, Component component, bool force)
+        {
+            if(ReloadComponentEditor != null)
+            {
+                ReloadComponentEditor(obj, component, force);
             }
         }
     }

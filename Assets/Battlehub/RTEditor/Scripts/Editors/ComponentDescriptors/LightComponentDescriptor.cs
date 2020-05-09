@@ -4,6 +4,7 @@ using System;
 using Battlehub.Utils;
 using System.Collections.Generic;
 using Battlehub.RTGizmos;
+using Battlehub.RTCommon;
 
 namespace Battlehub.RTEditor
 {
@@ -11,6 +12,8 @@ namespace Battlehub.RTEditor
     {
         public override PropertyDescriptor[] GetProperties(ComponentEditor editor, object converter)
         {
+            ILocalization lc = IOC.Resolve<ILocalization>();
+
             Light light = (Light)editor.Component;
 
             PropertyEditorCallback valueChanged = () => editor.BuildEditor();
@@ -27,28 +30,28 @@ namespace Battlehub.RTEditor
             MemberInfo renderModeInfo = Strong.PropertyInfo((Light x) => x.renderMode, "renderMode");
 
             List<PropertyDescriptor> descriptors = new List<PropertyDescriptor>();
-            descriptors.Add(new PropertyDescriptor("Enabled", editor.Component, enabledInfo, enabledInfo));
-            descriptors.Add(new PropertyDescriptor("Type", editor.Component, lightTypeInfo, lightTypeInfo, valueChanged));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_Enabled", "Enabled"), editor.Component, enabledInfo, "m_Enabled"));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_Type", "Type"), editor.Component, lightTypeInfo, lightTypeInfo, valueChanged));
             if (light.type == LightType.Point)
             {
                 MemberInfo rangeInfo = Strong.PropertyInfo((Light x) => x.range, "range");
-                descriptors.Add(new PropertyDescriptor("Range", editor.Component, rangeInfo, rangeInfo));
+                descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_Range", "Range"), editor.Component, rangeInfo, "m_Range"));
             }
             else if (light.type == LightType.Spot)
             {
                 MemberInfo rangeInfo = Strong.PropertyInfo((Light x) => x.range, "range");
                 MemberInfo spotAngleInfo = Strong.PropertyInfo((Light x) => x.spotAngle, "spotAngle");
-                descriptors.Add(new PropertyDescriptor("Range", editor.Component, rangeInfo, rangeInfo));
-                descriptors.Add(new PropertyDescriptor("Spot Angle", editor.Component, spotAngleInfo, spotAngleInfo, null, new Range(1, 179)));
+                descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_Range", "Range"), editor.Component, rangeInfo, "m_Range"));
+                descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_SpotAngle", "Spot Angle"), editor.Component, spotAngleInfo, spotAngleInfo, null, new Range(1, 179)) { AnimationPropertyName = "m_SpotAngle" } );
             }
 
-            descriptors.Add(new PropertyDescriptor("Color", editor.Component, colorInfo, colorInfo));
-            descriptors.Add(new PropertyDescriptor("Intensity", editor.Component, intensityInfo, intensityInfo, null, new Range(0, 8)));
-            descriptors.Add(new PropertyDescriptor("Bounce Intensity", editor.Component, bounceIntensityInfo, bounceIntensityInfo, null, new Range(0, 8)));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_Color", "Color"), editor.Component, colorInfo, "m_Color"));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_Intensity", "Intensity"), editor.Component, intensityInfo, intensityInfo, null, new Range(0, 8)) { AnimationPropertyName = "m_Intensity" });
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_BounceIntensity", "Bounce Intensity"), editor.Component, bounceIntensityInfo, bounceIntensityInfo, null, new Range(0, 8)) { AnimationPropertyName = "m_BounceIntensity" });
 
             if (light.type != LightType.Area)
             {
-                descriptors.Add(new PropertyDescriptor("Shadow Type", editor.Component, shadowTypeInfo, shadowTypeInfo, valueChanged));
+                descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_ShadowType", "Shadow Type"), editor.Component, shadowTypeInfo, shadowTypeInfo, valueChanged));
                 if (light.shadows == LightShadows.Soft || light.shadows == LightShadows.Hard)
                 {
                     MemberInfo shadowStrengthInfo = Strong.PropertyInfo((Light x) => x.shadowStrength, "shadowStrength");
@@ -57,19 +60,19 @@ namespace Battlehub.RTEditor
                     MemberInfo shadowNormalBiasInfo = Strong.PropertyInfo((Light x) => x.shadowNormalBias, "shadowNormalBias");
                     MemberInfo shadowNearPlaneInfo = Strong.PropertyInfo((Light x) => x.shadowNearPlane, "shadowNearPlane");
 
-                    descriptors.Add(new PropertyDescriptor("Strength", editor.Component, shadowStrengthInfo, shadowStrengthInfo, null, new Range(0, 1)));
-                    descriptors.Add(new PropertyDescriptor("Resoultion", editor.Component, shadowResolutionInfo, shadowResolutionInfo));
-                    descriptors.Add(new PropertyDescriptor("Bias", editor.Component, shadowBiasInfo, shadowBiasInfo, null, new Range(0, 2)));
-                    descriptors.Add(new PropertyDescriptor("Normal Bias", editor.Component, shadowNormalBiasInfo, shadowNormalBiasInfo, null, new Range(0, 3)));
-                    descriptors.Add(new PropertyDescriptor("Shadow Near Plane", editor.Component, shadowNearPlaneInfo, shadowNearPlaneInfo, null, new Range(0, 10)));
+                    descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_Strength", "Strength"), editor.Component, shadowStrengthInfo, shadowStrengthInfo, null, new Range(0, 1)) { AnimationPropertyName = "m_Strength" });
+                    descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_Resolution", "Resoultion"), editor.Component, shadowResolutionInfo, shadowResolutionInfo));
+                    descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_Bias", "Bias"), editor.Component, shadowBiasInfo, shadowBiasInfo, null, new Range(0, 2)) { AnimationPropertyName = "m_Bias" });
+                    descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_NormalBias", "Normal Bias"), editor.Component, shadowNormalBiasInfo, shadowNormalBiasInfo, null, new Range(0, 3)) { AnimationPropertyName = "m_NormalBias" });
+                    descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_ShadowNearPlane", "Shadow Near Plane"), editor.Component, shadowNearPlaneInfo, shadowNearPlaneInfo, null, new Range(0, 10)) { AnimationPropertyName = "m_NearPlane" });
                 }
 
-                descriptors.Add(new PropertyDescriptor("Cookie", editor.Component, cookieInfo, cookieInfo));
-                descriptors.Add(new PropertyDescriptor("Cookie Size", editor.Component, cookieSizeInfo, cookieSizeInfo));
+                descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_Cookie", "Cookie"), editor.Component, cookieInfo, cookieInfo));
+                descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_CookieSize", "Cookie Size"), editor.Component, cookieSizeInfo, cookieSizeInfo));
             }
 
-            descriptors.Add(new PropertyDescriptor("Flare", editor.Component, flareInfo, flareInfo));
-            descriptors.Add(new PropertyDescriptor("Render Mode", editor.Component, renderModeInfo, renderModeInfo));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_Flare", "Flare"), editor.Component, flareInfo, flareInfo));
+            descriptors.Add(new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_Light_RenderMode", "Render Mode"), editor.Component, renderModeInfo, renderModeInfo));
 
             return descriptors.ToArray();
         }

@@ -1,4 +1,5 @@
 ﻿using Battlehub.RTCommon;
+using Battlehub.RTSL.Interface;
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
@@ -23,9 +24,6 @@ namespace Battlehub.RTSL.Battlehub.SL2
         [ProtoMember(4)]
         public long[] Dependencies;
 
-        //[ProtoMember(5)]
-        //public int[] Usings;
-
         protected readonly ITypeMap m_typeMap;
 
         public PersistentRuntimePrefab()
@@ -40,30 +38,21 @@ namespace Battlehub.RTSL.Battlehub.SL2
 
             List<PersistentObject> data = new List<PersistentObject>();
             List<long> identifiers = new List<long>();
-            //HashSet<int> usings = new HashSet<int>();
+            
             GetDepsFromContext getDepsCtx = new GetDepsFromContext();
             Descriptors = new PersistentDescriptor[1];
-            Descriptors[0] = CreateDescriptorAndData(go, data, identifiers, /*usings,*/ getDepsCtx);
+            Descriptors[0] = CreateDescriptorAndData(go, data, identifiers, getDepsCtx);
 
             Identifiers = identifiers.ToArray();
             Data = data.ToArray();
             Dependencies = getDepsCtx.Dependencies.OfType<UnityObject>().Select(d => m_assetDB.ToID(d)).ToArray();
-           // Usings = usings.ToArray();
         }
 
         protected override object WriteToImpl(object obj)
         {
             obj = base.WriteToImpl(obj);
             RestoreDataAndResolveDependencies();
-            //for(int i = 0; i < Data.Length; ++i)
-            //{
-            //    PersistentObject data = Data[i];
-            //    long id = Identifiers[i];
- 
-            //    UnityObject unityObj = m_assetDB.FromID<UnityObject>(id);
-            //    data.WriteTo(unityObj);
-            //}
-
+            
             return obj;
         }
 
@@ -98,11 +87,17 @@ namespace Battlehub.RTSL.Battlehub.SL2
             }
         }
 
-        private void GetDependenciesFrom(GameObject go, List<object> prefabParts, GetDepsFromContext context)
+        protected virtual void GetDependenciesFrom(GameObject go, List<object> prefabParts, GetDepsFromContext context)
         {
             if (go.GetComponent<RTSLIgnore>())
             {
                 //Do not save persistent ignore objects
+                return;
+            }
+
+            ExposeToEditor exposeToEditor = go.GetComponent<ExposeToEditor>();
+            if(exposeToEditor != null && exposeToEditor.MarkAsDestroyed)
+            {
                 return;
             }
 
@@ -208,20 +203,35 @@ namespace Battlehub.RTSL.Battlehub.SL2
                     PersistentDescriptor componentDescriptor = descriptor.Components[i];
 
                     Type persistentComponentType = m_typeMap.ToType(componentDescriptor.PersistentTypeGuid);
-                    if (persistentComponentType == null)
+                    Type componentType;
+                    if (persistentComponentType != typeof(PersistentRuntimeSerializableObject))
                     {
-                        Debug.LogWarningFormat("Unknown type {0} associated with component Descriptor {1}", componentDescriptor.PersistentTypeGuid, componentDescriptor.ToString());
-                        idToObj.Add(m_assetDB.ToInt(componentDescriptor.PersistentID), null);
-                        continue;
-                    }
-                    Type componentType = typeMap.ToUnityType(persistentComponentType);
-                    if (componentType == null)
-                    {
-                        Debug.LogWarningFormat("There is no mapped type for " + persistentComponentType.FullName + " in TypeMap");
-                        idToObj.Add(m_assetDB.ToInt(componentDescriptor.PersistentID), null);
-                        continue;
-                    }
+                        if (persistentComponentType == null)
+                        {
+                            Debug.LogWarningFormat("Unknown type {0} associated with component Descriptor {1}", componentDescriptor.PersistentTypeGuid, componentDescriptor.ToString());
+                            idToObj.Add(m_assetDB.ToInt(componentDescriptor.PersistentID), null);
+                            continue;
+                        }
 
+                        componentType = typeMap.ToUnityType(persistentComponentType);
+                        if (componentType == null)
+                        {
+                            Debug.LogWarningFormat("There is no mapped type for " + persistentComponentType.FullName + " in TypeMap");
+                            idToObj.Add(m_assetDB.ToInt(componentDescriptor.PersistentID), null);
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        componentType = typeMap.ToType(componentDescriptor.RuntimeTypeGuid);
+                        if(componentType == null)
+                        {
+                            Debug.LogWarningFormat("There is no runtime type with guid {0}", componentDescriptor.RuntimeTypeGuid);
+                            idToObj.Add(m_assetDB.ToInt(componentDescriptor.PersistentID), null);
+                            continue;
+                        }
+                    }
+                    
                     if (!componentType.IsSubclassOf(typeof(Component)))
                     {
                         Debug.LogErrorFormat("{0} is not subclass of {1}", componentType.FullName, typeof(Component).FullName);
@@ -376,14 +386,15 @@ namespace Battlehub.RTSL.Battlehub.SL2
         }
 
 
-        protected PersistentDescriptor CreateDescriptorAndData(GameObject go, List<PersistentObject> persistentData, List<long> persistentIdentifiers, /*HashSet<int> usings,*/ GetDepsFromContext getDepsFromCtx, PersistentDescriptor parentDescriptor = null)
+        protected virtual PersistentDescriptor CreateDescriptorAndData(GameObject go, List<PersistentObject> persistentData, List<long> persistentIdentifiers, /*HashSet<int> usings,*/ GetDepsFromContext getDepsFromCtx, PersistentDescriptor parentDescriptor = null)
         {
             if (go.GetComponent<RTSLIgnore>())
             {
                 //Do not save persistent ignore objects
                 return null;
             }
-            Type persistentType = m_typeMap.ToPersistentType(go.GetType());
+            Type type = go.GetType();
+            Type persistentType = m_typeMap.ToPersistentType(type);
             if (persistentType == null)
             {
                 return null;
@@ -396,7 +407,7 @@ namespace Battlehub.RTSL.Battlehub.SL2
             //    usings.Add(ordinal);
             //}
             
-            PersistentDescriptor descriptor = new PersistentDescriptor(m_typeMap.ToGuid(persistentType), persistentID, go.name);
+            PersistentDescriptor descriptor = new PersistentDescriptor(m_typeMap.ToGuid(persistentType), persistentID, go.name, m_typeMap.ToGuid(type));
             descriptor.Parent = parentDescriptor;
 
             PersistentObject goData = (PersistentObject)Activator.CreateInstance(persistentType);
@@ -412,7 +423,8 @@ namespace Battlehub.RTSL.Battlehub.SL2
                 for (int i = 0; i < components.Length; ++i)
                 {
                     Component component = components[i];
-                    Type persistentComponentType = m_typeMap.ToPersistentType(component.GetType());
+                    Type componentType = component.GetType();
+                    Type persistentComponentType = m_typeMap.ToPersistentType(componentType);
                     if (persistentComponentType == null)
                     {
                         continue;
@@ -424,7 +436,7 @@ namespace Battlehub.RTSL.Battlehub.SL2
                     //    int ordinal = m_assetDB.ToOrdinal(componentID);
                     //    usings.Add(ordinal);
                     //}
-                    PersistentDescriptor componentDescriptor = new PersistentDescriptor(m_typeMap.ToGuid(persistentComponentType), componentID, component.name);
+                    PersistentDescriptor componentDescriptor = new PersistentDescriptor(m_typeMap.ToGuid(persistentComponentType), componentID, component.name, m_typeMap.ToGuid(componentType));
                     componentDescriptor.Parent = descriptor;
                     componentDescriptors.Add(componentDescriptor);
 

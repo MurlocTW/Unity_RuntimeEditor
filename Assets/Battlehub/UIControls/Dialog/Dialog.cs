@@ -23,7 +23,7 @@ namespace Battlehub.UIControls.Dialogs
 
         public event DialogAction<DialogCancelArgs> Ok;
         public event DialogAction<DialogCancelArgs> Cancel;
-        public event DialogAction Closed;
+        public event DialogAction<bool?> Closed;
         public DialogAction<DialogCancelArgs> OkAction;
         public DialogAction<DialogCancelArgs> CancelAction;
 
@@ -304,57 +304,12 @@ namespace Battlehub.UIControls.Dialogs
 
         private void OnOkClick()
         {
-            if(Ok != null)
-            {
-                DialogCancelArgs args = new DialogCancelArgs();
-                Ok(this, args);
-
-                if (args.Cancel)
-                {
-                    return;
-                }
-            }
-
-            if (OkAction != null)
-            {
-                DialogCancelArgs args = new DialogCancelArgs();
-                OkAction(this, args);
-
-                if (args.Cancel)
-                {
-                    return;
-                }
-            }
-
-            Close();
+            Close(true);
         }
 
         private void OnCancelClick()
         {
-            if (Cancel != null)
-            {
-                DialogCancelArgs args = new DialogCancelArgs();
-                Cancel(this, args);
-
-                if (args.Cancel)
-                {
-                    return;
-                }
-            }
-
-            if (CancelAction != null)
-            {
-                DialogCancelArgs args = new DialogCancelArgs();
-                CancelAction(this, args);
-
-                if (args.Cancel)
-                {
-                    return;
-                }
-            }
-
-
-            Close();
+            Close(false);
         }     
         
         public void Hide()
@@ -369,13 +324,17 @@ namespace Battlehub.UIControls.Dialogs
 
         public void Show()
         {
-            m_parentRegion.gameObject.SetActive(true);
+            if(m_parentRegion != null)
+            {
+                m_parentRegion.gameObject.SetActive(true);
+            }
         }
 
-        public void Close(bool? result = null)
+        public void Close(bool? result = null, bool raiseEvents = true, bool invokeActions = true)
         {
             if(m_parentRegion == null)
             {
+                Debug.LogWarning("m_parentRegion == null");
                 return;
             }
 
@@ -384,7 +343,7 @@ namespace Battlehub.UIControls.Dialogs
             {
                 if (result == false)
                 {
-                    if(Cancel != null)
+                    if(Cancel != null && raiseEvents)
                     {
                         DialogCancelArgs args = new DialogCancelArgs();
                         Cancel(this, args);
@@ -394,7 +353,7 @@ namespace Battlehub.UIControls.Dialogs
                         }
                     }
 
-                    if(CancelAction != null)
+                    if(CancelAction != null && invokeActions)
                     {
                         DialogCancelArgs args = new DialogCancelArgs();
                         CancelAction(this, args);
@@ -403,12 +362,10 @@ namespace Battlehub.UIControls.Dialogs
                             return;
                         }
                     }
-                    
-                    
                 }
                 else if (result == true)
                 {
-                    if(Ok != null)
+                    if(Ok != null && raiseEvents)
                     {
                         DialogCancelArgs args = new DialogCancelArgs();
                         Ok(this, args);
@@ -418,7 +375,7 @@ namespace Battlehub.UIControls.Dialogs
                         }
                     }
                 
-                    if(OkAction != null)
+                    if(OkAction != null && invokeActions)
                     {
                         DialogCancelArgs args = new DialogCancelArgs();
                         OkAction(this, args);
@@ -427,14 +384,13 @@ namespace Battlehub.UIControls.Dialogs
                             return;
                         }
                     }
-                   
                 }
             }
 
             Destroy(m_parentRegion.gameObject);
             if(Closed != null)
             {
-                Closed(this);
+                Closed(this, result);
             }
         }
     }

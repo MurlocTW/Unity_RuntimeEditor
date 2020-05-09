@@ -2,6 +2,7 @@
 using System.Reflection;
 using Battlehub.Utils;
 using Battlehub.RTGizmos;
+using Battlehub.RTCommon;
 
 namespace Battlehub.RTEditor
 {
@@ -9,18 +10,19 @@ namespace Battlehub.RTEditor
     {
         public override PropertyDescriptor[] GetProperties(ComponentEditor editor, object converter)
         {
+            ILocalization lc = IOC.Resolve<ILocalization>();
+
             MemberInfo isTriggerInfo = Strong.PropertyInfo((SphereCollider x) => x.isTrigger, "isTrigger");
             MemberInfo materialInfo = Strong.PropertyInfo((SphereCollider x) => x.sharedMaterial, "sharedMaterial");
             MemberInfo centerInfo = Strong.PropertyInfo((SphereCollider x) => x.center, "center");
             MemberInfo radiusInfo = Strong.PropertyInfo((SphereCollider x) => x.radius, "radius");
 
-
             return new[]
             {
-                new PropertyDescriptor("Is Trigger", editor.Component, isTriggerInfo, isTriggerInfo),
-                new PropertyDescriptor("Material", editor.Component, materialInfo, materialInfo),
-                new PropertyDescriptor("Center", editor.Component, centerInfo, centerInfo),
-                new PropertyDescriptor("Radius", editor.Component, radiusInfo, radiusInfo),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SphereCollider_IsTrigger", "Is Trigger"), editor.Component, isTriggerInfo, "m_IsTrigger"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SphereCollider_Material", "Material"), editor.Component, materialInfo),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SphereCollider_Center", "Center"), editor.Component, centerInfo, "m_Center"),
+                new PropertyDescriptor(lc.GetString("ID_RTEditor_CD_SphereCollider_Radius", "Radius"), editor.Component, radiusInfo, "m_Radius")
             };
         }
     }

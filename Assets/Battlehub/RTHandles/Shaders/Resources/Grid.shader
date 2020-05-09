@@ -5,10 +5,12 @@
 Shader "Battlehub/RTHandles/Grid" {
 	Properties
 	{
+		_GridColor("Color", Color) = (1.0, 1.0, 1.0, 1.0)
 		_ZWrite("ZWrite", Float) = 0.0
 		_ZTest("ZTest", Float) = 4.0
 		_Cull("Cull", Float) = 0.0
 		_FadeDistance("FadeDistance", Float) = 50.0
+		_CameraSize("CameraSize", Float) = 1.0
 
 		_StencilComp("Stencil Comparison", Float) = 5
 		_Stencil("Stencil ID", Float) = 99
@@ -27,26 +29,32 @@ Shader "Battlehub/RTHandles/Grid" {
 		{
 			Blend SrcAlpha OneMinusSrcAlpha
 			Cull[_Cull]
-			ZTest On
+			ZTest[_ZTest]
 			ZWrite Off
+			Offset -0.02, 0
 
 			CGPROGRAM
 
 			#include "UnityCG.cginc"
 			#pragma vertex vert  
 			#pragma fragment frag 
+			#pragma multi_compile_instancing
 
 			struct vertexInput {
 				float4 vertex : POSITION;
 				float4 color: COLOR;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 			struct vertexOutput {
 				float4 pos : SV_POSITION;
 				float3 worldPos: TEXCOORD0;
 				float4 color: COLOR;
+				//UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
 			float _FadeDistance;
+			float _CameraSize;
+			float4 _GridColor;
 
 			inline float4 GammaToLinearSpace(float4 sRGB)
 			{
@@ -60,6 +68,9 @@ Shader "Battlehub/RTHandles/Grid" {
 			vertexOutput vert(vertexInput input)
 			{
 				vertexOutput output;
+				UNITY_SETUP_INSTANCE_ID(input);
+				//UNITY_TRANSFER_INSTANCE_ID(input, output);
+
 				output.pos = UnityObjectToClipPos(input.vertex);
 				output.worldPos = mul(unity_ObjectToWorld, input.vertex);
 
@@ -68,18 +79,22 @@ Shader "Battlehub/RTHandles/Grid" {
 				return output;
 			}
 
+			#define PERSP UNITY_MATRIX_P[3][3]
+			#define ORTHO (1 - PERSP)
+
 			float4 frag(vertexOutput input) : COLOR
 			{
+				//UNITY_SETUP_INSTANCE_ID(input);
 				float4 col = input.color;
 				float3 cam = _WorldSpaceCameraPos;
 				float3 wp = input.worldPos;
-				cam.y = wp.y;
-
-				float alpha = saturate(1 - length(cam - wp) / _FadeDistance);
-				col.a = col.a * alpha * alpha;
 				
+				float f = (length(cam - wp) * ORTHO + _CameraSize * PERSP) / _FadeDistance;
+				float alpha = saturate(1.0f - f);
 
-				return col;
+				col.a = col.a * alpha * alpha;
+
+				return col * _GridColor;
 			}
 
 			ENDCG

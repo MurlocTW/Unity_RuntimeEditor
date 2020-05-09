@@ -19,6 +19,11 @@ namespace Battlehub.RTEditor
         private GameObject m_dropTarget;
         private AssetItem m_dragItem;
 
+        protected GameObject PrefabInstance
+        {
+            get { return m_prefabInstance; }
+        }
+
         private RuntimeWindow m_window;
         protected RuntimeWindow Window
         {
@@ -60,9 +65,7 @@ namespace Battlehub.RTEditor
             m_window.DragEnterEvent += OnDragEnter;
             m_window.DragLeaveEvent += OnDragLeave;
             m_window.DragEvent += OnDrag;
-            m_window.DropEvent += OnDrop;
-
-            
+            m_window.DropEvent += OnDrop;   
         }
 
         protected virtual void OnDestroy()
@@ -76,7 +79,6 @@ namespace Battlehub.RTEditor
             }
         }
 
-   
         protected virtual void OnDragEnter(PointerEventData pointerEventData)
         {
             if (m_prefabInstance != null)
@@ -105,51 +107,89 @@ namespace Battlehub.RTEditor
                     m_dragItem = assetItem;
                 }
             }
+            else if(Editor.DragDrop.DragObjects[0] is IToolCmd)
+            {
+                Editor.DragDrop.SetCursor(KnownCursor.DropAllowed);
+            }
         }
 
         protected virtual void OnAssetItemLoaded(Error error, Object[] obj)
         {
-            if (obj[0] is GameObject)
+            if(error.HasError)
             {
-                IScenePivot scenePivot = IOCContainer.Resolve<IScenePivot>();
-                Vector3 up = Vector3.up;
-                if (Mathf.Abs(Vector3.Dot(Camera.transform.up, Vector3.up)) > Mathf.Cos(Mathf.Deg2Rad))
+                Debug.LogError(error.ToString());
+                m_prefabInstance = null;
+                m_prefabInstanceTransforms = null;
+            }
+            else
+            {
+                if (obj[0] is GameObject)
                 {
-                    up = Vector3.Cross(Camera.transform.right, Vector3.up);
+                    CreateDragPlane();
+
+                    GameObject prefab = (GameObject)obj[0];
+                    bool wasPrefabEnabled = prefab.activeSelf;
+                    prefab.SetActive(false);
+
+                    Vector3 point;
+                    if (GetPointOnDragPlane(out point))
+                    {
+                        m_prefabInstance = InstantiatePrefab(prefab, point, prefab.GetComponent<Transform>().rotation);
+                    }
+                    else
+                    {
+                        m_prefabInstance = InstantiatePrefab(prefab, Vector3.zero, prefab.GetComponent<Transform>().rotation);
+                    }
+
+                    Editor.AddGameObjectToHierarchy(m_prefabInstance);
+                    
+                    m_prefabInstanceTransforms = new HashSet<Transform>(m_prefabInstance.GetComponentsInChildren<Transform>(true));
+
+                    prefab.SetActive(wasPrefabEnabled);
+
+                    ExposeToEditor exposeToEditor = ExposePrefabInstance(m_prefabInstance);
+                    exposeToEditor.SetName(obj[0].name);
+
+                    OnActivatePrefabInstance(m_prefabInstance);
+
+                    if (!Editor.DragDrop.InProgress)
+                    {
+                        RecordUndo();
+                        m_prefabInstance = null;
+                        m_prefabInstanceTransforms = null;
+                    }
                 }
-                else
-                {
-                    up = Vector3.up;
-                }
-                m_dragPlane = GetDragPlane(scenePivot, up);
+            }
+        }
 
-                GameObject prefab = (GameObject)obj[0];
-                bool wasPrefabEnabled = prefab.activeSelf;
-                prefab.SetActive(false);
-
-                Vector3 point;
-                if (GetPointOnDragPlane(out point))
-                {
-                    m_prefabInstance = InstantiatePrefab(prefab, point, Quaternion.identity);
-                }
-                else
-                {
-                    m_prefabInstance = InstantiatePrefab(prefab, Vector3.zero, Quaternion.identity);
-                }
-
-                m_prefabInstanceTransforms = new HashSet<Transform>(m_prefabInstance.GetComponentsInChildren<Transform>(true));
-
-                prefab.SetActive(wasPrefabEnabled);
-
-                ExposeToEditor exposeToEditor = m_prefabInstance.GetComponent<ExposeToEditor>();
+        protected virtual ExposeToEditor ExposePrefabInstance(GameObject prefabInstance)
+        {
+            Transform[] transforms = prefabInstance.GetComponentsInChildren<Transform>(true);
+            foreach (Transform transform in transforms)
+            {
+                ExposeToEditor exposeToEditor = transform.GetComponent<ExposeToEditor>();
                 if (exposeToEditor == null)
                 {
-                    exposeToEditor = m_prefabInstance.AddComponent<ExposeToEditor>();
+                    exposeToEditor = transform.gameObject.AddComponent<ExposeToEditor>();
                 }
-
-                exposeToEditor.SetName(obj[0].name);
-                OnActivatePrefabInstance(m_prefabInstance);
             }
+
+            return prefabInstance.GetComponent<ExposeToEditor>();
+        }
+
+        private void CreateDragPlane()
+        {
+            IScenePivot scenePivot = IOCContainer.Resolve<IScenePivot>();
+            Vector3 up = Vector3.up;
+            if (Mathf.Abs(Vector3.Dot(Camera.transform.up, Vector3.up)) > Mathf.Cos(Mathf.Deg2Rad))
+            {
+                up = Vector3.Cross(Camera.transform.right, Vector3.up);
+            }
+            else
+            {
+                up = Vector3.up;
+            }
+            m_dragPlane = GetDragPlane(scenePivot, up);
         }
 
         protected virtual GameObject InstantiatePrefab(GameObject prefab, Vector3 position, Quaternion rotation)
@@ -168,7 +208,6 @@ namespace Battlehub.RTEditor
             {
                 Editor.DragDrop.SetCursor(KnownCursor.DropNotAllowed);
             }
-
 
             if (m_prefabInstance != null)
             {
@@ -310,6 +349,41 @@ namespace Battlehub.RTEditor
                 m_dropTarget = null;
                 m_dragItem = null;
             }
+
+            
+            IToolCmd cmd = Editor.DragDrop.DragObjects.OfType<IToolCmd>().FirstOrDefault();
+            if (cmd != null)
+            {
+                GameObject go = cmd.Run() as GameObject;
+                if (go != null)
+                {
+                    CreateDragPlane();
+                    Vector3 point;
+                    if (GetPointOnDragPlane(out point))
+                    {
+                        m_point = point;
+
+                        RaycastHit hit = Physics.RaycastAll(Pointer).FirstOrDefault();
+                        if (hit.transform != null)
+                        {
+                            m_point = hit.point;
+                        }
+
+                        ExposeToEditor exposeToEditor = go.GetComponent<ExposeToEditor>();
+                        go.transform.position = m_point + Vector3.up * exposeToEditor.Bounds.extents.y;
+
+                        IRuntimeSelectionComponent selectionComponent = IOCContainer.Resolve<IRuntimeSelectionComponent>();
+                        if (selectionComponent.CanSelect)
+                        {
+                            bool wasEnabled = Editor.Undo.Enabled;
+                            Editor.Undo.Enabled = false;
+                            Editor.Selection.activeGameObject = null;
+                            Editor.Selection.activeGameObject = go;
+                            Editor.Undo.Enabled = wasEnabled;
+                        }    
+                    }
+                }
+            }
         }
 
         protected virtual void RecordUndo()
@@ -318,7 +392,12 @@ namespace Battlehub.RTEditor
 
             Editor.Undo.BeginRecord();
             Editor.Undo.RegisterCreatedObjects(new[] { exposeToEditor });
-            Editor.Selection.activeGameObject = m_prefabInstance;
+
+            IRuntimeSelectionComponent selectionComponent = IOCContainer.Resolve<IRuntimeSelectionComponent>();
+            if(selectionComponent.CanSelect)
+            {
+                Editor.Selection.activeGameObject = m_prefabInstance;
+            }
             Editor.Undo.EndRecord();
         }
 
