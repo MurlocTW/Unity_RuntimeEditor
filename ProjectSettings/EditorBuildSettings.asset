@@ -9,14 +9,8 @@ EditorBuildSettings:
     path: Assets/Battlehub/RTEditor/Demo/RTEditor.unity
     guid: 4215a0f4652834c40978a0dc505ae257
   - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
     path: Assets/Battlehub/UIControls/DockPanels/Demo/Demo.unity
     guid: 3bfc0768ab0e86344acac13608f784f6
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
   - enabled: 0
     path: Assets/Battlehub/RTHandles/Demo/RTHandles.unity
     guid: 486e7a8839af68b42923ba8833fa237a
@@ -24,21 +18,6 @@ EditorBuildSettings:
     path: Assets/Battlehub/ARCore/RTHandles/Demo/RTHandlesAR.unity
     guid: 773bc21ee352a2942aeb5f5ac20524b3
   - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
     path: Assets/Battlehub/RTHandles/Demo/Mobile3_BasicWithSceneComponent.unity
     guid: 9fa22473c39f8e84695fd75b24dc4e38
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: Assets/GoogleARCore/Examples/ObjectManipulation/Scenes/ObjectManipulation.unity
-    guid: 9dba7e74f4d2b410f90b920f80528d44
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
   m_configObjects: {}
